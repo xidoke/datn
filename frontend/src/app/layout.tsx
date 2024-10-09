@@ -1,29 +1,55 @@
-// app/layout.tsx
-import '../styles/globals.css';
-import 'styles/editor.css';
-// import GlobalContextProvider from 'contexts/globalContextProvider';
-// import CommandPalette from 'components/command-palette';
+import React from 'react';
+import './globals.css';
+import { Metadata, Viewport } from 'next';
+import { ThemeProvider } from '@/components/providers';
+import { cn } from '@/lib/utils';
+import { fontSans } from '@/lib/fonts';
+import { Toaster } from '@/components/ui/toaster';
 
-export default function RootLayout({
-  children,
-}: {
+export const metadata: Metadata = {
+  title: 'Xidoke - Next.js',
+  description: 'Xidoke - Next.js',
+};
+
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: dark)', color: 'black' },
+  ],
+};
+
+interface RootLayoutProps {
   children: React.ReactNode;
-}) {
-  return (
-    <html lang="en">
-      <body>
-        {/* <GlobalContextProvider>
-          <>
-            <CommandPalette />
-            {children}
-          </>
-        </GlobalContextProvider> */}
-      </body>
-    </html>
-  );
 }
 
-export const metadata = {
-  title: 'My App',
-  description: 'This is my app.',
-};
+export default function RootLayout({ children }: RootLayoutProps) {
+  return (
+    <>
+      <html lang="en" suppressHydrationWarning>
+        <head />
+        <body
+          className={cn(
+            'min-h-screen bg-background font-sans antialiased',
+            fontSans.className
+          )}
+        >
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div vaul-drawer-wrapper="">
+              <div className="relative flex min-h-screen flex-col bg-background">
+                {children}
+              </div>
+            </div>
+            
+            <Toaster />
+          </ThemeProvider>
+        </body>
+      </html>
+    </>
+  );
+}
