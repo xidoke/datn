@@ -1,16 +1,16 @@
 import React from 'react';
 import './globals.css';
 import { Metadata, Viewport } from 'next';
-import { ThemeProvider } from '@/components/providers';
+import { ThemeProvider } from '@/components/providers/theme-provider';
 import { cn } from '@/lib/utils';
 import { fontSans } from '@/lib/fonts';
 import { Toaster } from '@/components/ui/toaster';
+import { ProgressBarProvider } from '@/components/providers/progressBar-provider';
 
 export const metadata: Metadata = {
   title: 'Xidoke - Next.js',
   description: 'Xidoke - Next.js',
 };
-
 
 export const viewport: Viewport = {
   themeColor: [
@@ -34,6 +34,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             fontSans.className
           )}
         >
+          <ProgressBarProvider />
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -45,7 +46,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 {children}
               </div>
             </div>
-            
+
             <Toaster />
           </ThemeProvider>
         </body>
