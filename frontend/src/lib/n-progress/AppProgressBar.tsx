@@ -10,8 +10,8 @@ type PushStateInput = [data: any, unused: string, url?: string | URL | null | un
 
 export const AppProgressBar = React.memo(
   ({
-    color = 'hsl(284 80% 44%)',
-    height = '2px',
+    color = "#0A2FFF",
+    height = "2px",
     options,
     shallowRouting = false,
     disableSameURL = true,
@@ -118,9 +118,7 @@ export const AppProgressBar = React.memo(
       }, stopDelay);
     }, [pathname, searchParams]);
 
-    const elementsWithAttachedHandlers = useRef<
-      (HTMLAnchorElement | SVGAElement)[]
-    >([]);
+    const elementsWithAttachedHandlers = useRef<(HTMLAnchorElement | SVGAElement)[]>([]);
     useEffect(() => {
       if (disableAnchorClick) {
         return;
@@ -147,37 +145,26 @@ export const AppProgressBar = React.memo(
         // Skip preventDefault
         if (event.defaultPrevented) return;
 
-        const anchorElement = event.currentTarget as
-          | HTMLAnchorElement
-          | SVGAElement;
+        const anchorElement = event.currentTarget as HTMLAnchorElement | SVGAElement;
         const target = event.target as HTMLElement | Element;
         // Check if the target or any of its parents have the attribute
         const preventProgress =
-          hasPreventProgressAttribute(target) ||
-          anchorElement?.getAttribute('data-prevent-nprogress') === 'true';
+          hasPreventProgressAttribute(target) || anchorElement?.getAttribute("data-prevent-nprogress") === "true";
 
         if (preventProgress) return;
 
-        const anchorTarget = getAnchorProperty(anchorElement, 'target');
+        const anchorTarget = getAnchorProperty(anchorElement, "target");
         // Skip anchors with target="_blank"
-        if (anchorTarget === '_blank') return;
+        if (anchorTarget === "_blank") return;
 
         // Skip control/command/option/alt+click
-        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
-          return;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
 
-        const targetHref = getAnchorProperty(anchorElement, 'href');
-        const targetUrl = targetPreprocessor
-          ? targetPreprocessor(new URL(targetHref))
-          : new URL(targetHref);
+        const targetHref = getAnchorProperty(anchorElement, "href");
+        const targetUrl = targetPreprocessor ? targetPreprocessor(new URL(targetHref)) : new URL(targetHref);
         const currentUrl = new URL(location.href);
 
-        if (
-          shallowRouting &&
-          isSameURLWithoutSearch(targetUrl, currentUrl) &&
-          disableSameURL
-        )
-          return;
+        if (shallowRouting && isSameURLWithoutSearch(targetUrl, currentUrl) && disableSameURL) return;
         if (isSameURL(targetUrl, currentUrl) && disableSameURL) return;
 
         startProgress();
@@ -185,32 +172,22 @@ export const AppProgressBar = React.memo(
 
       // eslint-disable-next-line no-undef
       const handleMutation: MutationCallback = () => {
-        const anchorElements = Array.from(document.querySelectorAll('a')) as (
-          | HTMLAnchorElement
-          | SVGAElement
-        )[];
+        const anchorElements = Array.from(document.querySelectorAll("a")) as (HTMLAnchorElement | SVGAElement)[];
 
         const validAnchorElements = anchorElements.filter((anchor) => {
-          const href = getAnchorProperty(anchor, 'href');
-          const isNProgressDisabled =
-            anchor.getAttribute('data-disable-nprogress') === 'true';
+          const href = getAnchorProperty(anchor, "href");
+          const isNProgressDisabled = anchor.getAttribute("data-disable-nprogress") === "true";
           const isNotTelOrMailto =
             href &&
-            !href.startsWith('tel:') &&
-            !href.startsWith('mailto:') &&
-            !href.startsWith('blob:') &&
-            !href.startsWith('javascript:');
+            !href.startsWith("tel:") &&
+            !href.startsWith("mailto:") &&
+            !href.startsWith("blob:") &&
+            !href.startsWith("javascript:");
 
-          return (
-            !isNProgressDisabled &&
-            isNotTelOrMailto &&
-            getAnchorProperty(anchor, 'target') !== '_blank'
-          );
+          return !isNProgressDisabled && isNotTelOrMailto && getAnchorProperty(anchor, "target") !== "_blank";
         });
 
-        validAnchorElements.forEach((anchor) =>
-          anchor.addEventListener('click', handleAnchorClick)
-        );
+        validAnchorElements.forEach((anchor) => anchor.addEventListener("click", handleAnchorClick));
         elementsWithAttachedHandlers.current = validAnchorElements;
       };
 
@@ -229,7 +206,7 @@ export const AppProgressBar = React.memo(
       return () => {
         mutationObserver.disconnect();
         elementsWithAttachedHandlers.current.forEach((anchor) => {
-          anchor.removeEventListener('click', handleAnchorClick);
+          anchor.removeEventListener("click", handleAnchorClick);
         });
         elementsWithAttachedHandlers.current = [];
         window.history.pushState = originalWindowHistoryPushState;
@@ -256,8 +233,7 @@ export const AppProgressBar = React.memo(
       prevProps?.disableSameURL === nextProps?.disableSameURL &&
       prevProps?.stopDelay === nextProps?.stopDelay &&
       prevProps?.nonce === nextProps?.nonce &&
-      JSON.stringify(prevProps?.options) ===
-        JSON.stringify(nextProps?.options) &&
+      JSON.stringify(prevProps?.options) === JSON.stringify(nextProps?.options) &&
       prevProps?.style === nextProps?.style &&
       prevProps.disableAnchorClick === nextProps.disableAnchorClick
     );
