@@ -1,7 +1,7 @@
 "use client";
+
 import * as React from "react";
 import { ChevronDown, Plus } from "lucide-react";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,34 +15,50 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useParams } from "next/navigation";
+import { useParams, useRouter, usePathname } from "next/navigation";
 import { Icon } from "./icons";
 import Link from "next/link";
 import { IWorkspaceLite } from "@/types/workspace";
 import dynamicIconImports from "lucide-react/dynamicIconImports";
+import { useWorkspaces } from "@/hooks/useWorkspaces";
+import { useUser } from "@/hooks/useUser";
 
-export function WorkspaceSwitcher({
-  workspaces,
-}: {
-  workspaces: IWorkspaceLite[]; // Chỉ cần thông tin lite ở đây nếu không cần nhiều chi tiết.
-}) {
-  // Sử dụng `IWorkspaceLite | null` để xử lý khởi tạo an toàn.
-  const [activeWorkspace, setActiveWorkspace] =
-    React.useState<IWorkspaceLite | null>(null);
+export function WorkspaceSwitcher() {
+  const { workspaces = [] } = useWorkspaces();
+  const { user } = useUser();
+  const { last_workspace_id } = user || {};
   const { workspaceId } = useParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const activeWorkspace = React.useMemo(() => {
+    if (workspaceId) {
+      return (
+        workspaces.find((workspace) => workspace.id === workspaceId) || null
+      );
+    }
+    if (last_workspace_id) {
+      return (
+        workspaces.find((workspace) => workspace.id === last_workspace_id) ||
+        null
+      );
+    }
+    return workspaces[0] || null;
+  }, [workspaces, workspaceId, last_workspace_id]);
 
   React.useEffect(() => {
-    if (workspaceId) {
-      const workspace = workspaces?.find(
-        (workspace) => workspace.id === workspaceId,
-      );
-      if (workspace) {
-        setActiveWorkspace(workspace);
-      } else {
-        setActiveWorkspace(null); // Reset nếu không tìm thấy workspace.
+    if (pathname === "/v2") {
+      if (activeWorkspace) {
+        router.push(`/v2/${activeWorkspace.id}`);
+      } else if (workspaces.length === 0) {
+        router.push("/v2/create-workspace");
       }
     }
-  }, [workspaceId, workspaces]);
+  }, [pathname, activeWorkspace, workspaces.length, router]);
+
+  const handleAddWorkspace = React.useCallback(() => {
+    router.push("/v2/create-workspace");
+  }, [router]);
 
   return (
     <SidebarMenu>
@@ -60,7 +76,7 @@ export function WorkspaceSwitcher({
                 />
               </div>
               <span className="truncate font-semibold">
-                {activeWorkspace ? activeWorkspace.name : "Select Workspace"}
+                {activeWorkspace?.name || "Select Workspace"}
               </span>
               <ChevronDown className="opacity-50" />
             </SidebarMenuButton>
@@ -74,7 +90,7 @@ export function WorkspaceSwitcher({
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Workspaces
             </DropdownMenuLabel>
-            {workspaces.map((workspace) => (
+            {workspaces.map((workspace: IWorkspaceLite) => (
               <DropdownMenuItem
                 key={workspace.id}
                 className="gap-2 p-2"
@@ -84,7 +100,7 @@ export function WorkspaceSwitcher({
                   <div className="flex size-6 items-center justify-center rounded-sm border">
                     <Icon
                       name={
-                        (workspace?.logo as keyof typeof dynamicIconImports) ||
+                        (workspace.logo as keyof typeof dynamicIconImports) ||
                         "book"
                       }
                       className="size-4"
@@ -95,7 +111,10 @@ export function WorkspaceSwitcher({
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
+            <DropdownMenuItem
+              className="gap-2 p-2"
+              onSelect={handleAddWorkspace}
+            >
               <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                 <Plus className="size-4" />
               </div>

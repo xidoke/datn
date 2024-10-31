@@ -27,29 +27,11 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import UserSidebar from "./user-sidebar-footer";
-import { IWorkspace } from "@/types/workspace";
-import { useCallback, useEffect, useState } from "react";
-import { IUser } from "@/types/users";
+import { useUser } from "@/hooks/useUser";
+import { useWorkspaces } from "@/hooks/useWorkspaces";
 
 // This is sample data.
 const data = {
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: Command,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Search",
@@ -72,33 +54,6 @@ const data = {
       url: "/inbox",
       icon: Inbox,
       badge: "10",
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Calendar",
-      url: "#",
-      icon: Calendar,
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-    },
-    {
-      title: "Templates",
-      url: "#",
-      icon: Blocks,
-    },
-    {
-      title: "Trash",
-      url: "#",
-      icon: Trash2,
-    },
-    {
-      title: "Help",
-      url: "#",
-      icon: MessageCircleQuestion,
     },
   ],
   favorites: [
@@ -153,185 +108,59 @@ const data = {
       emoji: "✅",
     },
   ],
-  projects: [
-    {
-      name: "Personal Life Management",
-      emoji: "🏠",
-      pages: [
-        {
-          name: "Daily Journal & Reflection",
-          url: "#",
-          emoji: "📔",
-        },
-        {
-          name: "Health & Wellness Tracker",
-          url: "#",
-          emoji: "🍏",
-        },
-        {
-          name: "Personal Growth & Learning Goals",
-          url: "#",
-          emoji: "🌟",
-        },
-      ],
-    },
-    {
-      name: "Professional Development",
-      emoji: "💼",
-      pages: [
-        {
-          name: "Career Objectives & Milestones",
-          url: "#",
-          emoji: "🎯",
-        },
-        {
-          name: "Skill Acquisition & Training Log",
-          url: "#",
-          emoji: "🧠",
-        },
-        {
-          name: "Networking Contacts & Events",
-          url: "#",
-          emoji: "🤝",
-        },
-      ],
-    },
-    {
-      name: "Creative Projects",
-      emoji: "🎨",
-      pages: [
-        {
-          name: "Writing Ideas & Story Outlines",
-          url: "#",
-          emoji: "✍️",
-        },
-        {
-          name: "Art & Design Portfolio",
-          url: "#",
-          emoji: "🖼️",
-        },
-        {
-          name: "Music Composition & Practice Log",
-          url: "#",
-          emoji: "🎵",
-        },
-      ],
-    },
-    {
-      name: "Home Management",
-      emoji: "🏡",
-      pages: [
-        {
-          name: "Household Budget & Expense Tracking",
-          url: "#",
-          emoji: "💰",
-        },
-        {
-          name: "Home Maintenance Schedule & Tasks",
-          url: "#",
-          emoji: "🔧",
-        },
-        {
-          name: "Family Calendar & Event Planning",
-          url: "#",
-          emoji: "📅",
-        },
-      ],
-    },
-    {
-      name: "Travel & Adventure",
-      emoji: "🧳",
-      pages: [
-        {
-          name: "Trip Planning & Itineraries",
-          url: "#",
-          emoji: "🗺️",
-        },
-        {
-          name: "Travel Bucket List & Inspiration",
-          url: "#",
-          emoji: "🌎",
-        },
-        {
-          name: "Travel Journal & Photo Gallery",
-          url: "#",
-          emoji: "📸",
-        },
-      ],
-    },
-  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [workspaces, setWorkspaces] = useState<IWorkspace[]>([]);
-  const [user, setUser] = useState<IUser | null>(null);
+  const { user } = useUser();
+  const { workspaces, isLoading, isError } = useWorkspaces();
 
-  const fetchUser = useCallback(async () => {
-    const controller = new AbortController();
-    try {
-      const response = await fetch("/api/me", { signal: controller.signal });
-      if (!response.ok) {
-        throw new Error("Failed to fetch user data");
-      }
-      const data = await response.json();
-      setUser(data);
-    } catch (error) {
-      if (error.name === "AbortError") {
-        console.log("Fetch aborted");
-      } else {
-        console.error("Error fetching user data:", error);
-      }
-    }
-    return () => controller.abort();
-  }, []);
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading workspaces</div>;
 
-  const fetchWorkspaces = useCallback(async () => {
-    const controller = new AbortController();
-    try {
-      const response = await fetch("/api/workspaces", {
-        signal: controller.signal,
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch workspace data");
-      }
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setWorkspaces(data);
-      } else {
-        console.error("Unexpected data format:", data);
-      }
-    } catch (error) {
-      if (error.name === "AbortError") {
-        console.log("Fetch aborted");
-      } else {
-        console.error("Error fetching workspace data:", error);
-      }
-    }
-    return () => controller.abort();
-  }, []);
+  const activeWorkspaceId = user?.last_workspace_id || workspaces[0]?.id;
 
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+  const navSecondary = [
+    {
+      title: "Calendar",
+      url: `#`,
+      icon: Calendar,
+    },
+    {
+      title: "Settings",
+      url: `/v2/${activeWorkspaceId}/settings/general`,
+      icon: Settings2,
+    },
+    {
+      title: "Templates",
+      url: "#",
+      icon: Blocks,
+    },
+    {
+      title: "Trash",
+      url: "#",
+      icon: Trash2,
+    },
+    {
+      title: "Help",
+      url: "#",
+      icon: MessageCircleQuestion,
+    },
+  ];
 
-  useEffect(() => {
-    fetchWorkspaces();
-  }, [fetchWorkspaces]);
-  
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-        <WorkspaceSwitcher workspaces={workspaces} />
+        <WorkspaceSwitcher />
         <NavMain items={data.navMain} />
       </SidebarHeader>
       <SidebarContent>
         <NavFavorites favorites={data.favorites} />
-        <NavProjects projects={data.projects} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {activeWorkspaceId && <NavProjects workspaceId={activeWorkspaceId} />}
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarRail />
       <SidebarFooter>
-        <UserSidebar user={user} />
+        <UserSidebar />
       </SidebarFooter>
     </Sidebar>
   );

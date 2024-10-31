@@ -10,10 +10,15 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { useRouter } from "next/navigation";
-import { IUser } from "@/types/users";
 import { Skeleton } from "./ui/skeleton";
+import { useUser } from "@/hooks/useUser";
 
-const UserSidebar = ({ user }: { user: IUser | null }) => {
+const UserSidebar = () => {
+  const {
+    user,
+    //  isLoading,
+    //   isError
+  } = useUser();
   const router = useRouter();
   const { signOut } = useAuthenticator((context) => [context.user]);
 
@@ -39,7 +44,11 @@ const UserSidebar = ({ user }: { user: IUser | null }) => {
           >
             <div className=""></div>
             <h1 className="text-muted-foreground">{user?.email}</h1>
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                router.replace("/v2/profile");
+              }}
+            >
               <Settings className="mr-2" />
               <span>Setting</span>
             </DropdownMenuItem>
