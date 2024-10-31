@@ -1,13 +1,15 @@
-import { Test, TestingModule } from '@nestjs/testing';
+// test/user.e2e-spec.ts
+
+import { Test } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { AppModule } from '../src/app.module';
 
-describe('AppController (e2e)', () => {
+describe('UserController (e2e)', () => {
   let app: INestApplication;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+  beforeAll(async () => {
+    const moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
@@ -15,10 +17,37 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('/users/signup (POST)', () => {
     return request(app.getHttpServer())
-      .get('/')
+      .post('/users/signup')
+      .send({
+        email: 'test@example.com',
+        password: 'Password123!',
+        firstName: 'Test',
+        lastName: 'User',
+      })
+      .expect(201)
+      .expect((res) => {
+        expect(res.body).toHaveProperty('id');
+        expect(res.body.email).toBe('test@example.com');
+      });
+  });
+
+  it('/users/me (GET)', () => {
+    // Note: This requires a valid Cognito token
+    const validToken = 'your-valid-token';
+
+    return request(app.getHttpServer())
+      .get('/users/me')
+      .set('Authorization', `Bearer ${validToken}`)
       .expect(200)
-      .expect('Hello World!');
+      .expect((res) => {
+        expect(res.body).toHaveProperty('id');
+        expect(res.body).toHaveProperty('email');
+      });
   });
 });
