@@ -15,20 +15,20 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useParams, useRouter, usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { Icon } from "./icons";
 import Link from "next/link";
-import { IWorkspaceLite } from "@/types/workspace";
 import dynamicIconImports from "lucide-react/dynamicIconImports";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { useUser } from "@/hooks/useUser";
+import { useAppRouter } from "@/hooks/use-app-router";
 
 export function WorkspaceSwitcher() {
   const { workspaces = [] } = useWorkspaces();
   const { user } = useUser();
   const { last_workspace_id } = user || {};
   const { workspaceId } = useParams();
-  const router = useRouter();
+  const router = useAppRouter();
   const pathname = usePathname();
 
   const activeWorkspace = React.useMemo(() => {
@@ -47,17 +47,17 @@ export function WorkspaceSwitcher() {
   }, [workspaces, workspaceId, last_workspace_id]);
 
   React.useEffect(() => {
-    if (pathname === "/v2") {
+    if (pathname === "/") {
       if (activeWorkspace) {
-        router.push(`/v2/${activeWorkspace.id}`);
+        router.push(`/${activeWorkspace.id}`);
       } else if (workspaces.length === 0) {
-        router.push("/v2/create-workspace");
+        router.push("/create-workspace");
       }
     }
   }, [pathname, activeWorkspace, workspaces.length, router]);
 
   const handleAddWorkspace = React.useCallback(() => {
-    router.push("/v2/create-workspace");
+    router.push("/create-workspace");
   }, [router]);
 
   return (
@@ -96,7 +96,7 @@ export function WorkspaceSwitcher() {
                 className="gap-2 p-2"
                 asChild
               >
-                <Link href={`/v2/${workspace.id}`}>
+                <Link href={`/${workspace.id}`}>
                   <div className="flex size-6 items-center justify-center rounded-sm border">
                     <Icon
                       name={

@@ -1,10 +1,10 @@
-import { Test } from '@nestjs/testing';
-import { UserController } from './user.controller';
-import { UserService } from './user.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { CognitoService } from './cognito.service';
+import { Test } from "@nestjs/testing";
+import { UserController } from "./user.controller";
+import { UserService } from "./user.service";
+import { PrismaService } from "../prisma/prisma.service";
+import { CognitoService } from "./cognito.service";
 
-describe('UserController', () => {
+describe("UserController", () => {
   let controller: UserController;
   let userService: UserService;
 
@@ -45,17 +45,17 @@ describe('UserController', () => {
     userService = module.get<UserService>(UserService);
   });
 
-  describe('signup', () => {
-    it('should create a new user', async () => {
+  describe("signup", () => {
+    it("should create a new user", async () => {
       const createUserDto = {
-        email: 'test@example.com',
-        password: 'Password123!',
-        firstName: 'Test',
-        lastName: 'User',
+        email: "test@example.com",
+        password: "Password123!",
+        firstName: "Test",
+        lastName: "User",
       };
 
       const expectedResult = {
-        id: '123',
+        id: "123",
         email: createUserDto.email,
         firstName: createUserDto.firstName,
         lastName: createUserDto.lastName,
@@ -69,11 +69,11 @@ describe('UserController', () => {
     });
   });
 
-  describe('getCurrentUser', () => {
-    it('should return current user', async () => {
+  describe("getCurrentUser", () => {
+    it("should return current user", async () => {
       const user = {
-        id: '123',
-        email: 'test@example.com',
+        id: "123",
+        email: "test@example.com",
       };
 
       const req = { user };

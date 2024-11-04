@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { useProjectStore } from "@/store/projectStore";
+import { useProjectStore } from "@/stores/projectStore";
 import { useCallback, useEffect } from "react";
 import { IProject } from "@/types/project";
 

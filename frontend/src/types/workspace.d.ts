@@ -1,13 +1,8 @@
-export interface IWorkspace {
+export interface Workspace {
   id: string;
-  name: string;
-  logo: string;
   slug: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface IWorkspaceLite {
-  readonly id: string;
-  name: string;
-  logo: string;
-  slug: string;
-}

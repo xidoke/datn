@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { useCommentStore } from "@/store/commentStore";
+import { useCommentStore } from "@/stores/commentStore";
 import { useCallback, useEffect } from "react";
 import { IComment } from "@/types/comment";
 

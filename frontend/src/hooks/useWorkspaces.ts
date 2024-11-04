@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { useWorkspaceStore } from "@/store/workspaceStore";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { useCallback, useEffect } from "react";
 import { IWorkspace } from "@/types/workspace";
 

@@ -8,19 +8,15 @@ import {
 } from "./ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { useAuthenticator } from "@aws-amplify/ui-react";
-import { useRouter } from "next/navigation";
 import { Skeleton } from "./ui/skeleton";
-import { useUser } from "@/hooks/useUser";
+import { useAuth } from "@/hooks/useAuth";
+import { useAppRouter } from "@/hooks/use-app-router";
 
 const UserSidebar = () => {
   const {
-    user,
-    //  isLoading,
-    //   isError
-  } = useUser();
-  const router = useRouter();
-  const { signOut } = useAuthenticator((context) => [context.user]);
+    user, logout
+  } = useAuth();
+  const router = useAppRouter();
 
   return (
     <SidebarMenu>
@@ -29,12 +25,12 @@ const UserSidebar = () => {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton>
               <Avatar className="h-6 w-6">
-                <AvatarImage src={user?.avatar || undefined} />
+                <AvatarImage src={user?.avatarUrl || "/image/user.jpg"} />
                 <AvatarFallback>
                   <Skeleton className="rounded-full" />
                 </AvatarFallback>
               </Avatar>
-              {user?.display_name}
+              {`${user?.firstName} ${user?.lastName}`}
               <ChevronUp className="ml-auto" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -46,17 +42,14 @@ const UserSidebar = () => {
             <h1 className="text-muted-foreground">{user?.email}</h1>
             <DropdownMenuItem
               onClick={() => {
-                router.replace("/v2/profile");
+                router.replace("/profile");
               }}
             >
               <Settings className="mr-2" />
               <span>Setting</span>
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => {
-                router.replace("/v2");
-                signOut();
-              }}
+              onClick={logout}
             >
               <LogOut className="mr-2" />
               <span>Sign out</span>

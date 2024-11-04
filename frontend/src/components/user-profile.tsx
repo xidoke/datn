@@ -20,7 +20,7 @@ export function UserProfile() {
       <CardContent>
         <div className="flex items-center space-x-4">
           <Avatar>
-            <AvatarImage src={user.avatar} alt={user.username} />
+            <AvatarImage src={user.avatarUrl} alt={user.username} />
             <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import {
   CognitoIdentityProviderClient,
   AdminCreateUserCommand,
@@ -10,9 +10,12 @@ import {
   AuthFlowType,
   AdminInitiateAuthCommandInput,
   AdminSetUserPasswordCommandInput,
+  InitiateAuthCommand,
+  CognitoIdentityProviderServiceException,
 } from '@aws-sdk/client-cognito-identity-provider';
 import { createHmac } from 'crypto';
 import { AWS_CONFIG } from '../config/aws.config';
+import { CognitoServiceException } from 'src/exceptions/cognito-service.exception';
 @Injectable()
 export class CognitoService {
   private readonly cognitoClient: CognitoIdentityProviderClient;
@@ -65,18 +68,26 @@ export class CognitoService {
   }
 
   async authenticateUser(email: string, password: string) {
-    const params: AdminInitiateAuthCommandInput = {
-      AuthFlow: AuthFlowType.ADMIN_USER_PASSWORD_AUTH,
-      ClientId: AWS_CONFIG.cognito.clientId,
-      UserPoolId: AWS_CONFIG.cognito.userPoolId,
-      AuthParameters: {
-        USERNAME: email,
-        PASSWORD: password,
-        SECRET_HASH: this.calculateSecretHash(email),
-      },
-    };
-    const command = new AdminInitiateAuthCommand(params);
-    return this.cognitoClient.send(command);
+    try {
+      const command = new AdminInitiateAuthCommand({
+        AuthFlow: AuthFlowType.ADMIN_USER_PASSWORD_AUTH,
+        UserPoolId: AWS_CONFIG.cognito.userPoolId,
+        ClientId: AWS_CONFIG.cognito.clientId,
+        AuthParameters: {
+          USERNAME: email,
+          PASSWORD: password,
+          SECRET_HASH: this.calculateSecretHash(email),
+        },
+      });
+
+      const response = await this.cognitoClient.send(command);
+      return response;
+    } catch (error) {
+      if (error instanceof CognitoIdentityProviderServiceException) {
+        throw new CognitoServiceException(error);
+      }
+      throw new HttpException(error.message, 500);
+    }
   }
 
   async refreshToken(refreshToken: string, username: string) {
@@ -93,7 +104,7 @@ export class CognitoService {
     return this.cognitoClient.send(command);
   }
 
-  async signOut(username: string) {
+  async globalSignOut(username: string) {
     const command = new GlobalSignOutCommand({
       AccessToken: username,
     });

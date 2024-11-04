@@ -25,7 +25,9 @@ export class UserService {
       data: {
         email: createUserDto.email,
         cognitoId: cognitoUser.User.Username,
-        role: Role.USER, // Default role
+        role: Role.USER, // Default role,
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
       },
     });
   }
@@ -73,8 +75,8 @@ export class UserService {
     return this.cognitoService.refreshToken(refreshToken, username);
   }
 
-  async logout(userId: string) {
-    return this.cognitoService.signOut(userId);
+  async globalSignOut(userId: string) {
+    return this.cognitoService.globalSignOut(userId);
   }
 
   async forgotPassword(email: string) {

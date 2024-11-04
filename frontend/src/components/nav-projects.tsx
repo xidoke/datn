@@ -64,7 +64,7 @@ export function NavProjects({ workspaceId }: { workspaceId: string }) {
       <div className="flex items-center justify-between px-2">
         <SidebarGroupLabel>Projects</SidebarGroupLabel>
         <Link
-          href={`/v2/${workspaceId}/projects/new`}
+          href={`/${workspaceId}/projects/new`}
           className="rounded-md p-1 hover:bg-muted"
         >
           <Plus className="h-4 w-4" />
@@ -83,7 +83,7 @@ export function NavProjects({ workspaceId }: { workspaceId: string }) {
                   </CollapsibleTrigger>
                   <SidebarMenuButton asChild className="flex-1">
                     <Link
-                      href={`/v2/${workspaceId}/projects/${project.id}`}
+                      href={`/${workspaceId}/projects/${project.id}`}
                       className="flex items-center gap-2"
                     >
                       <Folder className="h-4 w-4 text-primary" />
@@ -100,7 +100,7 @@ export function NavProjects({ workspaceId }: { workspaceId: string }) {
                       {expandedSubItems.map((item) => (
                         <DropdownMenuItem key={item.href}>
                           <Link
-                            href={`/v2/${workspaceId}/projects/${project.id}/${item.href}`}
+                            href={`/${workspaceId}/projects/${project.id}/${item.href}`}
                             className="flex items-center gap-2"
                           >
                             <item.icon className="h-4 w-4" />
@@ -117,7 +117,7 @@ export function NavProjects({ workspaceId }: { workspaceId: string }) {
                       <SidebarMenuSubItem key={item.href}>
                         <SidebarMenuSubButton asChild>
                           <Link
-                            href={`/v2/${workspaceId}/projects/${project.id}/${item.href}`}
+                            href={`/${workspaceId}/projects/${project.id}/${item.href}`}
                             className="flex items-center gap-2"
                           >
                             <item.icon className="h-4 w-4" />
@@ -133,7 +133,7 @@ export function NavProjects({ workspaceId }: { workspaceId: string }) {
           ))}
           <SidebarMenuItem>
             <Link
-              href={`/v2/${workspaceId}/projects`}
+              href={`/${workspaceId}/projects`}
               className={cn(
                 "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm",
                 "text-muted-foreground hover:bg-muted hover:text-foreground",

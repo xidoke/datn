@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { useIssueStore } from "@/store/issueStore";
+import { useIssueStore } from "@/stores/issueStore";
 import { useCallback, useEffect } from "react";
 import { IIssue } from "@/types/issue";
 

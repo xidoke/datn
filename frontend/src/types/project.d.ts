@@ -1,9 +1,7 @@
-export interface IProject {
+export interface Project {
   id: string;
   name: string;
-  description: string;
-  key: string;
-  leadId: string;
+  description?: string;
   workspaceId: string;
   createdAt: string;
   updatedAt: string;

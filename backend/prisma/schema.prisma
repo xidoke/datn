@@ -8,6 +8,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "../ERD.svg" // This will create ERD.svg in parent directory
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -16,14 +21,134 @@ datasource db {
 model User {
   id            String    @id @default(uuid())
   email         String    @unique
-  cognitoId     String    @unique  // AWS Cognito User ID
-  role      String   @default("USER")
+  cognitoId     String    @unique
+  role          String    @default("USER")
   firstName     String?
   lastName      String?
   avatarUrl     String?
   isActive      Boolean   @default(true)
+  workspaces    WorkspaceMember[]
+  projectMembers  ProjectMember[]
+  createdIssues   Issue[]         @relation("CreatedIssues")
+  assignedIssues  IssueAssignee[]
+  comments        IssueComment[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-
   @@map("users")
+}
+
+model Workspace {
+  id            String    @id @default(uuid())
+  slug          String    @unique
+  name          String
+  projects      Project[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  members       WorkspaceMember[]
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id            String    @id @default(uuid())
+  role          String    @default("MEMBER")
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  workspace     Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId   String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  @@map("workspace_members")
+}
+
+
+model Project {
+  id            String          @id @default(uuid())
+  name          String
+  description   String?
+  workspace     Workspace       @relation(fields: [workspaceId], references: [id])
+  workspaceId   String
+  members       ProjectMember[]
+  issues        Issue[]
+  states        State[]  
+  labels        Label[] 
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  @@map("projects")
+}
+
+model ProjectMember {
+  id            String    @id @default(uuid())
+  role          String    @default("MEMBER")
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  project       Project   @relation(fields: [projectId], references: [id])
+  projectId     String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  @@map("project_members")
+}
+
+model Issue {
+  id            String          @id @default(uuid())
+  title         String
+  description   String?
+  state         State          @relation(fields: [stateId], references: [id])
+  stateId       String
+  project       Project        @relation(fields: [projectId], references: [id]) 
+  projectId     String
+  creator       User           @relation("CreatedIssues", fields: [creatorId], references: [id])
+  creatorId     String
+  assignees     IssueAssignee[]
+  labels        Label[]
+  comments      IssueComment[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  @@map("issues")
+}
+
+model IssueComment {
+  id        String   @id @default(uuid())
+  content   String
+  issue     Issue    @relation(fields: [issueId], references: [id])
+  issueId   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("issue_comments")
+}
+
+model IssueAssignee {
+  id        String   @id @default(uuid())
+  issue     Issue    @relation(fields: [issueId], references: [id])
+  issueId   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("issue_assignees")
+}
+
+model Label {
+  id          String    @id @default(uuid()) 
+  name        String
+  color       String
+  project     Project   @relation(fields: [projectId], references: [id])
+  projectId   String
+  issues      Issue[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@map("labels")
+}
+
+model State {
+  id        String   @id @default(uuid())
+  name      String
+  color     String
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String
+  issues    Issue[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("states")
 }

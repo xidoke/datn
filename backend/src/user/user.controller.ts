@@ -54,7 +54,7 @@ export class UserController {
   @UseGuards(CognitoAuthGuard)
   @HttpCode(204)
   async logout(@Req() req) {
-    return this.userService.logout(req.user.id);
+    return this.userService.globalSignOut(req.user.id);
   }
 
   @Post('forgot-password')

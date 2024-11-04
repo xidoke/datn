@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { useNotificationStore } from "@/store/notificationStore";
+import { useNotificationStore } from "@/stores/notificationStore";
 import { useCallback, useEffect } from "react";
 import { INotification } from "@/types/notification";
 

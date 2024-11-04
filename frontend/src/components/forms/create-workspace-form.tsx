@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,9 +12,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useAppRouter } from "@/hooks/use-app-router";
 
 export default function CreateWorkspaceForm() {
-  const router = useRouter();
+  const router = useAppRouter();
   const { addWorkspace } = useWorkspaces();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -33,7 +33,7 @@ export default function CreateWorkspaceForm() {
         name: formData.name,
         logo: "building", // Default logo
       });
-      router.push(`/v2/${workspace.id}`);
+      router.push(`/${workspace.id}`);
     } catch (error) {
       console.error("Failed to create workspace:", error);
     } finally {
