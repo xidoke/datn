@@ -11,11 +11,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppRouter } from "@/hooks/use-app-router";
+import { useUser } from "@/stores/userStore";
 
 const UserSidebar = () => {
   const {
-    user, logout
+    logout
   } = useAuth();
+  const {data: user} = useUser();
   const router = useAppRouter();
 
   return (

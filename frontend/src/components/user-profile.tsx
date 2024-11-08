@@ -1,15 +1,15 @@
 "use client";
 
-import { useUser } from "@/hooks/useUser";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useUser } from "@/stores/userStore";
 
 export function UserProfile() {
-  const { user, isLoading, isError, updateUser } = useUser();
+  const { data: user, isLoading, error } = useUser();
 
   if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading user data</div>;
+  if (error) return <div>Error loading user data</div>;
   if (!user) return <div>User not found</div>;
 
   return (
@@ -29,9 +29,9 @@ export function UserProfile() {
           </div>
         </div>
         <div className="mt-4 space-y-2">
-          <Button onClick={() => updateUser({ username: "New Name" })}>
+          {/* <Button onClick={() => updateUser({ username: "New Name" })}>
             Update Name
-          </Button>
+          </Button> */}
         </div>
       </CardContent>
     </Card>

@@ -11,5 +11,6 @@ export interface RequestWithUser extends Request {
     auth_time: number;
     exp: number;
     iat: number;
+    userId: string; // Database User ID
   };
 }

@@ -47,6 +47,7 @@ export default function LoginForm() {
       email: "",
       password: "",
     },
+    
   });
 
   const onSubmit = async (values: LoginFormValues) => {
@@ -68,7 +69,12 @@ export default function LoginForm() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+            <form
+              // method="POST"
+              // action={`${API_BASE_URL}/auth/login`}
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="grid gap-4"
+            >
               <FormField
                 control={form.control}
                 name="email"

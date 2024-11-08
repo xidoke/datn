@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from "@nestjs/common";
 import {
   CognitoIdentityProviderClient,
   AdminCreateUserCommand,
@@ -8,14 +8,12 @@ import {
   ForgotPasswordCommand,
   GlobalSignOutCommand,
   AuthFlowType,
-  AdminInitiateAuthCommandInput,
   AdminSetUserPasswordCommandInput,
-  InitiateAuthCommand,
   CognitoIdentityProviderServiceException,
-} from '@aws-sdk/client-cognito-identity-provider';
-import { createHmac } from 'crypto';
-import { AWS_CONFIG } from '../config/aws.config';
-import { CognitoServiceException } from 'src/exceptions/cognito-service.exception';
+} from "@aws-sdk/client-cognito-identity-provider";
+import { createHmac } from "crypto";
+import { AWS_CONFIG } from "../config/aws.config";
+import { CognitoServiceException } from "src/exceptions/cognito-service.exception";
 @Injectable()
 export class CognitoService {
   private readonly cognitoClient: CognitoIdentityProviderClient;
@@ -33,15 +31,15 @@ export class CognitoService {
       Username: email,
       UserAttributes: [
         {
-          Name: 'email',
+          Name: "email",
           Value: email,
         },
         {
-          Name: 'email_verified',
-          Value: 'true',
+          Name: "email_verified",
+          Value: "true",
         },
       ],
-      MessageAction: 'SUPPRESS', // Không gửi email
+      MessageAction: "SUPPRESS", // Không gửi email
     });
 
     const user = await this.cognitoClient.send(createUserCommand);
@@ -61,9 +59,9 @@ export class CognitoService {
 
   private calculateSecretHash(username: string): string {
     const message = username + AWS_CONFIG.cognito.clientId;
-    const hmac = createHmac('SHA256', AWS_CONFIG.cognito.clientSecret)
+    const hmac = createHmac("SHA256", AWS_CONFIG.cognito.clientSecret)
       .update(message)
-      .digest('base64');
+      .digest("base64");
     return hmac;
   }
 
@@ -90,20 +88,6 @@ export class CognitoService {
     }
   }
 
-  async refreshToken(refreshToken: string, username: string) {
-    const params: AdminInitiateAuthCommandInput = {
-      AuthFlow: AuthFlowType.REFRESH_TOKEN_AUTH,
-      ClientId: AWS_CONFIG.cognito.clientId,
-      UserPoolId: AWS_CONFIG.cognito.userPoolId,
-      AuthParameters: {
-        REFRESH_TOKEN: refreshToken,
-        SECRET_HASH: this.calculateSecretHash(username),
-      },
-    };
-    const command = new AdminInitiateAuthCommand(params);
-    return this.cognitoClient.send(command);
-  }
-
   async globalSignOut(username: string) {
     const command = new GlobalSignOutCommand({
       AccessToken: username,
@@ -122,7 +106,7 @@ export class CognitoService {
   async confirmForgotPassword(
     email: string,
     code: string,
-    newPassword: string
+    newPassword: string,
   ) {
     const command = new ConfirmForgotPasswordCommand({
       ClientId: AWS_CONFIG.cognito.clientId,
@@ -136,7 +120,7 @@ export class CognitoService {
   async changePassword(
     cognitoId: string,
     oldPassword: string,
-    newPassword: string
+    newPassword: string,
   ) {
     const params: AdminSetUserPasswordCommandInput = {
       UserPoolId: AWS_CONFIG.cognito.userPoolId,
@@ -150,8 +134,8 @@ export class CognitoService {
     try {
       return await this.cognitoClient.send(command);
     } catch (error) {
-      if (error.name === 'InvalidPasswordException') {
-        throw new BadRequestException('Invalid password format');
+      if (error.name === "InvalidPasswordException") {
+        throw new BadRequestException("Invalid password format");
       }
       throw error;
     }

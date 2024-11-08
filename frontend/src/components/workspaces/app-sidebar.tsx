@@ -14,8 +14,8 @@ import {
 import { NavFavorites } from "@/components/nav-favorites";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
-import { NavProjects } from "@/components/nav-projects";
-import { WorkspaceSwitcher } from "@/components/workspace-switcher";
+// import { NavProjects } from "@/components/nav-projects";
+import { WorkspaceSwitcher } from "@/components/workspaces/workspace-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -24,8 +24,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import UserSidebar from "../user-sidebar-footer";
-import { useUser } from "@/hooks/useUser";
-import { useWorkspaces } from "@/hooks/useWorkspaces";
 
 // This is sample data.
 const data = {
@@ -68,13 +66,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useUser();
-  const { workspaces, isLoading, isError } = useWorkspaces();
-
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading workspaces</div>;
-
-  const activeWorkspaceId = user?.last_workspace_id || workspaces[0]?.id;
+  // const activeWorkspaceId = user?.last_workspace_id || workspaces[0]?.id;
 
   const navSecondary = [
     {
@@ -84,7 +76,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     },
     {
       title: "Settings",
-      url: `/${activeWorkspaceId}/settings/general`,
+      // url: `/${activeWorkspaceId}/settings/general`,
       icon: Settings2,
     },
     {
@@ -112,7 +104,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavFavorites favorites={data.favorites} />
-        {activeWorkspaceId && <NavProjects workspaceId={activeWorkspaceId} />}
+        {/* {activeWorkspaceId && <NavProjects workspaceId={activeWorkspaceId} />} */}
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarRail />

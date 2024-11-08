@@ -3,16 +3,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { apiClient } from "@/lib/api/api-client";
 
-interface User {
-  id: string;
-  email: string;
-  name: string;
-}
 
 interface AuthState {
-  user: User | null;
   isLoading: boolean;
-  error: string | null;
+  error: string | undefined;
+  isAuthenticated: boolean;
+}
+interface AuthActions {
   login: (email: string, password: string) => Promise<void>;
   register: (
     email: string,
@@ -21,24 +18,27 @@ interface AuthState {
     lastName: string,
   ) => Promise<void>;
   logout: () => void;
-  updateUser: (user: Partial<User>) => void;
+  reset: () => void;
 }
 
-export const useAuthStore = create<AuthState>()(
+export interface AuthStore extends AuthState, AuthActions {}
+
+const initialState = {
+  isLoading: false,
+  error: undefined,
+  isAuthenticated: false,
+};
+export const useAuthStore = create<AuthState & AuthActions>()(
   persist(
     (set, get) => ({
-      user: null,
-      isLoading: false,
-      error: null,
+      ...initialState,
       login: async (email: string, password: string) => {
-        set({ isLoading: true, error: null });
+        set({ isLoading: true, error: undefined });
         try {
-          const response = await apiClient.post<{
-            user: User;
-          }>("/auth/login", { email, password });
+          await apiClient.post("/auth/login", { email, password });
           set({
-            user: response.user,
             isLoading: false,
+            isAuthenticated: true,
           });
         } catch (error) {
           set({
@@ -46,10 +46,10 @@ export const useAuthStore = create<AuthState>()(
               error.response?.data?.message ||
               "Failed to login. Please check your credentials.",
             isLoading: false,
+            isAuthenticated: false,
           });
         }
       },
-
       // Test register
       register: async (
         email: string,
@@ -57,13 +57,10 @@ export const useAuthStore = create<AuthState>()(
         firstName: string,
         lastName: string,
       ) => {
-        set({ isLoading: true, error: null });
+        set({ isLoading: true, error: undefined });
         try {
-          const response = await apiClient.post<{
-            user: User;
-          }>("/auth/register", { email, password, firstName, lastName });
+          await apiClient.post("/auth/register", { email, password, firstName, lastName });
           set({
-            user: response.user,
             isLoading: false,
           });
         } catch (error) {
@@ -75,10 +72,11 @@ export const useAuthStore = create<AuthState>()(
           });
         }
       },
+      reset: () => set(initialState),
       logout: async () => {
         try {
           // Optimistic logout: Immediately clear user data
-          set({ user: null, error: null, isLoading: true });
+          set({ isAuthenticated: false, error: undefined, isLoading: true });
 
           // Notify the backend
           await apiClient.post("/auth/logout");
@@ -95,24 +93,11 @@ export const useAuthStore = create<AuthState>()(
               "Logout failed. Please try again.",
             isLoading: false,
           });
-
-          // Optionally, you might want to restore the user state if logout fails
-          // const previousUser = get().user;
-          // set({ user: previousUser });
         }
-      },
-      updateUser: (updatedUser: Partial<User>) => {
-        set((state) => ({
-          user: state.user ? { ...state.user, ...updatedUser } : null,
-        }));
       },
     }),
     {
       name: "auth-storage",
-      getStorage: () => localStorage,
-      partialize: (state) => ({
-        user: state.user,
-      }),
     },
   ),
 );

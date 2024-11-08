@@ -16,45 +16,45 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useParams, usePathname } from "next/navigation";
-import { Icon } from "./icons";
+import { Icon } from "@/components/icons";
 import Link from "next/link";
 import dynamicIconImports from "lucide-react/dynamicIconImports";
-import { useWorkspaces } from "@/hooks/useWorkspaces";
-import { useUser } from "@/hooks/useUser";
+// import { useWorkspaces } from "@/hooks/useWorkspaces";
+// import { useUser } from "@/hooks/useUser";
 import { useAppRouter } from "@/hooks/use-app-router";
 
 export function WorkspaceSwitcher() {
-  const { workspaces = [] } = useWorkspaces();
-  const { user } = useUser();
-  const { last_workspace_id } = user || {};
-  const { workspaceId } = useParams();
+  // const { workspaces = [] } = useWorkspaces();
+  // const { user } = useUser();
+  // const { last_workspace_id } = user || {};
+  // const { workspaceId } = useParams();
   const router = useAppRouter();
-  const pathname = usePathname();
+  // const pathname = usePathname();
 
-  const activeWorkspace = React.useMemo(() => {
-    if (workspaceId) {
-      return (
-        workspaces.find((workspace) => workspace.id === workspaceId) || null
-      );
-    }
-    if (last_workspace_id) {
-      return (
-        workspaces.find((workspace) => workspace.id === last_workspace_id) ||
-        null
-      );
-    }
-    return workspaces[0] || null;
-  }, [workspaces, workspaceId, last_workspace_id]);
+  // const activeWorkspace = React.useMemo(() => {
+  //   if (workspaceId) {
+  //     return (
+  //       workspaces.find((workspace) => workspace.id === workspaceId) || null
+  //     );
+  //   }
+  //   if (last_workspace_id) {
+  //     return (
+  //       workspaces.find((workspace) => workspace.id === last_workspace_id) ||
+  //       null
+  //     );
+  //   }
+  //   return workspaces[0] || null;
+  // }, [workspaces, workspaceId, last_workspace_id]);
 
-  React.useEffect(() => {
-    if (pathname === "/") {
-      if (activeWorkspace) {
-        router.push(`/${activeWorkspace.id}`);
-      } else if (workspaces.length === 0) {
-        router.push("/create-workspace");
-      }
-    }
-  }, [pathname, activeWorkspace, workspaces.length, router]);
+  // React.useEffect(() => {
+  //   if (pathname === "/") {
+  //     if (activeWorkspace) {
+  //       router.push(`/${activeWorkspace.id}`);
+  //     } else if (workspaces.length === 0) {
+  //       router.push("/create-workspace");
+  //     }
+  //   }
+  // }, [pathname, activeWorkspace, workspaces.length, router]);
 
   const handleAddWorkspace = React.useCallback(() => {
     router.push("/create-workspace");
@@ -67,16 +67,16 @@ export function WorkspaceSwitcher() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton className="w-fit px-1.5">
               <div className="flex aspect-square size-5 items-center justify-center rounded-md">
-                <Icon
+                {/* <Icon
                   name={
                     (activeWorkspace?.logo as keyof typeof dynamicIconImports) ||
                     "book"
                   }
                   className="size-4"
-                />
+                /> */}
               </div>
               <span className="truncate font-semibold">
-                {activeWorkspace?.name || "Select Workspace"}
+                {/* {activeWorkspace?.name || "Select Workspace"} */}
               </span>
               <ChevronDown className="opacity-50" />
             </SidebarMenuButton>
@@ -90,7 +90,7 @@ export function WorkspaceSwitcher() {
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Workspaces
             </DropdownMenuLabel>
-            {workspaces.map((workspace: IWorkspaceLite) => (
+            {/* {workspaces.map((workspace: IWorkspaceLite) => (
               <DropdownMenuItem
                 key={workspace.id}
                 className="gap-2 p-2"
@@ -109,7 +109,7 @@ export function WorkspaceSwitcher() {
                   {workspace.name}
                 </Link>
               </DropdownMenuItem>
-            ))}
+            ))} */}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="gap-2 p-2"

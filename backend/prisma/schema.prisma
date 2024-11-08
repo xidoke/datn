@@ -27,11 +27,13 @@ model User {
   lastName      String?
   avatarUrl     String?
   isActive      Boolean   @default(true)
+  ownedWorkspaces Workspace[]
   workspaces    WorkspaceMember[]
   projectMembers  ProjectMember[]
   createdIssues   Issue[]         @relation("CreatedIssues")
   assignedIssues  IssueAssignee[]
   comments        IssueComment[]
+  lastWorkspaceSlug String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   @@map("users")
@@ -41,6 +43,8 @@ model Workspace {
   id            String    @id @default(uuid())
   slug          String    @unique
   name          String
+  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     String   
   projects      Project[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

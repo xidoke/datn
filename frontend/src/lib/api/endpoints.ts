@@ -41,7 +41,7 @@ export const changePassword = (oldPassword: string, newPassword: string) =>
   api.post("/auth/change-password", { oldPassword, newPassword });
 
 // User endpoints
-export const fetchCurrentUser = () => api.get<User>("/users/me");
+export const fetchCurrentUser = () => api.get<User>("/me");
 export const updateUser = (userId: string, data: Partial<User>) =>
   api.put<User>(`/users/${userId}`, data);
 

@@ -1,6 +1,5 @@
 "use client";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/contexts/AuthContext";
 import { AppProgressBar } from "@/lib/n-progress";
 import { ThemeProvider } from "next-themes";
 import { FC } from "react";

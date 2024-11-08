@@ -1,13 +1,23 @@
-import { IWorkspace } from "@/types/workspace";
-import { create } from "zustand";
+import { Workspace } from "@/types";
 
-// store/workspaceStore.ts
 interface WorkspaceState {
-  workspaces: IWorkspace[];
-  setWorkspaces: (workspaces: IWorkspace[]) => void;
+    loader: boolean;
+  // observables
+  workspaces: Record<string, Workspace>;
+  // computed
+  currentWorkspace: Workspace | null;
+  workspacesCreatedByCurrentUser: Workspace[] | null;
+
 }
 
-export const useWorkspaceStore = create<WorkspaceState>((set) => ({
-  workspaces: [],
-  setWorkspaces: (workspaces) => set({ workspaces }),
-}));
+interface WorkspaceActions {
+    getWorkspaceBySlug: (workspaceSlug: string) => Workspace | null;
+  getWorkspaceById: (workspaceId: string) => Workspace | null;
+  // fetch actions
+  fetchWorkspaces: () => Promise<Workspace[]>;
+  // crud actions
+  createWorkspace: (data: Partial<Workspace>) => Promise<Workspace>;
+  updateWorkspace: (workspaceSlug: string, data: Partial<Workspace>) => Promise<Workspace>;
+  updateWorkspaceLogo: (workspaceSlug: string, logoURL: string) => void;
+  deleteWorkspace: (workspaceSlug: string) => Promise<void>;
+}

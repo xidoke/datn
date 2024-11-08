@@ -1,4 +1,4 @@
-export interface User {
+export interface IUser {
   id: string;
   email: string;
   cognitoId: string;
@@ -7,6 +7,7 @@ export interface User {
   lastName?: string;
   avatarUrl?: string;
   isActive: boolean;
+  lastWorkspaceSlug?: string;
   createdAt: string;
   updatedAt: string;
 }

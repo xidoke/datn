@@ -6,15 +6,19 @@ import {
   Param,
   Post,
   Put,
+  Req,
 } from "@nestjs/common";
 import { AppService } from "./app.service";
+import { Roles } from "./auth/decorators/roles.decorator";
+import { Role } from "./auth/enums/role.enum";
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): string {
+  @Roles(Role.USER)
+  getHello(@Req() req): string {
     return this.appService.getHello();
   }
 
