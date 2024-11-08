@@ -1,8 +1,8 @@
-export interface IComment {
+export interface IssueComment {
   id: string;
   content: string;
-  authorId: string;
   issueId: string;
+  userId: string;
   createdAt: string;
   updatedAt: string;
 }

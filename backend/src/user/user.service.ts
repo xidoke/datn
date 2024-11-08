@@ -1,31 +1,67 @@
 // src/user/user.service.ts
 
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CognitoService } from './cognito.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { LoginDto } from './dto/login.dto';
-import { Role } from 'src/auth/enums/role.enum';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { LoginDto } from "./dto/login.dto";
+import { Role } from "src/auth/enums/role.enum";
+import { UpdateUserDto } from "./dto/update-user.dto";
+import { CognitoService } from "src/auth/cognito.service";
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
-    private cognitoService: CognitoService
+    private cognitoService: CognitoService,
   ) {}
 
+  // DONE
   async create(createUserDto: CreateUserDto) {
     const cognitoUser = await this.cognitoService.createUser(
       createUserDto.email,
-      createUserDto.password
+      createUserDto.password,
     );
 
     return this.prisma.user.create({
       data: {
         email: createUserDto.email,
         cognitoId: cognitoUser.User.Username,
-        role: Role.USER, // Default role
+        role: Role.ADMIN, // Default role,
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
+      },
+    });
+  }
+
+  // DONE
+  async login(loginDto: LoginDto) {
+    const authResult = await this.cognitoService.authenticateUser(
+      loginDto.email,
+      loginDto.password,
+    );
+
+    const user = await this.prisma.user.findFirst({
+      where: { email: loginDto.email },
+    });
+
+    return {
+      accessToken: authResult.AuthenticationResult.AccessToken,
+      refreshToken: authResult.AuthenticationResult.RefreshToken,
+      user,
+    };
+  }
+
+  async findUserWorkspaces(userId: string) {
+    return this.prisma.workspace.findMany({
+      where: {
+        members: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      orderBy: {
+        updatedAt: "desc",
       },
     });
   }
@@ -52,29 +88,8 @@ export class UserService {
     });
   }
 
-  async login(loginDto: LoginDto) {
-    const authResult = await this.cognitoService.authenticateUser(
-      loginDto.email,
-      loginDto.password
-    );
-
-    const user = await this.prisma.user.findFirst({
-      where: { email: loginDto.email },
-    });
-
-    return {
-      accessToken: authResult.AuthenticationResult.AccessToken,
-      refreshToken: authResult.AuthenticationResult.RefreshToken,
-      user,
-    };
-  }
-
-  async refreshToken(refreshToken: string, username: string) {
-    return this.cognitoService.refreshToken(refreshToken, username);
-  }
-
-  async logout(userId: string) {
-    return this.cognitoService.signOut(userId);
+  async globalSignOut(userId: string) {
+    return this.cognitoService.globalSignOut(userId);
   }
 
   async forgotPassword(email: string) {
@@ -95,15 +110,14 @@ export class UserService {
   async changePassword(id: string, oldPassword: string, newPassword: string) {
     const user = await this.findById(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     await this.cognitoService.changePassword(
       user.cognitoId,
       oldPassword,
-      newPassword
+      newPassword,
     );
-
     return user;
   }
 }

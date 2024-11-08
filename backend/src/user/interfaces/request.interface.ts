@@ -1,5 +1,5 @@
-import { Request } from 'express';
-import { Role } from '../../auth/enums/role.enum';
+import { Request } from "express";
+import { Role } from "../../auth/enums/role.enum";
 
 export interface RequestWithUser extends Request {
   user: {
@@ -11,5 +11,6 @@ export interface RequestWithUser extends Request {
     auth_time: number;
     exp: number;
     iat: number;
+    userId: string; // Database User ID
   };
 }

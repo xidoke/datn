@@ -1,12 +1,10 @@
-export interface IIssue {
+export interface Issue {
   id: string;
   title: string;
-  description: string;
-  status: "TODO" | "IN_PROGRESS" | "DONE";
-  priority: "LOW" | "MEDIUM" | "HIGH";
-  assigneeId: string | null;
-  reporterId: string;
+  description?: string;
+  stateId: string;
   projectId: string;
+  creatorId: string;
   createdAt: string;
   updatedAt: string;
 }

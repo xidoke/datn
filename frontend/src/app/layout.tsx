@@ -8,8 +8,8 @@ import { fontSans } from "@/lib/fonts";
 import { AppProvider } from "./provider";
 
 export const metadata: Metadata = {
-  title: "Xidoke - Next.js",
-  description: "Xidoke - Next.js",
+  title: "Xidok - Next.js",
+  description: "Xidok - Next.js",
 };
 
 export const viewport: Viewport = {

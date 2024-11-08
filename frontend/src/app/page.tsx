@@ -117,7 +117,7 @@ export default function Homepage() {
             </Link>
             <ModeToggle />
           </nav>
-          <Link href='/v2'
+          <Link href='/'
             className={cn(buttonVariants({
               variant: 'default',
             }))}

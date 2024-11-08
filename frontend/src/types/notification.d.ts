@@ -1,4 +1,4 @@
-export interface INotification {
+export interface Notification {
   id: string;
   type: "ISSUE_ASSIGNED" | "COMMENT_ADDED" | "ISSUE_UPDATED" | "MENTION";
   content: string;
@@ -8,7 +8,7 @@ export interface INotification {
 }
 
 export interface NotificationState {
-  notifications: INotification[];
+  notifications: Notification[];
   setNotifications: (notifications: INotification[]) => void;
   addNotification: (notification: INotification) => void;
   markAsRead: (notificationId: string) => void;
