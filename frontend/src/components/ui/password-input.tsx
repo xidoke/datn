@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ({ className, type, ...props }, ref) => {
     const [showPassword, setShowPassword] = React.useState(false);
     const togglePasswordVisibility = () => setShowPassword(!showPassword);

@@ -12,6 +12,9 @@ const RESTRICTED_WORKSPACE_SLUGS = [
   "app",
   "dashboard",
   "create",
+  "login",
+  "register",
+  "profile",
 ];
 
 @Injectable()
@@ -261,18 +264,39 @@ export class WorkspaceService {
     });
 
     if (!workspace) {
-      throw new NotFoundException("Workspace not found");
+      throw new NotFoundException('Workspace not found');
     }
 
     // Only the owner can delete the workspace
     if (workspace.ownerId !== userId) {
       throw new BadRequestException(
-        "Only the workspace owner can delete the workspace",
+        'Only the workspace owner can delete the workspace'
       );
     }
 
-    return this.prisma.workspace.delete({
-      where: { slug },
+    // Use a transaction to ensure all operations are performed or none
+    return this.prisma.$transaction(async (prisma) => {
+      // Delete all workspace members
+      await prisma.workspaceMember.deleteMany({
+        where: { workspaceId: workspace.id },
+      });
+
+      // Delete all projects associated with this workspace
+      await prisma.project.deleteMany({
+        where: { workspaceId: workspace.id },
+      });
+
+      // Delete all issues associated with this workspace's projects
+      await prisma.issue.deleteMany({
+        where: { project: { workspaceId: workspace.id } },
+      });
+
+      // Delete any other related records here...
+
+      // Finally, delete the workspace
+      return prisma.workspace.delete({
+        where: { id: workspace.id },
+      });
     });
   }
 }

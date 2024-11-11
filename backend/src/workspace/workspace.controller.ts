@@ -13,10 +13,14 @@ import {
 import { WorkspaceService } from "./workspace.service";
 import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
 import { RequestWithUser } from "src/user/interfaces/request.interface";
+import { UserService } from "src/user/user.service";
 
 @Controller("workspaces")
 export class WorkspaceController {
-  constructor(private workspaceService: WorkspaceService) {}
+  constructor(
+    private workspaceService: WorkspaceService,
+    private userService: UserService,
+  ) {}
 
   @Get("check-workspace-slug")
   async checkWorkspaceAvailability(@Query("slug") slug: string) {
@@ -35,11 +39,21 @@ export class WorkspaceController {
     @Req() req: RequestWithUser,
     @Body() data: { name: string; slug: string },
   ) {
-    return this.workspaceService.createWorkspace({
-      name: data.name,
-      userId: req.user.userId,
-      slug: data.slug,
-    });
+    try {
+      const workspaceCreated = await this.workspaceService.createWorkspace({
+        name: data.name,
+        userId: req.user.userId,
+        slug: data.slug,
+      });
+      // edit lastWorkspaceSlug in user
+      await this.userService.update(req.user.userId, {
+        lastWorkspaceSlug: data.slug,
+      });
+      return workspaceCreated;
+    } catch (error) {
+      // TODO: Handle error
+      throw new Error(error);
+    }
   }
 
   @Get(":slug")
@@ -50,7 +64,6 @@ export class WorkspaceController {
   ) {
     return this.workspaceService.getWorkspace(slug, req.user.userId);
   }
-
 
   // TODO: Hiện tại chỉ cho phép sửa name
   @Patch(":slug")

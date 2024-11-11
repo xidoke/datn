@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function parsePath(path: string) {
   const hashIndex = path.indexOf("#");
   const queryIndex = path.indexOf("?");

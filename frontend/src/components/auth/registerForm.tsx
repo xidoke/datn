@@ -62,6 +62,7 @@ export default function RegisterForm() {
         values.lastName,
       );
     } catch (err) {
+      console.log(err);
       // Error is handled by the useAuth hook
     }
   };
@@ -147,7 +148,7 @@ export default function RegisterForm() {
         </Form>
         <div className="mt-4 text-center text-sm">
           Already have an account?{" "}
-          <Link href="/login" className="underline">
+          <Link href="/" className="underline">
             Sign in
           </Link>
         </div>
