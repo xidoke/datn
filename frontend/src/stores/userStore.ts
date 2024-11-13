@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from "@/lib/api/api-client";
 import { IUser } from "@/types/user";
 import { create } from "zustand";
@@ -31,7 +32,7 @@ const initialState: UserState = {
 
 export const useUserStore = create<UserStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       ...initialState,
 
       fetchCurrentUser: async () => {

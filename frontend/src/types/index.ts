@@ -1,4 +1,4 @@
-export type { User } from "./user";
+export type { IUser } from "./user";
 export type { Workspace } from "./workspace";
 export type { WorkspaceMember } from "./workspaceMember";
 export type { Issue } from "./issue";

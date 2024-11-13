@@ -1,8 +1,7 @@
-// src/stores/authStore.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { apiClient } from "@/lib/api/api-client";
-
 
 interface AuthState {
   isLoading: boolean;
@@ -30,7 +29,7 @@ const initialState = {
 };
 export const useAuthStore = create<AuthState & AuthActions>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       ...initialState,
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: undefined });
@@ -40,7 +39,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             isLoading: false,
             isAuthenticated: true,
           });
-        } catch (error) {
+        } catch (error: any) {
           set({
             error:
               error.response?.data?.message ||
@@ -59,11 +58,16 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       ) => {
         set({ isLoading: true, error: undefined });
         try {
-          await apiClient.post("/auth/register", { email, password, firstName, lastName });
+          await apiClient.post("/auth/register", {
+            email,
+            password,
+            firstName,
+            lastName,
+          });
           set({
             isLoading: false,
           });
-        } catch (error) {
+        } catch (error: any) {
           set({
             error:
               error.response?.data?.message ||
@@ -83,7 +87,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
           // Ensure isLoading is set to false after the request completes
           set({ isLoading: false });
-        } catch (error) {
+        } catch (error: any) {
           console.error("Logout error:", error);
 
           // Set error state and isLoading to false

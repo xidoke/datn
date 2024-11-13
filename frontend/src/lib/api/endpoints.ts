@@ -1,6 +1,6 @@
 import api from "./index";
 import {
-  User,
+  IUser,
   Workspace,
   Project,
   Issue,
@@ -11,7 +11,7 @@ import {
 
 // Authentication endpoints
 export const login = (email: string, password: string) =>
-  api.post<{ user: User; token: string }>("/auth/login", { email, password });
+  api.post<{ user: IUser; token: string }>("/auth/login", { email, password });
 
 export const register = (
   email: string,
@@ -19,7 +19,7 @@ export const register = (
   firstName: string,
   lastName: string,
 ) =>
-  api.post<{ user: User; token: string }>("/auth/register", {
+  api.post<{ user: IUser; token: string }>("/auth/register", {
     email,
     password,
     firstName,
@@ -41,9 +41,9 @@ export const changePassword = (oldPassword: string, newPassword: string) =>
   api.post("/auth/change-password", { oldPassword, newPassword });
 
 // User endpoints
-export const fetchCurrentUser = () => api.get<User>("/me");
-export const updateUser = (userId: string, data: Partial<User>) =>
-  api.put<User>(`/users/${userId}`, data);
+export const fetchCurrentUser = () => api.get<IUser>("/me");
+export const updateUser = (userId: string, data: Partial<IUser>) =>
+  api.put<IUser>(`/users/${userId}`, data);
 
 // Workspace endpoints
 export const fetchWorkspaces = () => api.get<Workspace[]>("/workspaces");

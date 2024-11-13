@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-// import { useWorkspaces } from "@/hooks/useWorkspaces";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,14 +12,16 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useAppRouter } from "@/hooks/use-app-router";
+import { useWorkspace } from "@/stores/workspaceStore";
 
 export default function CreateWorkspaceForm() {
   const router = useAppRouter();
-  // const { addWorkspace } = useWorkspaces();
+  const { createWorkspace } = useWorkspace();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>(undefined);
   const [formData, setFormData] = useState({
     name: "",
-    url: "",
+    slug: "",
     size: "",
   });
 
@@ -29,19 +30,22 @@ export default function CreateWorkspaceForm() {
     setIsLoading(true);
 
     try {
-      // const workspace = await addWorkspace({
-      //   name: formData.name,
-      //   logo: "building", // Default logo
-      // });
-      // router.push(`/${workspace.id}`);
-    } catch (error) {
-      console.error("Failed to create workspace:", error);
+      const workspace = await createWorkspace({
+        name: formData.name,
+        // logo: "building", // Default logo
+        slug: formData.slug,
+      });
+      router.push(`/${workspace.slug}`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error : any) {
+      setError(error.response?.data?.message || "Failed to create workspace");
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoBack = () => {
+// TODO: handle log out
     router.back();
   };
 
@@ -59,14 +63,14 @@ export default function CreateWorkspaceForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="url">Workspace URL</Label>
+        <Label htmlFor="slug">Workspace URL</Label>
         <div className="flex items-center space-x-2">
           <span className="text-sm text-muted-foreground">localhost:3000/</span>
           <Input
-            id="url"
+            id="slug"
             placeholder="your-workspace-url"
-            value={formData.url}
-            onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+            value={formData.slug}
+            onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
             required
           />
         </div>
@@ -104,6 +108,10 @@ export default function CreateWorkspaceForm() {
           Go back
         </Button>
       </div>
+      {/* Error message */}
+      {error && (
+        <div className="text-red-500 text-sm font-medium">{error}</div>
+      )}
     </form>
   );
 }

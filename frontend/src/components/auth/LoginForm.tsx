@@ -55,6 +55,7 @@ export default function LoginForm() {
       await login(values.email, values.password);
     } catch (err) {
       // Error is handled by the useAuth hook
+      console.log(err);
     }
   };
 
@@ -70,8 +71,6 @@ export default function LoginForm() {
         <CardContent>
           <Form {...form}>
             <form
-              // method="POST"
-              // action={`${API_BASE_URL}/auth/login`}
               onSubmit={form.handleSubmit(onSubmit)}
               className="grid gap-4"
             >
