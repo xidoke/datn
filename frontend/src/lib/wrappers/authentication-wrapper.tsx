@@ -60,24 +60,31 @@ export const AuthenticationWrapper: FC<TAuthenticationWrapper> = (props) => {
   );
 
   const getWorkspaceRedirectionUrl = (): string => {
-    let redirectionRoute = "/profile";
+    let redirectionRoute = "";
 
-    // validating the nextPath from the router query
+    // Validate the nextPath from the router query
     if (nextPath && isValidURL(nextPath.toString())) {
-      redirectionRoute = nextPath.toString();
-      return redirectionRoute;
+      return nextPath.toString();
     }
 
-    // validate the last and fallback workspace_slug
     const currentWorkspaceSlug = lastWorkspaceSlug;
 
-    // validate the current workspace_slug is available in the user's workspace list
-    const isCurrentWorkspaceValid = Object.values(workspaces || {}).findIndex(
+    // Check if current workspace slug exists in the user's workspace list
+    const workspaceList = Object.values(workspaces || {});
+    const isCurrentWorkspaceValid = workspaceList.some(
       (workspace) => workspace.slug === currentWorkspaceSlug,
     );
 
-    if (isCurrentWorkspaceValid >= 0)
+    if (isCurrentWorkspaceValid) {
+      // If last workspace is valid, redirect to it
       redirectionRoute = `/${currentWorkspaceSlug}`;
+    } else if (workspaceList.length > 0) {
+      // If last workspace is invalid, redirect to the first workspace in the list
+      redirectionRoute = `/${workspaceList[0].slug}`;
+    } else {
+      // If no workspaces are available, redirect to the create workspace page
+      redirectionRoute = "/create-workspace";
+    }
 
     return redirectionRoute;
   };

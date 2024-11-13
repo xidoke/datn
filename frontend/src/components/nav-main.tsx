@@ -20,21 +20,19 @@ export function NavMain({
     isActive?: boolean;
   }[];
 }) {
-
   const params = useParams();
   const pathname = usePathname();
-
   return (
     <SidebarMenu>
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton
             asChild
-            isActive={pathname.endsWith(`/${params.workspaceSlug}/${item.url ? item.url : item.url + '/'}`)} // Kiểm tra mục có đang hoạt động không
+            isActive={pathname.endsWith(
+              `/${params.workspaceSlug}/${item.url ? item.url + "/" : ""}`,
+            )}
           >
-            <Link
-              href={`/${params.workspaceSlug}/` + item.url}
-            >
+            <Link href={`/${params.workspaceSlug}/` + item.url}>
               <item.icon />
               <span>{item.title}</span>
             </Link>

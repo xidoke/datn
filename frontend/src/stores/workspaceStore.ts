@@ -3,6 +3,7 @@ import { Workspace } from "@/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useUserStore } from "./userStore";
+import { API_BASE_URL } from "@/helpers/common.helper";
 
 interface WorkspaceState {
   loader: boolean;
@@ -22,7 +23,7 @@ interface WorkspaceActions {
   //   workspaceSlug: string,
   //   data: Partial<Workspace>,
   // ) => Promise<Workspace>;
-  // updateWorkspaceLogo: (workspaceSlug: string, logoURL: string) => void;
+  updateWorkspaceLogo: (workspaceSlug: string, logoFile: File) => void;
   // deleteWorkspace: (workspaceSlug: string) => Promise<void>;
   setCurrentWorkspace: (workspaceSlug: string) => void;
   updateWorkspace: (workspaceSlug: string, data: Partial<Workspace>) => Promise<Workspace>;
@@ -103,6 +104,35 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         throw error;
       }
     },
+    updateWorkspaceLogo: async (workspaceSlug: string, logoFile: File) => {
+        try {
+          const formData = new FormData();
+          formData.append('file', logoFile);
+
+          const response = await apiClient.post(`file-storage/upload`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          debugger;
+          const logoUrl = response?.fileUrl;
+          debugger
+          const updatedWorkspace: Workspace = await apiClient.patch(`workspaces/${workspaceSlug}`, { logo_url: logoUrl });
+          
+          set((state) => ({
+            workspaces: state.workspaces.map((w) =>
+              w.slug === workspaceSlug ? updatedWorkspace : w
+            ),
+            currentWorkspace: state.currentWorkspace?.slug === workspaceSlug 
+              ? updatedWorkspace 
+              : state.currentWorkspace
+          }));
+
+          return updatedWorkspace;
+        } catch (error) {
+          throw error;
+        }
+      },
     }),
     {
       name: "workspace-storage",

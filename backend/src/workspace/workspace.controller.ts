@@ -9,11 +9,16 @@ import {
   Delete,
   Body,
   Patch,
+  HttpException,
+  HttpStatus,
+  ConflictException,
 } from "@nestjs/common";
 import { WorkspaceService } from "./workspace.service";
 import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
 import { RequestWithUser } from "src/user/interfaces/request.interface";
 import { UserService } from "src/user/user.service";
+import { UpdateWorkspaceDto } from "./dto/update-workspace.dto";
+import { CreateWorkspaceDto } from "./dto/create-workspace.dto";
 
 @Controller("workspaces")
 export class WorkspaceController {
@@ -27,35 +32,42 @@ export class WorkspaceController {
     return this.workspaceService.checkWorkspaceAvailability(slug);
   }
 
+  // Trả về tất cả các workspace mà user đã tham gia
+  // query isOwner = true để lấy workspace mà user là owner
   @Get()
   @UseGuards(CognitoAuthGuard)
-  async getUserWorkspaces(@Req() req: RequestWithUser) {
-    return this.workspaceService.getUserWorkspaces(req.user.userId);
+  async getUserWorkspaces(
+    @Req() req: RequestWithUser,
+    @Query("owner") isOwner: string,
+  ) {
+    return this.workspaceService.getUserWorkspaces(req.user.userId, {
+      isOwner: isOwner === "true",
+    });
   }
 
   @Post()
   @UseGuards(CognitoAuthGuard)
   async createWorkspace(
     @Req() req: RequestWithUser,
-    @Body() data: { name: string; slug: string },
+    @Body() createWorkspaceDto: CreateWorkspaceDto,
   ) {
     try {
       const workspaceCreated = await this.workspaceService.createWorkspace({
-        name: data.name,
+        name: createWorkspaceDto.name,
         userId: req.user.userId,
-        slug: data.slug,
+        slug: createWorkspaceDto.slug,
       });
       // edit lastWorkspaceSlug in user
       await this.userService.update(req.user.userId, {
-        lastWorkspaceSlug: data.slug,
+        lastWorkspaceSlug: createWorkspaceDto.slug,
       });
       return workspaceCreated;
     } catch (error) {
-      // TODO: Handle error
-      throw new Error(error);
+      throw new ConflictException(error.message);
     }
   }
 
+  // Chỉ cho phép thành viên trong workspace mới có thể xem thông tin workspace
   @Get(":slug")
   @UseGuards(CognitoAuthGuard)
   async getWorkspaceBySlug(
@@ -71,9 +83,13 @@ export class WorkspaceController {
   async updateWorkspace(
     @Param("slug") slug: string,
     @Req() req: RequestWithUser,
-    @Body() data: { name?: string },
+    @Body() updateWorkspaceDto: UpdateWorkspaceDto,
   ) {
-    return this.workspaceService.updateWorkspace(slug, req.user.userId, data);
+    return this.workspaceService.updateWorkspace(
+      slug,
+      req.user.userId,
+      updateWorkspaceDto,
+    );
   }
 
   @Delete(":slug")

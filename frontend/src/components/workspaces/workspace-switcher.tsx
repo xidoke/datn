@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronDown, Plus, Settings } from "lucide-react";
+import { ChevronDown, Plus, Settings, Briefcase } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,20 +16,15 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useParams } from "next/navigation";
-import { Icon } from "@/components/icons";
 import Link from "next/link";
-// import dynamicIconImports from "lucide-react/dynamicIconImports";
-// import { useWorkspaces } from "@/hooks/useWorkspaces";
-// import { useUser } from "@/hooks/useUser";
 import { useAppRouter } from "@/hooks/use-app-router";
 import { useWorkspace } from "@/stores/workspaceStore";
+import Image from "next/image";
+import { API_BASE_URL } from "@/helpers/common.helper";
 
 export function WorkspaceSwitcher() {
   const { workspaces, currentWorkspace, setCurrentWorkspace } = useWorkspace();
-  // const { user } = useUser();
-  // const { last_workspace_id } = user || {};
   const { workspaceSlug } = useParams();
-  // if workspaces has workspace with slug from params, set it as current workspace
   if (
     workspaceSlug &&
     workspaceSlug !== currentWorkspace?.slug &&
@@ -43,21 +38,49 @@ export function WorkspaceSwitcher() {
     router.push("/create-workspace");
   }, [router]);
 
+  const renderWorkspaceIcon = (workspace: {
+    logo_url: string | null;
+    name: string;
+  }) => {
+    if (workspace.logo_url) {
+      return (
+        <div className="relative flex size-6 items-center justify-center overflow-hidden rounded-sm border">
+          <Image
+            src={`${API_BASE_URL}${workspace.logo_url}`}
+            alt={workspace.name}
+            fill
+            className="object-cover"
+            sizes="24px"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+              (e.target as HTMLImageElement).nextSibling?.classList.remove(
+                "hidden",
+              );
+            }}
+          />
+          <Briefcase className="hidden size-4" />
+        </div>
+      );
+    }
+    return (
+      <div className="flex size-6 items-center justify-center rounded-sm border">
+        <Briefcase className="size-4" />
+      </div>
+    );
+  };
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton className="w-fit px-1.5">
-              <div className="flex aspect-square size-5 items-center justify-center rounded-md">
-                <Icon
-                  name={
-                    // (currentWorkspace?.logo as keyof typeof dynamicIconImports) ||
-                    "book"
-                  }
-                  className="size-4"
-                />
-              </div>
+              {renderWorkspaceIcon(
+                currentWorkspace || {
+                  logo_url: null,
+                  name: "Select Workspace",
+                },
+              )}
               <span className="truncate font-semibold">
                 {currentWorkspace?.name || "Select Workspace"}
               </span>
@@ -79,18 +102,9 @@ export function WorkspaceSwitcher() {
                 className="gap-2 p-2"
                 asChild
               >
-                <Link href={`/${workspace.slug}`}>
-                  <div className="flex size-6 items-center justify-center rounded-sm border">
-                    <Icon
-                      name={
-                        // (workspace.logo as keyof typeof dynamicIconImports)
-                        // ||
-                        "book"
-                      }
-                      className="size-4"
-                    />
-                  </div>
-                  {workspace.name}
+                <Link href={`/${workspace.slug}`} className="flex items-center">
+                  {renderWorkspaceIcon(workspace)}
+                  <span className="ml-2">{workspace.name}</span>
                 </Link>
               </DropdownMenuItem>
             ))}
@@ -106,11 +120,12 @@ export function WorkspaceSwitcher() {
                 Add workspace
               </div>
             </DropdownMenuItem>
-            {/* settings workspace */}
-            {
+            {currentWorkspace && (
               <DropdownMenuItem
                 className="gap-2 p-2"
-                onSelect={() => router.push(`${workspaceSlug}/settings`)}
+                onSelect={() =>
+                  router.push(`/${currentWorkspace.slug}/settings`)
+                }
               >
                 <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                   <Settings className="size-4" />
@@ -119,7 +134,7 @@ export function WorkspaceSwitcher() {
                   Settings
                 </div>
               </DropdownMenuItem>
-            }
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

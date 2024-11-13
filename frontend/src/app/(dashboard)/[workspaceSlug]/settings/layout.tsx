@@ -6,7 +6,7 @@ import Link from "next/link";
 
 const settingsNavItems = [
   { name: "General", href: "" },
-  { name: "Members", href: "members" },
+  { name: "Members", href: "members/" },
 ];
 
 export default function SettingsLayout({
@@ -23,7 +23,7 @@ export default function SettingsLayout({
           SETTINGS
         </div>
         {settingsNavItems.map((item) => {
-          const itemPath = `/${params.workspaceSlug}/settings${item.href ? `/${item.href}` : ""}`;
+          const itemPath = `/${params.workspaceSlug}/settings/${item.href ? item.href : ""}`;
           const isActive = pathname.endsWith(itemPath);
 
           return (

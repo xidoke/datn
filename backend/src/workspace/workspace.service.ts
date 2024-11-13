@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   HttpException,
   Injectable,
   NotFoundException,
@@ -69,7 +70,7 @@ export class WorkspaceService {
     return { status: isAvailable };
   }
 
-  async getUserWorkspaces(userId: string, filters: { owner?: string } = {}) {
+  async getUserWorkspaces(userId: string, filters: { isOwner?: boolean } = {}) {
     const whereClause: any = {
       members: {
         some: {
@@ -79,8 +80,8 @@ export class WorkspaceService {
     };
 
     // If owner filter is provided, filter by workspace creator
-    if (filters.owner) {
-      whereClause.ownerId = filters.owner;
+    if (filters.isOwner) {
+      whereClause.ownerId = userId;
     }
 
     return this.prisma.workspace.findMany({
@@ -96,7 +97,7 @@ export class WorkspaceService {
           },
         },
         members: {
-          include: {
+          select: {
             user: {
               select: {
                 id: true,
@@ -104,9 +105,9 @@ export class WorkspaceService {
                 firstName: true,
                 lastName: true,
                 avatarUrl: true,
-                role: true,
               },
             },
+            role: true,
           },
         },
         projects: {
@@ -195,7 +196,7 @@ export class WorkspaceService {
       (member) => member.userId === userId,
     );
     if (!isMember) {
-      throw new BadRequestException("You don't have access to this workspace");
+      throw new ForbiddenException("You don't have access to this workspace");
     }
     return workspace;
   }
@@ -215,7 +216,7 @@ export class WorkspaceService {
     // Check if user is owner or admin
     const member = workspace.members.find((m) => m.userId === userId);
     if (!member || (member.role !== "ADMIN" && workspace.ownerId !== userId)) {
-      throw new BadRequestException(
+      throw new ForbiddenException(
         "Only owners and admins can update the workspace",
       );
     }
@@ -264,13 +265,13 @@ export class WorkspaceService {
     });
 
     if (!workspace) {
-      throw new NotFoundException('Workspace not found');
+      throw new NotFoundException("Workspace not found");
     }
 
     // Only the owner can delete the workspace
     if (workspace.ownerId !== userId) {
       throw new BadRequestException(
-        'Only the workspace owner can delete the workspace'
+        "Only the workspace owner can delete the workspace",
       );
     }
 
@@ -281,14 +282,25 @@ export class WorkspaceService {
         where: { workspaceId: workspace.id },
       });
 
-      // Delete all projects associated with this workspace
-      await prisma.project.deleteMany({
+      // Get all project IDs associated with this workspace
+      const projectIds = await prisma.project.findMany({
         where: { workspaceId: workspace.id },
+        select: { id: true },
+      });
+
+      // Delete all project members
+      await prisma.projectMember.deleteMany({
+        where: { projectId: { in: projectIds.map((p) => p.id) } },
       });
 
       // Delete all issues associated with this workspace's projects
       await prisma.issue.deleteMany({
-        where: { project: { workspaceId: workspace.id } },
+        where: { projectId: { in: projectIds.map((p) => p.id) } },
+      });
+
+      // Delete all projects associated with this workspace
+      await prisma.project.deleteMany({
+        where: { workspaceId: workspace.id },
       });
 
       // Delete any other related records here...

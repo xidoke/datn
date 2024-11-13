@@ -2,7 +2,7 @@ export interface Issue {
   id: string;
   title: string;
   description?: string;
-  stateId: string;
+  stateId?: string;
   projectId: string;
   creatorId: string;
   createdAt: string;
