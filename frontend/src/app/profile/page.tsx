@@ -1,15 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -19,180 +12,244 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useUser } from "@/stores/userStore";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "@/hooks/use-toast";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import UserAvatar from "@/components/user/avatar-user";
 
-interface UserProfile {
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-  timezone: string;
-  language: string;
-  displayName: string;
-}
+const profileSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+});
+
+type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export default function ProfileSettings() {
-  const [profile, setProfile] = useState<UserProfile>({
-    firstName: "Do",
-    lastName: "Pham Dinh",
-    email: "do.pd200154@sis.hust.edu.vn",
-    role: "Product / Project Manager",
-    timezone: "UTC",
-    language: "English (US)",
-    displayName: "do.pd200154",
+  const { data: user, isLoading, updateUser, updateUserAvatar } = useUser();
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
+  const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
+
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+    },
   });
 
-  const handleSave = () => {
-    // Handle save profile changes
-    console.log("Saving profile:", profile);
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+      });
+    }
+  }, [user, form]);
+
+  const onSubmit = async (values: ProfileFormValues) => {
+    if (!user) return;
+    setIsUpdating(true);
+    try {
+      const { firstName, lastName } = values;
+      const result = await updateUser(firstName, lastName);
+      if (result.success) {
+        toast({
+          title: "Profile updated",
+          description: "Your profile has been successfully updated.",
+        });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description:
+          error.message || "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
+  const handleDeactivate = async () => {
+    if (!user) return;
+    setIsDeactivating(true);
+    try {
+      // await deactivateAccount();
+      toast({
+        title: "Account deactivated",
+        description: "Your account has been successfully deactivated.",
+      });
+      // Redirect to logout or home page
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to deactivate account. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeactivating(false);
+      setIsDeactivateDialogOpen(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <div>Error: User not found</div>;
+  }
+
   return (
-    <div>
-      {/* Cover Image */}
-      <div className="relative h-48">
-        <img
-          src="/placeholder.svg?height=192&width=1024"
-          alt="Cover"
-          className="h-full w-full object-cover"
-        />
-        <Button variant="secondary" className="absolute bottom-4 right-4">
-          Change cover
-        </Button>
-      </div>
-
-      {/* Profile Form */}
-      <div className="mx-auto max-w-4xl p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile Information</CardTitle>
-            <CardDescription>
-              Update your profile information and settings
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First name</Label>
-                <Input
-                  id="firstName"
-                  value={profile.firstName}
-                  onChange={(e) =>
-                    setProfile({ ...profile, firstName: e.target.value })
-                  }
+    <div className="mx-auto max-w-4xl p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Profile Information</CardTitle>
+          <CardDescription>
+            Update your profile information and settings
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last name</Label>
-                <Input
-                  id="lastName"
-                  value={profile.lastName}
-                  onChange={(e) =>
-                    setProfile({ ...profile, lastName: e.target.value })
-                  }
-                />
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={user.email} disabled />
               </div>
+
+              <Button type="submit" disabled={isUpdating}>
+                {isUpdating ? "Saving..." : "Save changes"}
+              </Button>
+            </form>
+          </Form>
+
+          <Separator className="my-6" />
+
+          <UserAvatar
+            avatarUrl={user.avatarUrl}
+            isLoading={isUpdating}
+            onAvatarChange={async (file: File) => {
+              try {
+                await updateUserAvatar(file);
+                toast({
+                  title: "Success",
+                  description: "Avatar updated successfully",
+                });
+              } catch (error) {
+                console.error("Failed to update avatar:", error);
+                toast({
+                  title: "Error",
+                  description: "Failed to update avatar. Please try again.",
+                  variant: "destructive",
+                });
+              }
+            }}
+          />
+
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-medium">Deactivate account</h3>
+              <p className="text-sm text-muted-foreground">
+                Permanently remove your account and all of its contents from the
+                platform. This action is not reversible, so please continue with
+                caution.
+              </p>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={profile.email}
-                onChange={(e) =>
-                  setProfile({ ...profile, email: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <Select
-                value={profile.role}
-                onValueChange={(value) =>
-                  setProfile({ ...profile, role: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Product / Project Manager">
-                    Product / Project Manager
-                  </SelectItem>
-                  <SelectItem value="Developer">Developer</SelectItem>
-                  <SelectItem value="Designer">Designer</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="timezone">Timezone</Label>
-                <Select
-                  value={profile.timezone}
-                  onValueChange={(value) =>
-                    setProfile({ ...profile, timezone: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="UTC">UTC</SelectItem>
-                    <SelectItem value="GMT+7">GMT+7</SelectItem>
-                    <SelectItem value="GMT+8">GMT+8</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
-                <Select
-                  value={profile.language}
-                  onValueChange={(value) =>
-                    setProfile({ ...profile, language: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="English (US)">English (US)</SelectItem>
-                    <SelectItem value="Vietnamese">Vietnamese</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="displayName">Display name</Label>
-              <Input
-                id="displayName"
-                value={profile.displayName}
-                onChange={(e) =>
-                  setProfile({ ...profile, displayName: e.target.value })
-                }
-              />
-            </div>
-
-            <Button onClick={handleSave}>Save changes</Button>
-
-            <Separator className="my-6" />
-
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-medium">Deactivate account</h3>
-                <p className="text-sm text-muted-foreground">
-                  Permanently remove your account and all of its contents from
-                  the platform. This action is not reversible, so please
-                  continue with caution.
-                </p>
-              </div>
-              <Button variant="destructive">Deactivate account</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Dialog
+              open={isDeactivateDialogOpen}
+              onOpenChange={setIsDeactivateDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button variant="destructive">Deactivate account</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Are you absolutely sure?</DialogTitle>
+                  <DialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    your account and remove your data from our servers.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDeactivateDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeactivate}
+                    // disabled={isDeactivating}
+                    // TODO: Re-enable when deactivation is implemented
+                    disabled
+                  >
+                    {isDeactivating
+                      ? "Deactivating..."
+                      : "Yes, deactivate my account"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

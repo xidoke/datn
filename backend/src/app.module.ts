@@ -2,7 +2,6 @@ import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { AppService } from "./app.service";
 import { UserModule } from "./user/user.module";
 import { PrismaModule } from "./prisma/prisma.module";
-import { UserService } from "./user/user.service";
 import { RequestLoggerMiddleware } from "./middleware/request-logger.middleware";
 import { WorkspaceModule } from "./workspace/workspace.module";
 import { CognitoService } from "./auth/cognito.service";
@@ -12,10 +11,13 @@ import { IssueModule } from "./issue/issue.module";
 import { FileStorageModule } from "./file-storage/file-storage.module";
 import { FileAssetModule } from "./file-asset/file-asset.module";
 import { ConfigModule } from "@nestjs/config";
+import { WorkspaceInvitationsModule } from "./workspace-invitations/workspace-invitations.module";
+import { StateModule } from './state/state.module';
+import { WorkspaceMemberModule } from './workspace-member/workspace-member.module';
 
 @Module({
   controllers: [],
-  providers: [AppService, UserService, CognitoService],
+  providers: [AppService, CognitoService],
   imports: [
     ConfigModule.forRoot(),
     UserModule,
@@ -26,6 +28,9 @@ import { ConfigModule } from "@nestjs/config";
     IssueModule,
     FileStorageModule,
     FileAssetModule,
+    WorkspaceInvitationsModule,
+    StateModule,
+    WorkspaceMemberModule,
   ],
 })
 export class AppModule implements NestModule {

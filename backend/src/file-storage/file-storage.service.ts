@@ -55,9 +55,20 @@ export class FileStorageService {
     return fs.stat(filePath);
   }
 
-  async deleteFile(filename: string): Promise<void> {
+  async deleteFile(filename: string): Promise<boolean> {
     const filePath = this.getFilePath(filename);
-    await fs.unlink(filePath);
+    try {
+      await fs.access(filePath);
+      await fs.unlink(filePath);
+      return true;
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        // File doesn't exist, which is fine in this case
+        return false;
+      }
+      // If it's a different error, we should probably throw it
+      throw error;
+    }
   }
 
   async fileExists(filename: string): Promise<boolean> {

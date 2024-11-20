@@ -1,4 +1,5 @@
 "use client";
+import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppProgressBar } from "@/lib/n-progress";
 import { ThemeProvider } from "next-themes";
@@ -30,6 +31,7 @@ export const AppProvider: FC<IAppProvider> = (props) => {
           <div className="relative flex min-h-screen flex-col bg-background">
             {children}
           </div>
+          <Toaster />
         </TooltipProvider>
       </ThemeProvider>
     </>

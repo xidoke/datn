@@ -9,9 +9,10 @@ import {
   Delete,
   Body,
   Patch,
-  HttpException,
-  HttpStatus,
-  ConflictException,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
 } from "@nestjs/common";
 import { WorkspaceService } from "./workspace.service";
 import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
@@ -19,6 +20,7 @@ import { RequestWithUser } from "src/user/interfaces/request.interface";
 import { UserService } from "src/user/user.service";
 import { UpdateWorkspaceDto } from "./dto/update-workspace.dto";
 import { CreateWorkspaceDto } from "./dto/create-workspace.dto";
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @Controller("workspaces")
 export class WorkspaceController {
@@ -51,20 +53,15 @@ export class WorkspaceController {
     @Req() req: RequestWithUser,
     @Body() createWorkspaceDto: CreateWorkspaceDto,
   ) {
-    try {
-      const workspaceCreated = await this.workspaceService.createWorkspace({
-        name: createWorkspaceDto.name,
-        userId: req.user.userId,
-        slug: createWorkspaceDto.slug,
-      });
-      // edit lastWorkspaceSlug in user
-      await this.userService.update(req.user.userId, {
-        lastWorkspaceSlug: createWorkspaceDto.slug,
-      });
-      return workspaceCreated;
-    } catch (error) {
-      throw new ConflictException(error.message);
-    }
+    const workspaceCreated = await this.workspaceService.createWorkspace(
+      createWorkspaceDto,
+      req.user.userId,
+    );
+    // edit lastWorkspaceSlug in user
+    await this.userService.update(req.user.userId, {
+      lastWorkspaceSlug: createWorkspaceDto.slug,
+    });
+    return workspaceCreated;
   }
 
   // Chỉ cho phép thành viên trong workspace mới có thể xem thông tin workspace
@@ -99,5 +96,22 @@ export class WorkspaceController {
     @Req() req: RequestWithUser,
   ) {
     return this.workspaceService.deleteWorkspace(req.user.userId, slug);
+  }
+
+  @Patch(":slug/logo")
+  @UseGuards(CognitoAuthGuard)
+  @UseInterceptors(FileInterceptor("logo"))
+  async updateWorkspaceLogo(
+    @Param("slug") slug: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }), // 5MB limit
+        ],
+      }),
+    )
+    logo: Express.Multer.File,
+  ) {
+    return this.workspaceService.updateWorkspaceLogo(slug, logo);
   }
 }

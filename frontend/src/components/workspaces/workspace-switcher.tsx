@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { ChevronDown, Plus, Settings, Briefcase } from "lucide-react";
+import {
+  ChevronDown,
+  Plus,
+  Settings,
+  Briefcase,
+  Inbox,
+  MailPlus,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,15 +45,19 @@ export function WorkspaceSwitcher() {
     router.push("/create-workspace");
   }, [router]);
 
+  const handleInvitation = React.useCallback(() => {
+    router.push("/invitations");
+  }, [router]);
+
   const renderWorkspaceIcon = (workspace: {
-    logo_url: string | null;
+    logoUrl: string | null;
     name: string;
   }) => {
-    if (workspace.logo_url) {
+    if (workspace.logoUrl) {
       return (
         <div className="relative flex size-6 items-center justify-center overflow-hidden rounded-sm border">
           <Image
-            src={`${API_BASE_URL}${workspace.logo_url}`}
+            src={`${API_BASE_URL}${workspace.logoUrl}`}
             alt={workspace.name}
             fill
             className="object-cover"
@@ -77,7 +88,7 @@ export function WorkspaceSwitcher() {
             <SidebarMenuButton className="w-fit px-1.5">
               {renderWorkspaceIcon(
                 currentWorkspace || {
-                  logo_url: null,
+                  logoUrl: null,
                   name: "Select Workspace",
                 },
               )}
@@ -118,6 +129,14 @@ export function WorkspaceSwitcher() {
               </div>
               <div className="font-medium text-muted-foreground">
                 Add workspace
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem className="gap-2 p-2" onSelect={handleInvitation}>
+              <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+                <MailPlus className="size-4" />
+              </div>
+              <div className="font-medium text-muted-foreground">
+                Invite to workspace
               </div>
             </DropdownMenuItem>
             {currentWorkspace && (

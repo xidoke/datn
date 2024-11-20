@@ -1,11 +1,4 @@
-import {
-  IsOptional,
-  IsString,
-  isString,
-  Length,
-  Matches,
-  MinLength,
-} from "class-validator";
+import { IsString, Length, Matches, MinLength } from "class-validator";
 
 export class CreateWorkspaceDto {
   // slug is required and must be a string with at least 1 character
@@ -19,11 +12,4 @@ export class CreateWorkspaceDto {
   // name is required and must be a string with at least 1 character
   @MinLength(1)
   name: string;
-
-  @IsString()
-  @IsOptional()
-  @Matches(/\.(jpg|jpeg|png)$/i, {
-    message: "logo_url must be a valid image file (jpg, jpeg, png, webp)",
-  })
-  logo_url?: string;
 }

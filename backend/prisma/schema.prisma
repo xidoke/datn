@@ -69,10 +69,10 @@ model User {
   avatarUrl     String?
   isActive      Boolean   @default(true)
   ownedWorkspaces Workspace[]
-  workspaces    WorkspaceMember[]
+  workspaces      WorkspaceMember[]
   projectMembers  ProjectMember[]
-  createdAssets FileAsset[] @relation("CreatedAssets")
-  userAssets    FileAsset[] @relation("UserAssets")
+  createdAssets   FileAsset[] @relation("CreatedAssets")
+  userAssets      FileAsset[] @relation("UserAssets")
   createdIssues   Issue[]         @relation("CreatedIssues")
   assignedIssues  IssueAssignee[]
   comments        IssueComment[]
@@ -86,26 +86,48 @@ model Workspace {
   id            String    @id @default(uuid())
   slug          String    @unique
   name          String
-  owner       User     @relation(fields: [ownerId], references: [id])
-  ownerId     String   
-  logo_url    String?
-  FileAssets FileAsset[]
+  owner         User     @relation(fields: [ownerId], references: [id])
+  ownerId       String   
+  logoUrl      String?
+  FileAssets    FileAsset[]
   projects      Project[]
+  invitations   WorkspaceInvitation[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   members       WorkspaceMember[]
   @@map("workspaces")
 }
 
+model WorkspaceInvitation {
+  id          String    @id @default(uuid())
+  email       String
+  role        String    // You might want to use an enum here
+  status      String    // e.g., "PENDING", "ACCEPTED", "REJECTED"
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([email, workspaceId])
+}
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
 model WorkspaceMember {
-  id            String    @id @default(uuid())
-  role          String    @default("MEMBER")
-  user          User      @relation(fields: [userId], references: [id])
+  id            String        @id @default(uuid())
+  role          WorkspaceRole @default(MEMBER)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String
-  workspace     Workspace @relation(fields: [workspaceId], references: [id])
+  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId   String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  joinedAt      DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+  @@index([userId])
   @@map("workspace_members")
 }
 
@@ -196,10 +218,14 @@ model State {
   id        String   @id @default(uuid())
   name      String
   color     String
-  project   Project  @relation(fields: [projectId], references: [id])
+  order     Int
+  group     String
   projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  isDefault Boolean  @default(false)
   issues    Issue[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  @@map("states")
+
+  @@unique([projectId, name])
 }

@@ -28,10 +28,15 @@ export class IssuesController {
     @Req() req: RequestWithUser,
     @Param("projectId") projectId: string,
   ) {
-    return this.issuesService.create(
-      { ...createIssueDto, projectId },
-      req.user.userId,
-    );
+    try {
+      return this.issuesService.create(
+        createIssueDto,
+        projectId,
+        req.user.userId,
+      );
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   @Get()

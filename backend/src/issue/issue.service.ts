@@ -9,13 +9,34 @@ import { Prisma } from "@prisma/client";
 export class IssuesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createIssueDto: CreateIssueDto, creatorId: string) {
-    const { assigneeIds, labelIds, ...issueData } = createIssueDto;
+  async create(
+    createIssueDto: CreateIssueDto,
+    projectId: string,
+    creatorId: string,
+  ) {
+    const { assigneeIds, labelIds, stateId, ...issueData } = createIssueDto;
+
+    let effectiveStateId = stateId;
+
+    if (!effectiveStateId) {
+      // If no state is provided, find the default state for the project
+      const defaultState = await this.prisma.state.findFirst({
+        where: { projectId, isDefault: true },
+      });
+
+      if (!defaultState) {
+        throw new Error("No default state found for this project");
+      }
+
+      effectiveStateId = defaultState.id;
+    }
 
     return this.prisma.issue.create({
       data: {
         ...issueData,
+        projectId,
         creatorId,
+        stateId: effectiveStateId,
         assignees: {
           create: assigneeIds?.map((userId) => ({ userId })) || [],
         },
@@ -204,5 +225,4 @@ export class IssuesService {
 
     return groupedIssues;
   }
-
 }

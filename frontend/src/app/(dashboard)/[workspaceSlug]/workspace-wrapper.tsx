@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import useSWR from "swr";
 import { useProject } from "@/stores/projectStore";
 import { useAppRouter } from "@/hooks/use-app-router";
+import { useMemberStore } from "@/stores/member/memberStore";
 
 interface WorkspaceWrapperProps {
   children: React.ReactNode;
@@ -32,6 +33,7 @@ const WorkspaceWrapper: React.FC<WorkspaceWrapperProps> = ({ children }) => {
   } = useUser();
   const { fetchProjects } = useProject();
 
+  const { fetchWorkspaceMembers } = useMemberStore();
   // fetching workspace projects
   useSWR(
     workspaceSlug && currentWorkspace
@@ -39,6 +41,17 @@ const WorkspaceWrapper: React.FC<WorkspaceWrapperProps> = ({ children }) => {
       : null,
     workspaceSlug && currentWorkspace
       ? () => fetchProjects(workspaceSlug.toString())
+      : null,
+    { revalidateIfStale: false, revalidateOnFocus: false },
+  );
+
+  // fetch workspace members
+  useSWR(
+    workspaceSlug && currentWorkspace
+      ? `WORKSPACE_MEMBERS_${workspaceSlug}`
+      : null,
+    workspaceSlug && currentWorkspace
+      ? () => fetchWorkspaceMembers(workspaceSlug.toString())
       : null,
     { revalidateIfStale: false, revalidateOnFocus: false },
   );

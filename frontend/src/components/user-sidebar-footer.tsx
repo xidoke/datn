@@ -12,6 +12,7 @@ import { Skeleton } from "./ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppRouter } from "@/hooks/use-app-router";
 import { useUser } from "@/stores/userStore";
+import { API_BASE_URL } from "@/helpers/common.helper";
 
 const UserSidebar = () => {
   const {
@@ -27,7 +28,9 @@ const UserSidebar = () => {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton>
               <Avatar className="h-6 w-6">
-                <AvatarImage src={user?.avatarUrl || "/image/user.jpg"} />
+                <AvatarImage
+                  src={`${API_BASE_URL}${user?.avatarUrl}` || "/image/user.jpg"}
+                />
                 <AvatarFallback>
                   <Skeleton className="rounded-full" />
                 </AvatarFallback>
@@ -50,9 +53,7 @@ const UserSidebar = () => {
               <Settings className="mr-2" />
               <span>Setting</span>
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={logout}
-            >
+            <DropdownMenuItem onClick={logout}>
               <LogOut className="mr-2" />
               <span>Sign out</span>
             </DropdownMenuItem>

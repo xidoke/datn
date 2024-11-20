@@ -1,8 +1,18 @@
+export interface WorkspaceMember {
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl: string | undefined;
+  }
+  role: string;
+}
 export interface Workspace {
   id: string;
   slug: string;
   name: string;
-  logo_url: string | null;
+  logoUrl: string | null;
   ownerId: string;
   createdAt: string;
   updatedAt: string;

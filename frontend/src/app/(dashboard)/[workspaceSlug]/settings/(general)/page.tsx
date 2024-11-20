@@ -1,26 +1,34 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useParams } from "next/navigation";
+import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWorkspace } from "@/stores/workspaceStore";
-import { Upload } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { API_BASE_URL } from "@/helpers/common.helper";
 import WorkspaceLogo from "@/components/workspaces/workspace-logo";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function GeneralSettingsPage() {
   const params = useParams();
-  const { workspaces, updateWorkspace, updateWorkspaceLogo } = useWorkspace();
+  const router = useRouter();
+  const { workspaces, updateWorkspace, updateWorkspaceLogo, deleteWorkspace } =
+    useWorkspace();
   const workspace = workspaces.find((w) => w.slug === params.workspaceSlug);
   const [isLoading, setIsLoading] = useState(false);
-  const [logoPreview, setLogoPreview] = useState<string | null>(
-    workspace?.logo_url || null,
-  );
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,37 +57,50 @@ export default function GeneralSettingsPage() {
     }
   };
 
-  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && workspace) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const handleDeleteWorkspace = async () => {
+    if (!workspace || deleteConfirmation !== workspace.name) return;
 
-      try {
-        setIsLoading(true);
-        await updateWorkspaceLogo(workspace.slug, file);
-        toast({
-          title: "Logo updated",
-          description: "Your workspace logo has been updated successfully.",
-        });
-      } catch (error) {
-        console.error("Failed to update logo:", error);
-        toast({
-          title: "Error",
-          description: "Failed to update logo. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
+    setIsLoading(true);
+    try {
+      await deleteWorkspace(workspace.slug);
+      setIsDeleteDialogOpen(false);
+      toast({
+        title: "Workspace deleted",
+        description: "Your workspace has been deleted successfully.",
+      });
+      router.push("/"); // Redirect to home page or workspace list
+    } catch (error) {
+      console.error("Failed to delete workspace:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete workspace. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
+  const handleLogoChange = async (file: File) => {
+    if (!workspace) return;
+
+    setIsLoading(true);
+    try {
+      await updateWorkspaceLogo(workspace.slug, file);
+      toast({
+        title: "Success",
+        description: "Logo updated successfully",
+      });
+    } catch (error) {
+      console.error("Failed to update logo:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update logo. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!workspace) return null;
@@ -130,25 +151,8 @@ export default function GeneralSettingsPage() {
         </CardHeader>
         <CardContent>
           <WorkspaceLogo
-            logoUrl={workspace?.logo_url || null}
-            onLogoChange={async (file) => {
-              try {
-                setIsLoading(true);
-                await updateWorkspaceLogo(workspace.slug, file);
-                toast({
-                  title: "Success",
-                  description: "Logo updated successfully",
-                });
-              } catch (error) {
-                toast({
-                  title: "Error",
-                  description: "Failed to update logo",
-                  variant: "destructive",
-                });
-              } finally {
-                setIsLoading(false);
-              }
-            }}
+            logoUrl={workspace?.logoUrl || null}
+            onLogoChange={handleLogoChange}
             isLoading={isLoading}
             apiBaseUrl={API_BASE_URL}
           />
@@ -160,7 +164,48 @@ export default function GeneralSettingsPage() {
           <CardTitle>Danger Zone</CardTitle>
         </CardHeader>
         <CardContent>
-          <Button variant="destructive">Delete Workspace</Button>
+          <Dialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button variant="destructive">Delete Workspace</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you absolutely sure?</DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your workspace and remove your data from our servers.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p>
+                  Please type <strong>{workspace.name}</strong> to confirm.
+                </p>
+                <Input
+                  value={deleteConfirmation}
+                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  placeholder="Type workspace name to confirm"
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDeleteDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteWorkspace}
+                  disabled={deleteConfirmation !== workspace.name || isLoading}
+                >
+                  {isLoading ? "Deleting..." : "Delete Workspace"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
     </div>
