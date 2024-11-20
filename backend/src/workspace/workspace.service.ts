@@ -7,6 +7,7 @@ import {
   InternalServerErrorException,
 } from "@nestjs/common";
 import { FileStorageService } from "src/file-storage/file-storage.service";
+import { PermissionService } from "src/permission/permission.service";
 import { PrismaService } from "src/prisma/prisma.service";
 
 const RESTRICTED_WORKSPACE_SLUGS = [
@@ -25,6 +26,7 @@ export class WorkspaceService {
   constructor(
     private prisma: PrismaService,
     private fileStorageService: FileStorageService,
+    private permissionService: PermissionService,
   ) {}
 
   async findBySlug(slug: string) {
@@ -110,6 +112,9 @@ export class WorkspaceService {
       role: workspace.members[0].role,
       memberCount: workspace._count.members,
       projectCount: workspace._count.projects,
+      permissions: this.permissionService.getPermissionsForRole(
+        workspace.members[0].role,
+      ),
     }));
 
     return {

@@ -5,38 +5,44 @@ import {
   Param,
   UseGuards,
   Body,
-  Delete,
+  SetMetadata,
+  Query,
 } from "@nestjs/common";
 import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
 import { WorkspaceInvitationsService } from "./workspace-invitations.service";
 import { InviteWorkspaceDto } from "./dto/invite-workspace.dto";
+import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
+import { WorkspacePermission } from "src/permission/permission.type";
+import { PaginationQueryDto } from "src/user/dto/pagination-query.dto";
 
 @Controller("workspaces/:slug/invitations")
+@UseGuards(CognitoAuthGuard, WorkspacePermissionGuard)
 export class WorkspaceInvitationsController {
   constructor(
     private workspaceInvitationService: WorkspaceInvitationsService,
   ) {}
   // invitations
   @Get()
-  @UseGuards(CognitoAuthGuard)
-  async getInvitations(@Param("slug") slug: string) {
-    return this.workspaceInvitationService.getInvitations(slug);
+  @SetMetadata("workspace_permission", WorkspacePermission.INVITE_MEMBER)
+  async getInvitations(
+    @Param("slug") slug: string,
+    @Query() paginationQueryDto: PaginationQueryDto,
+  ) {
+    return this.workspaceInvitationService.getInvitations(
+      slug,
+      paginationQueryDto,
+    );
   }
 
-  @Post("")
+  @Post()
+  @SetMetadata("workspace_permission", WorkspacePermission.INVITE_MEMBER)
   async createInvitation(
     @Param("slug") slug: string,
     @Body() inviteWorkspaceDto: InviteWorkspaceDto,
   ) {
-    const { email, role } = inviteWorkspaceDto;
-    return this.workspaceInvitationService.createInvitation(email, slug, role);
-  }
-
-  @Delete(":slug/invitations/:email")
-  async deleteInvitation(
-    @Param("slug") slug: string,
-    @Param("email") email: string,
-  ) {
-    return this.workspaceInvitationService.deleteInvitation(email, slug);
+    return this.workspaceInvitationService.createInvitation(
+      slug,
+      inviteWorkspaceDto,
+    );
   }
 }

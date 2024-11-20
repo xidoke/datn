@@ -18,6 +18,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum WorkspacePermission {
+  CREATE_PROJECT
+  INVITE_MEMBER
+  REMOVE_MEMBER
+  UPDATE_WORKSPACE
+  DELETE_WORKSPACE
+  // ... thêm các quyền khác khi cần
+}
+
 model FileAsset {
   id              String    @id @default(uuid())
   asset           String    // The filename or path of the asset

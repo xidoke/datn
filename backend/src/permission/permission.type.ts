@@ -1,0 +1,10 @@
+export { WorkspaceRole } from "@prisma/client";
+
+export enum WorkspacePermission {
+  CREATE_PROJECT = "CREATE_PROJECT",
+  INVITE_MEMBER = "INVITE_MEMBER",
+  REMOVE_MEMBER = "REMOVE_MEMBER",
+  UPDATE_WORKSPACE = "UPDATE_WORKSPACE",
+  DELETE_WORKSPACE = "DELETE_WORKSPACE",
+  VIEW_WORKSPACE = "VIEW_WORKSPACE",
+}

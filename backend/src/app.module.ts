@@ -14,6 +14,7 @@ import { ConfigModule } from "@nestjs/config";
 import { WorkspaceInvitationsModule } from "./workspace-invitations/workspace-invitations.module";
 import { StateModule } from './state/state.module';
 import { WorkspaceMemberModule } from './workspace-member/workspace-member.module';
+import { PermissionModule } from './permission/permission.module';
 
 @Module({
   controllers: [],
@@ -31,6 +32,7 @@ import { WorkspaceMemberModule } from './workspace-member/workspace-member.modul
     WorkspaceInvitationsModule,
     StateModule,
     WorkspaceMemberModule,
+    PermissionModule,
   ],
 })
 export class AppModule implements NestModule {

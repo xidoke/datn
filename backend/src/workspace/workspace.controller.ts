@@ -13,6 +13,7 @@ import {
   UploadedFile,
   ParseFilePipe,
   MaxFileSizeValidator,
+  SetMetadata,
 } from "@nestjs/common";
 import { WorkspaceService } from "./workspace.service";
 import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
@@ -21,7 +22,10 @@ import { UserService } from "src/user/user.service";
 import { UpdateWorkspaceDto } from "./dto/update-workspace.dto";
 import { CreateWorkspaceDto } from "./dto/create-workspace.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
+import { WorkspacePermission } from "src/permission/permission.type";
 
+@UseGuards(CognitoAuthGuard, WorkspacePermissionGuard)
 @Controller("workspaces")
 export class WorkspaceController {
   constructor(
@@ -37,7 +41,6 @@ export class WorkspaceController {
   // Trả về tất cả các workspace mà user đã tham gia
   // query isOwner = true để lấy workspace mà user là owner
   @Get()
-  @UseGuards(CognitoAuthGuard)
   async getUserWorkspaces(
     @Req() req: RequestWithUser,
     @Query("owner") isOwner: string,
@@ -48,7 +51,6 @@ export class WorkspaceController {
   }
 
   @Post()
-  @UseGuards(CognitoAuthGuard)
   async createWorkspace(
     @Req() req: RequestWithUser,
     @Body() createWorkspaceDto: CreateWorkspaceDto,
@@ -66,7 +68,6 @@ export class WorkspaceController {
 
   // Chỉ cho phép thành viên trong workspace mới có thể xem thông tin workspace
   @Get(":slug")
-  @UseGuards(CognitoAuthGuard)
   async getWorkspaceBySlug(
     @Param("slug") slug: string,
     @Req() req: RequestWithUser,
@@ -76,7 +77,7 @@ export class WorkspaceController {
 
   // TODO: Hiện tại chỉ cho phép sửa name
   @Patch(":slug")
-  @UseGuards(CognitoAuthGuard)
+  @SetMetadata("workspace_permission", WorkspacePermission.UPDATE_WORKSPACE)
   async updateWorkspace(
     @Param("slug") slug: string,
     @Req() req: RequestWithUser,
@@ -90,7 +91,7 @@ export class WorkspaceController {
   }
 
   @Delete(":slug")
-  @UseGuards(CognitoAuthGuard)
+  @SetMetadata("workspace_permission", WorkspacePermission.DELETE_WORKSPACE)
   async deleteWorkspace(
     @Param("slug") slug: string,
     @Req() req: RequestWithUser,
@@ -99,7 +100,6 @@ export class WorkspaceController {
   }
 
   @Patch(":slug/logo")
-  @UseGuards(CognitoAuthGuard)
   @UseInterceptors(FileInterceptor("logo"))
   async updateWorkspaceLogo(
     @Param("slug") slug: string,

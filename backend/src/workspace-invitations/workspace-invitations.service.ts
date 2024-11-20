@@ -5,27 +5,58 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
+import { InviteWorkspaceDto } from "./dto/invite-workspace.dto";
+import { PaginationQueryDto } from "src/user/dto/pagination-query.dto";
 
 @Injectable()
 export class WorkspaceInvitationsService {
   constructor(private prisma: PrismaService) {}
-  // TODO: Thêm permission cho phương thức này
-  async getInvitations(slug: string) {
-    return this.prisma.workspaceInvitation.findMany({
-      where: {
-        workspace: {
-          slug: slug,
-        },
-      },
-      include: {
-        workspace: true,
-      },
+  async getInvitations(slug: string, paginationQueryDto: PaginationQueryDto) {
+    const { page = 1, pageSize = 20 } = paginationQueryDto;
+    const skip = (page - 1) * pageSize;
+
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { slug: slug },
     });
+
+    if (!workspace) {
+      throw new NotFoundException(`Workspace with slug ${slug} not found`);
+    }
+
+    const [invitations, totalCount] = await Promise.all([
+      this.prisma.workspaceInvitation.findMany({
+        where: { workspaceId: workspace.id },
+        skip,
+        take: pageSize,
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.workspaceInvitation.count({
+        where: { workspaceId: workspace.id },
+      }),
+    ]);
+
+    return {
+      invitations: invitations.map((invitation) => ({
+        id: invitation.id,
+        email: invitation.email,
+        role: invitation.role,
+        status: invitation.status,
+        createdAt: invitation.createdAt,
+      })),
+      meta: {
+        totalCount,
+        page,
+        pageSize,
+      },
+    };
   }
 
-  // TODO: Thêm permission cho phương thức này
-  // Phương thức để tạo lời mời mới sử dụng slug
-  async createInvitation(email: string, workspaceSlug: string, role?: string) {
+  async createInvitation(
+    workspaceSlug: string,
+    inviteWorkspaceDto: InviteWorkspaceDto,
+  ) {
+    const { email, role } = inviteWorkspaceDto;
+
     try {
       // First, check if the user with the given email exists
       const user = await this.prisma.user.findUnique({
@@ -94,20 +125,5 @@ export class WorkspaceInvitationsService {
       // Re-throw other errors
       throw error;
     }
-  }
-
-  // TODO: Thêm permission cho phương thức này
-  // Phương thức để xóa lời mời sử dụng slug và email
-  async deleteInvitation(email: string, workspaceSlug: string) {
-    const invitation = await this.prisma.workspaceInvitation.deleteMany({
-      where: {
-        email,
-        workspace: {
-          slug: workspaceSlug,
-        },
-      },
-    });
-
-    return invitation;
   }
 }
