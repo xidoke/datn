@@ -230,11 +230,11 @@ export class UserService {
     return { avatarUrl };
   }
 
-  async getInvitations(email: string) {
+  async getInvitations(email: string, status?: string) {
     const invitations = await this.prisma.workspaceInvitation.findMany({
       where: {
         email: email,
-        status: "PENDING",
+        status: status ? { equals: status } : undefined,
       },
       include: {
         workspace: {
@@ -259,6 +259,90 @@ export class UserService {
         updatedAt: invitation.updatedAt,
       })),
       totalCount: invitations.length,
+    };
+  }
+
+  async acceptInvitation(invitationId: string, userId: string) {
+    const invitation = await this.prisma.workspaceInvitation.findUnique({
+      where: { id: invitationId },
+      include: { workspace: true },
+    });
+
+    if (!invitation) {
+      throw new NotFoundException("Invitation not found");
+    }
+
+    if (invitation.status !== "PENDING") {
+      throw new BadRequestException("Invitation is no longer valid");
+    }
+
+    if (
+      invitation.email !==
+      (await this.prisma.user.findUnique({ where: { id: userId } }))?.email
+    ) {
+      throw new BadRequestException("This invitation is not for you");
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [updatedWorkspace, _] = await this.prisma.$transaction([
+      this.prisma.workspace.update({
+        where: { id: invitation.workspaceId },
+        data: {
+          members: {
+            create: {
+              userId: userId,
+              role: invitation.role,
+            },
+          },
+        },
+      }),
+      this.prisma.workspaceInvitation.update({
+        where: { id: invitationId },
+        data: {
+          status: "ACCEPTED",
+        },
+      }),
+    ]);
+
+    return {
+      message: "Invitation accepted successfully",
+      workspace: {
+        id: updatedWorkspace.id,
+        name: updatedWorkspace.name,
+        slug: updatedWorkspace.slug,
+      },
+    };
+  }
+
+  async rejectInvitation(invitationId: string, userId: string) {
+    const invitation = await this.prisma.workspaceInvitation.findUnique({
+      where: { id: invitationId },
+    });
+
+    if (!invitation) {
+      throw new NotFoundException("Invitation not found");
+    }
+
+    if (invitation.status !== "PENDING") {
+      throw new BadRequestException("Invitation is no longer valid");
+    }
+
+    if (
+      invitation.email !==
+      (await this.prisma.user.findUnique({ where: { id: userId } }))?.email
+    ) {
+      throw new BadRequestException("This invitation is not for you");
+    }
+
+    await this.prisma.workspaceInvitation.update({
+      where: { id: invitationId },
+      data: {
+        status: "REJECTED",
+      },
+    });
+
+    return {
+      message: "Invitation rejected successfully",
     };
   }
 }

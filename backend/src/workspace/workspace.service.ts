@@ -274,11 +274,6 @@ export class WorkspaceService {
         select: { id: true },
       });
 
-      // Delete all project members
-      await prisma.projectMember.deleteMany({
-        where: { projectId: { in: projectIds.map((p) => p.id) } },
-      });
-
       // Delete all issues associated with this workspace's projects
       await prisma.issue.deleteMany({
         where: { projectId: { in: projectIds.map((p) => p.id) } },

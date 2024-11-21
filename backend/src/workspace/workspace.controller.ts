@@ -43,7 +43,7 @@ export class WorkspaceController {
   @Get()
   async getUserWorkspaces(
     @Req() req: RequestWithUser,
-    @Query("owner") isOwner: string,
+    @Query("isOwner") isOwner: string,
   ) {
     return this.workspaceService.getUserWorkspaces(req.user.userId, {
       isOwner: isOwner === "true",
@@ -100,6 +100,7 @@ export class WorkspaceController {
   }
 
   @Patch(":slug/logo")
+  @SetMetadata("workspace_permission", WorkspacePermission.UPDATE_WORKSPACE)
   @UseInterceptors(FileInterceptor("logo"))
   async updateWorkspaceLogo(
     @Param("slug") slug: string,

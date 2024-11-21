@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   Query,
+  SetMetadata,
 } from "@nestjs/common";
 import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
 import { WorkspaceMemberService } from "./workspace-member.service";
@@ -16,9 +17,11 @@ import { RequestWithUser } from "src/user/interfaces/request.interface";
 import { UpdateMemberRoleDto } from "./dto/update-member-role.dto";
 import { PaginationQueryDto } from "src/user/dto/pagination-query.dto";
 import { WorkspaceRole } from "@prisma/client";
+import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
+import { WorkspacePermission } from "src/permission/permission.type";
 
 @Controller("workspaces/:workspaceSlug/members")
-@UseGuards(CognitoAuthGuard)
+@UseGuards(CognitoAuthGuard, WorkspacePermissionGuard)
 export class WorkspaceMemberController {
   constructor(private workspaceMembersService: WorkspaceMemberService) {}
 
@@ -33,7 +36,10 @@ export class WorkspaceMemberController {
     );
   }
 
+  // ! Hiện tại không hỗ trợ thêm thành viên mà không thông qua invitation
+  // ! Nếu cần hỗ trợ chức năng này, cần thêm permission vào permission service
   @Post()
+  @SetMetadata("workspace_permission", WorkspacePermission.ADD_MEMBER)
   async addMemberToWorkspace(
     @Param("workspaceSlug") workspaceSlug: string,
     @Body("email") email: string,
@@ -49,6 +55,7 @@ export class WorkspaceMemberController {
   }
 
   @Patch(":memberId")
+  @SetMetadata("workspace_permission", WorkspacePermission.UPDATE_MEMBER_ROLE)
   async updateMemberRole(
     @Param("workspaceSlug") workspaceSlug: string,
     @Param("memberId") memberId: string,
@@ -64,6 +71,7 @@ export class WorkspaceMemberController {
   }
 
   @Delete(":memberId")
+  @SetMetadata("workspace_permission", WorkspacePermission.REMOVE_MEMBER)
   async removeMemberFromWorkspace(
     @Param("workspaceSlug") workspaceSlug: string,
     @Param("memberId") memberId: string,

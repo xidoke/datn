@@ -7,6 +7,7 @@ import {
   Body,
   SetMetadata,
   Query,
+  Delete,
 } from "@nestjs/common";
 import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
 import { WorkspaceInvitationsService } from "./workspace-invitations.service";
@@ -23,7 +24,7 @@ export class WorkspaceInvitationsController {
   ) {}
   // invitations
   @Get()
-  @SetMetadata("workspace_permission", WorkspacePermission.INVITE_MEMBER)
+  @SetMetadata("workspace_permission", WorkspacePermission.VIEW_INVITATIONS)
   async getInvitations(
     @Param("slug") slug: string,
     @Query() paginationQueryDto: PaginationQueryDto,
@@ -44,5 +45,21 @@ export class WorkspaceInvitationsController {
       slug,
       inviteWorkspaceDto,
     );
+  }
+
+  @Get(":id")
+  @SetMetadata("workspace_permission", WorkspacePermission.VIEW_INVITATIONS)
+  async getInvitation(@Param("id") id: string) {
+    return this.workspaceInvitationService.getInvitation(id);
+  }
+
+  // Cancel invitation
+  @Delete(":invitationId")
+  @SetMetadata("workspace_permission", WorkspacePermission.CANCEL_INVITATION)
+  async cancelInvitation(
+    @Param("slug") slug: string,
+    @Param("invitationId") invitationId: string,
+  ) {
+    return this.workspaceInvitationService.cancelInvitation(slug, invitationId);
   }
 }

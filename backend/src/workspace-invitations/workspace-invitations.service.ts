@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -125,5 +126,41 @@ export class WorkspaceInvitationsService {
       // Re-throw other errors
       throw error;
     }
+  }
+
+  async getInvitation(id: string) {
+    const invitation = await this.prisma.workspaceInvitation.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!invitation) {
+      throw new NotFoundException(`Invitation with id ${id} not found`);
+    }
+
+    return invitation;
+  }
+
+  async cancelInvitation(workspaceSlug: string, invitationId: string) {
+    const invitation = await this.prisma.workspaceInvitation.findUnique({
+      where: { id: invitationId },
+    });
+
+    if (!invitation) {
+      throw new NotFoundException("Invitation not found");
+    }
+
+    await this.prisma.workspaceInvitation.delete({
+      where: { id: invitationId },
+    });
+
+    return { message: "Invitation cancelled successfully" };
   }
 }

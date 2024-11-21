@@ -49,7 +49,9 @@ export default function GeneralSettingsPage() {
       console.error("Failed to update workspace:", error);
       toast({
         title: "Error",
-        description: "Failed to update workspace. Please try again.",
+        description:
+          error?.response?.data?.message ??
+          "Failed to update workspace. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -95,7 +97,9 @@ export default function GeneralSettingsPage() {
       console.error("Failed to update logo:", error);
       toast({
         title: "Error",
-        description: "Failed to update logo. Please try again.",
+        description:
+          error?.response?.data?.message ??
+          "Failed to update logo. Please try again.",
         variant: "destructive",
       });
     } finally {

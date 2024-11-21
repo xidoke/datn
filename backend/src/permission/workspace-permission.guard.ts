@@ -36,7 +36,6 @@ export class WorkspacePermissionGuard implements CanActivate {
     if (!workspace) {
       throw new ForbiddenException("Workspace not found");
     }
-
     const workspaceMember = await this.prisma.workspaceMember.findUnique({
       where: {
         userId_workspaceId: {

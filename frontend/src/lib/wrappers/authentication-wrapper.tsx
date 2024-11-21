@@ -1,15 +1,14 @@
 "use client";
 
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useEffect } from "react";
 import { useSearchParams, usePathname } from "next/navigation";
 import useSWR from "swr";
-// helpers
-import { useAppRouter } from "@/hooks/use-app-router";
-import { PageType } from "@/helpers/authentication.helper";
 import { Spinner } from "@/components/ui/spinner";
 import { useUser } from "@/stores/userStore";
 import { useWorkspace } from "@/stores/workspaceStore";
 import { useAuth } from "@/hooks/useAuth";
+import { useAppRouter } from "@/hooks/use-app-router";
+import { PageType } from "@/helpers/authentication.helper";
 
 type TAuthenticationWrapper = {
   children: ReactNode;
@@ -21,117 +20,102 @@ const isValidURL = (url: string): boolean => {
   return !disallowedSchemes.test(url);
 };
 
-export const AuthenticationWrapper: FC<TAuthenticationWrapper> = (props) => {
+export const AuthenticationWrapper: FC<TAuthenticationWrapper> = ({
+  children,
+  pageType = PageType.AUTHENTICATED,
+}) => {
   const pathname = usePathname();
   const router = useAppRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next_path");
-  // props
-  const { children, pageType = PageType.AUTHENTICATED } = props;
-  // hooks
-  const {
-    isLoading: isUserLoading,
+
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { fetchCurrentUser, lastWorkspaceSlug } = useUser();
+  const { fetchWorkspaces, workspaces } = useWorkspace();
+
+  useSWR(
+    isAuthenticated ? "USER_INFORMATION" : null,
     fetchCurrentUser,
-    lastWorkspaceSlug,
-  } = useUser();
-  const { isAuthenticated } = useAuth();
-  const {
-    loader: workspacesLoader,
-    workspaces,
+    { revalidateOnFocus: false, shouldRetryOnError: false },
+  );
+
+  useSWR(
+    isAuthenticated ? "WORKSPACE_INFORMATION" : null,
     fetchWorkspaces,
-  } = useWorkspace();
-
-  const { isLoading: isUserSWRLoading } = useSWR(
-    "USER_INFORMATION",
-    async () => await fetchCurrentUser(),
-    {
-      revalidateOnFocus: false,
-      shouldRetryOnError: false,
-    },
+    { revalidateOnFocus: false, shouldRetryOnError: false },
   );
 
-  const { isLoading: isWorkspaceSWRLoading } = useSWR(
-    "WORKSPACE_INFORMATION",
-    async () => await fetchWorkspaces(),
-    {
-      revalidateOnFocus: false,
-      shouldRetryOnError: false,
-    },
-  );
-
+  const isLoading = isAuthLoading;
   const getWorkspaceRedirectionUrl = (): string => {
-    let redirectionRoute = "";
-
-    // Validate the nextPath from the router query
     if (nextPath && isValidURL(nextPath.toString())) {
       return nextPath.toString();
     }
 
-    const currentWorkspaceSlug = lastWorkspaceSlug;
-
-    // Check if current workspace slug exists in the user's workspace list
     const workspaceList = Object.values(workspaces || {});
     const isCurrentWorkspaceValid = workspaceList.some(
-      (workspace) => workspace.slug === currentWorkspaceSlug,
+      (workspace) => workspace.slug === lastWorkspaceSlug,
     );
 
     if (isCurrentWorkspaceValid) {
-      // If last workspace is valid, redirect to it
-      redirectionRoute = `/${currentWorkspaceSlug}`;
+      return `/${lastWorkspaceSlug}`;
     } else if (workspaceList.length > 0) {
-      // If last workspace is invalid, redirect to the first workspace in the list
-      redirectionRoute = `/${workspaceList[0].slug}`;
+      return `/${workspaceList[0].slug}`;
     } else {
-      // If no workspaces are available, redirect to the create workspace page
-      redirectionRoute = "/create-workspace";
+      return "/create-workspace";
     }
-
-    return redirectionRoute;
   };
 
-  if (
-    (isUserSWRLoading ||
-      isWorkspaceSWRLoading ||
-      isUserLoading ||
-      workspacesLoader) &&
-    !isAuthenticated
-  )
+  useEffect(() => {
+    if (!isLoading) {
+      if (pageType === PageType.NON_AUTHENTICATED && isAuthenticated) {
+        router.push(getWorkspaceRedirectionUrl());
+      } else if (pageType === PageType.AUTHENTICATED && !isAuthenticated) {
+        router.push(`/${pathname ? `?next_path=${pathname}` : ""}`);
+      } else if (
+        pageType === PageType.AUTHENTICATED &&
+        isAuthenticated &&
+        !lastWorkspaceSlug
+      ) {
+        router.push(
+          `/create-workspace${pathname ? `?next_path=${pathname}` : ""}`,
+        );
+      }
+    }
+  }, [
+    isLoading,
+    isAuthenticated,
+    pageType,
+    lastWorkspaceSlug,
+    pathname,
+    router,
+  ]);
+
+  if (pageType === PageType.PUBLIC) {
+    return <>{children}</>;
+  }
+
+  if (isLoading) {
     return (
-      <div className="relative flex h-screen w-full items-center justify-center">
+      <div
+        className="relative flex h-screen w-full items-center justify-center"
+        aria-live="polite"
+        aria-busy="true"
+      >
         <Spinner />
       </div>
     );
-
-  if (pageType === PageType.PUBLIC) return <>{children}</>;
-
-  if (pageType === PageType.NON_AUTHENTICATED) {
-    if (!isAuthenticated) return <>{children}</>;
-    else {
-      if (lastWorkspaceSlug) {
-        const currentRedirectRoute = getWorkspaceRedirectionUrl();
-        router.push(currentRedirectRoute);
-        return <></>;
-      } else {
-        router.push("/create-workspace");
-        return <></>;
-      }
-    }
+  }
+  if (pageType === PageType.NON_AUTHENTICATED && !isAuthenticated) {
+    return <>{children}</>;
   }
 
-  if (pageType === PageType.AUTHENTICATED) {
-    if (isAuthenticated) {
-      if (lastWorkspaceSlug) return <>{children}</>;
-      else {
-        router.push(
-          `/create-workspace${pathname ? `?next_path=${pathname}` : ``}`,
-        );
-        return <></>;
-      }
-    } else {
-      router.push(`/${pathname ? `?next_path=${pathname}` : ``}`);
-      return <></>;
-    }
+  if (
+    pageType === PageType.AUTHENTICATED &&
+    isAuthenticated &&
+    lastWorkspaceSlug
+  ) {
+    return <>{children}</>;
   }
 
-  return <>{children}</>;
+  return null;
 };

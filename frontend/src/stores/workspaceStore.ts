@@ -15,7 +15,7 @@ interface WorkspaceActions {
   getWorkspaceBySlug: (workspaceSlug: string) => Workspace | undefined;
   // getWorkspaceById: (workspaceId: string) => Workspace | undefined;
   // fetch actions
-  fetchWorkspaces: () => void;
+  fetchWorkspaces: () => Promise<Workspace[]>;
   // // crud actions
   createWorkspace: (data: Partial<Workspace>) => Promise<Workspace>;
   // updateWorkspace: (
@@ -52,13 +52,13 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       fetchWorkspaces: async () => {
         set({ loader: true });
         try {
-          const response : { workspaces: Workspace[]} = await apiClient.get("workspaces");
-          set({ workspaces: response.workspaces });
-          return;
+          const response: { workspaces: Workspace[]; totalCount: number } =
+            await apiClient.get("workspaces");
+          set({ workspaces: response.workspaces, loader: false });
+          return response.workspaces;
         } catch (error) {
-          throw error;
-        } finally {
           set({ loader: false });
+          throw error;
         }
       },
       createWorkspace: async (data: Partial<Workspace>) => {

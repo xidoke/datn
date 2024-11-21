@@ -36,6 +36,7 @@ import {
 import { useWorkspace } from "@/stores/workspaceStore";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/stores/userStore";
+import { useMemberStore } from "@/stores/member/memberStore";
 
 export default function MembersPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,8 +50,9 @@ export default function MembersPage() {
     leaveWorkspace,
     inviteMember,
   } = useWorkspace();
+  const { workspaceMemberMap } =  useMemberStore();
   const {data: user} = useUser();
-  const members = currentWorkspace?.members || [];
+  const members = workspaceMemberMap[currentWorkspace!.slug];
   const currentUser = members.find(
     (member) => member.user.id === user?.id,
   );

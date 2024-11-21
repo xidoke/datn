@@ -79,7 +79,6 @@ model User {
   isActive      Boolean   @default(true)
   ownedWorkspaces Workspace[]
   workspaces      WorkspaceMember[]
-  projectMembers  ProjectMember[]
   createdAssets   FileAsset[] @relation("CreatedAssets")
   userAssets      FileAsset[] @relation("UserAssets")
   createdIssues   Issue[]         @relation("CreatedIssues")
@@ -110,7 +109,7 @@ model Workspace {
 model WorkspaceInvitation {
   id          String    @id @default(uuid())
   email       String
-  role        String    // You might want to use an enum here
+  role        WorkspaceRole   @default(MEMBER) // You might want to use an enum here
   status      String    // e.g., "PENDING", "ACCEPTED", "REJECTED"
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
@@ -147,7 +146,6 @@ model Project {
   description   String?
   workspace     Workspace       @relation(fields: [workspaceId], references: [id])
   workspaceId   String
-  members       ProjectMember[]
   issues        Issue[]
   states        State[]  
   labels        Label[] 
@@ -155,18 +153,6 @@ model Project {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   @@map("projects")
-}
-
-model ProjectMember {
-  id            String    @id @default(uuid())
-  role          String    @default("MEMBER")
-  user          User      @relation(fields: [userId], references: [id])
-  userId        String
-  project       Project   @relation(fields: [projectId], references: [id])
-  projectId     String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  @@map("project_members")
 }
 
 model Issue {

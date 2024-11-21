@@ -66,6 +66,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           });
           set({
             isLoading: false,
+            isAuthenticated: true,
           });
         } catch (error: any) {
           set({

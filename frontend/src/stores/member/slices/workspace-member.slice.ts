@@ -11,16 +11,16 @@ export interface UserLite {
   email: string;
   firstName: string;
   lastName: string;
-  avatarUrl: string | null;
+  displayName: string;
+  avatarUrl: string | undefined;
 }
 
 export interface WorkspaceMember {
   id: string;
-  role: string; // Changed from TUserPermissions to string
   userId: string;
-  workspaceId: string;
-  createdAt: string;
-  updatedAt: string;
+  role: string;
+  workspaceSlug: string;
+  joinedAt: Date;
   user: UserLite;
 }
 
@@ -41,29 +41,31 @@ export interface IWorkspaceMemberInvitation {
     slug: string;
   };
 }
-export interface WorkspaceMembership {
-  id: string;
-  userId: string; // Changed from 'member' to 'userId'
-  role: string; // Changed from EUserPermissions to string
-}
 
 interface WorkspaceMemberSliceState {
-  workspaceMemberMap: Record<string, Record<string, WorkspaceMembership>>;
+  workspaceMemberMap: Record<string, Record<string, WorkspaceMember>>;
   workspaceMemberInvitations: Record<string, IWorkspaceMemberInvitation[]>;
-  workspaceMemberIds: string[] | undefined;
+  workspaceMemberIds: string[];
   workspaceMemberInvitationIds: string[] | undefined;
 }
 
 const initialState: WorkspaceMemberSliceState = {
   workspaceMemberMap: {},
   workspaceMemberInvitations: {},
-  workspaceMemberIds: undefined,
+  workspaceMemberIds: [],
   workspaceMemberInvitationIds: undefined,
 };
 
+export interface MemberResponse {
+  members: WorkspaceMember[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
 interface WorkspaceMemberSliceActions {
-  fetchWorkspaceMembers: (workspaceSlug: string) => Promise<WorkspaceMember[]>;
-  getWorkspaceMemberDetails: (workspaceMemberId: string) => WorkspaceMember | undefined;
+  fetchWorkspaceMembers: (workspaceSlug: string) => Promise<MemberResponse>;
+  // getWorkspaceMemberDetails: (workspaceMemberId: string) => WorkspaceMember | undefined;
   // getWorkspaceMemberInvitations: (workspaceId: string) => void;
   // addWorkspaceMember: (workspaceId: string, member: WorkspaceMembership) => void;
   // removeWorkspaceMember: (workspaceId: string, memberId: string) => void;
@@ -84,20 +86,17 @@ export const workspaceMemberSlice: StateCreator<
   ...initialState,
   fetchWorkspaceMembers: async (workspaceSlug: string) => {
     try {
-      const workspaceMembers: WorkspaceMember[] = await apiClient.get(
+      const response: MemberResponse = await apiClient.get(
         `/workspaces/${workspaceSlug}/members`,
       );
 
+      const { members: workspaceMembers } = response;
       set((state) => {
         const newWorkspaceMemberMap = { ...state.workspaceMemberMap };
-        const memberMap: Record<string, WorkspaceMembership> = {};
+        const memberMap: Record<string, WorkspaceMember> = {};
 
         workspaceMembers.forEach((member) => {
-          memberMap[member.id] = {
-            id: member.id,
-            userId: member.userId,
-            role: member.role,
-          };
+          memberMap[member.id] = member;
         });
 
         newWorkspaceMemberMap[workspaceSlug] = memberMap;
@@ -108,7 +107,7 @@ export const workspaceMemberSlice: StateCreator<
         };
       });
 
-      return workspaceMembers;
+      return response;
     } catch (error) {
       console.error("Error fetching workspace members:", error);
       throw error;

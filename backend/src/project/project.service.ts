@@ -36,28 +36,9 @@ export class ProjectService {
         data: {
           ...data,
           workspace: { connect: { slug: workspaceSlug } },
-          members: {
-            create: {
-              userId: userId,
-              role: "ADMIN",
-            },
-          },
         },
         include: {
           workspace: true,
-          members: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  email: true,
-                  firstName: true,
-                  lastName: true,
-                  avatarUrl: true,
-                },
-              },
-            },
-          },
         },
       });
 
@@ -120,26 +101,8 @@ export class ProjectService {
     return this.prisma.project.findMany({
       where: {
         workspace: { slug: workspaceSlug },
-        members: {
-          some: {
-            userId: userId,
-          },
-        },
       },
       include: {
-        members: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true,
-              },
-            },
-          },
-        },
         _count: {
           select: {
             issues: true,
@@ -157,19 +120,6 @@ export class ProjectService {
       },
       include: {
         workspace: true,
-        members: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true,
-              },
-            },
-          },
-        },
         _count: {
           select: {
             issues: true,
@@ -182,10 +132,10 @@ export class ProjectService {
       throw new NotFoundException("Project not found");
     }
 
-    const member = project.members.find((m) => m.userId === userId);
-    if (!member) {
-      throw new BadRequestException("User is not a member of this project");
-    }
+    // const member = project.members.find((m) => m.userId === userId);
+    // if (!member) {
+    //   throw new BadRequestException("User is not a member of this project");
+    // }
 
     return project;
   }
@@ -201,41 +151,28 @@ export class ProjectService {
         id: projectId,
         workspace: { slug: workspaceSlug },
       },
-      include: { members: true, workspace: true },
+      include: { workspace: true },
     });
 
     if (!project) {
       throw new NotFoundException("Project not found");
     }
 
-    const member = project.members.find((m) => m.userId === userId);
-    if (
-      !member ||
-      (member.role !== "ADMIN" && project.workspace.ownerId !== userId)
-    ) {
-      throw new BadRequestException(
-        "Only project admins and workspace owners can update projects",
-      );
-    }
+    // const member = project.members.find((m) => m.userId === userId);
+    // if (
+    //   !member ||
+    //   (member.role !== "ADMIN" && project.workspace.ownerId !== userId)
+    // ) {
+    //   throw new BadRequestException(
+    //     "Only project admins and workspace owners can update projects",
+    //   );
+    // }
 
     return this.prisma.project.update({
       where: { id: projectId },
       data,
       include: {
         workspace: true,
-        members: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true,
-              },
-            },
-          },
-        },
         _count: {
           select: {
             issues: true,

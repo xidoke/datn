@@ -102,11 +102,31 @@ export class UserController {
     return user;
   }
 
-  // DOING
   @Get("me/invitations")
   @UseGuards(CognitoAuthGuard)
-  async getInvitations(@Req() req: RequestWithUser) {
-    return this.userService.getInvitations(req.user.email);
+  async getInvitations(
+    @Req() req: RequestWithUser,
+    @Query("status") status?: string,
+  ) {
+    return this.userService.getInvitations(req.user.email, status);
+  }
+
+  @Post("me/invitations/:invitationId/accept")
+  @UseGuards(CognitoAuthGuard)
+  async acceptInvitation(
+    @Param("invitationId") invitationId: string,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.userService.acceptInvitation(invitationId, req.user.userId);
+  }
+
+  @Post("me/invitations/:invitationId/reject")
+  @UseGuards(CognitoAuthGuard)
+  async rejectInvitation(
+    @Param("invitationId") invitationId: string,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.userService.rejectInvitation(invitationId, req.user.userId);
   }
 
   // ADMIN

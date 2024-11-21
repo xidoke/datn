@@ -1,20 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from "@/lib/api/api-client";
-import { IUser } from "@/types/user";
+import { UserService } from "@/services/user.service";
+import { User } from "@/types/user";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface UserState {
   isLoading: boolean;
   error: string | undefined;
-  data: IUser | undefined;
+  data: User | undefined;
   lastWorkspaceSlug: string | undefined;
   isLoadingWorkspaceSlug: boolean;
   errorWorkspaceSlug: string | undefined;
 }
 
 interface UserActions {
-  fetchCurrentUser: () => Promise<IUser | undefined>;
+  fetchCurrentUser: () => Promise<User | undefined>;
   updateLastWorkspaceSlug: (slug: string) => Promise<string | undefined>;
   updateUser: (firstName: string, lastName: string) => any;
   updateUserAvatar: (avatarFile: File) => any;
@@ -31,35 +32,43 @@ const initialState: UserState = {
   isLoadingWorkspaceSlug: false,
   errorWorkspaceSlug: undefined,
 };
-
+const userService = new UserService();
 export const useUserStore = create<UserStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
 
       fetchCurrentUser: async () => {
         set({ isLoading: true, error: undefined });
         try {
-          const user = await apiClient.get<IUser>("/users/me");
-          set({
-            data: user,
-            isLoading: false,
-            lastWorkspaceSlug: user.lastWorkspaceSlug,
-          });
+          const user = await userService.currentUser();
+          if (user && user.id) {
+            set({
+              data: user,
+              isLoading: false,
+              lastWorkspaceSlug: user.lastWorkspaceSlug,
+            });
+          } else {
+            set({
+              isLoading: false,
+            });
+          }
           return user;
-        } catch (error: any) {
+        } catch (error) {
           set({
-            error: error.response?.data?.message || "Failed to fetch user",
+            error: "Failed to fetch user",
             isLoading: false,
           });
-          return undefined;
+          throw error;
         }
       },
 
       updateLastWorkspaceSlug: async (slug) => {
+        if (slug === get().lastWorkspaceSlug)
+          return get().lastWorkspaceSlug;
         set({ isLoadingWorkspaceSlug: true, errorWorkspaceSlug: undefined });
         try {
-          const user = await apiClient.patch<IUser>("/users/me", {
+          const user = await apiClient.patch<User>("/users/me", {
             lastWorkspaceSlug: slug,
           });
           set({
@@ -80,7 +89,7 @@ export const useUserStore = create<UserStore>()(
       updateUser: async (firstName, lastName) => {
         set({ isLoading: true, error: undefined });
         try {
-          const user = await apiClient.patch<IUser>("/users/me", {
+          const user = await apiClient.patch<User>("/users/me", {
             firstName,
             lastName,
           });
@@ -101,12 +110,16 @@ export const useUserStore = create<UserStore>()(
           const formData = new FormData();
           formData.append("avatar", file);
 
-          const response : IUser = await apiClient.post("/users/me/avatar", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
+          const response: User = await apiClient.post(
+            "/users/me/avatar",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
             },
-          });
-          
+          );
+
           set((state) => ({
             data: state.data
               ? {
