@@ -4,6 +4,7 @@ import { UserService } from "@/services/user.service";
 import { User } from "@/types/user";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { useWorkspace, useWorkspaceStore } from "./workspaceStore";
 
 interface UserState {
   isLoading: boolean;
@@ -37,12 +38,12 @@ export const useUserStore = create<UserStore>()(
   persist(
     (set, get) => ({
       ...initialState,
-
       fetchCurrentUser: async () => {
         set({ isLoading: true, error: undefined });
         try {
           const user = await userService.currentUser();
           if (user && user.id) {
+            await useWorkspaceStore.getState().fetchWorkspaces();
             set({
               data: user,
               isLoading: false,
@@ -55,8 +56,10 @@ export const useUserStore = create<UserStore>()(
           }
           return user;
         } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Failed to fetch user";
           set({
-            error: "Failed to fetch user",
+            error: errorMessage,
             isLoading: false,
           });
           throw error;
@@ -64,76 +67,77 @@ export const useUserStore = create<UserStore>()(
       },
 
       updateLastWorkspaceSlug: async (slug) => {
-        if (slug === get().lastWorkspaceSlug)
-          return get().lastWorkspaceSlug;
-        set({ isLoadingWorkspaceSlug: true, errorWorkspaceSlug: undefined });
-        try {
-          const user = await apiClient.patch<User>("/users/me", {
-            lastWorkspaceSlug: slug,
-          });
-          set({
-            lastWorkspaceSlug: user.lastWorkspaceSlug,
-            isLoadingWorkspaceSlug: false,
-          });
-          return user.lastWorkspaceSlug;
-        } catch (error: any) {
-          set({
-            errorWorkspaceSlug:
-              error.response?.data?.message ||
-              "Failed to update last workspace slug",
-            isLoadingWorkspaceSlug: false,
-          });
-          return undefined;
-        }
-      },
-      updateUser: async (firstName, lastName) => {
+        const currentSlug = get().lastWorkspaceSlug;
+        if (slug === currentSlug) return currentSlug;
+
         set({ isLoading: true, error: undefined });
+
         try {
-          const user = await apiClient.patch<User>("/users/me", {
-            firstName,
-            lastName,
-          });
-          set({ data: user, isLoading: false });
-          return { success: true, user };
-        } catch (error: any) {
+          const lastWorkspaceSlug =
+            await userService.updateLastWorkspaceSlug(slug);
+
+          set((state) => ({
+            lastWorkspaceSlug: lastWorkspaceSlug,
+            isLoading: false,
+            data: state.data ? { ...state.data, lastWorkspaceSlug } : undefined,
+          }));
+          return lastWorkspaceSlug;
+        } catch (error) {
           const errorMessage =
-            error.response?.data?.message || "Failed to update user";
+            error instanceof Error
+              ? error.message
+              : "Failed to update last workspace slug";
           set({
             error: errorMessage,
             isLoading: false,
           });
-          return { success: false, error: errorMessage };
+          throw error;
+        }
+      },
+
+      updateUser: async (firstName: string, lastName: string) => {
+        set({ isLoading: true, error: undefined });
+
+        try {
+          const user = await userService.updateUser(firstName, lastName);
+
+          set({
+            data: user,
+            isLoading: false,
+          });
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Failed to update user";
+          set({
+            error: errorMessage,
+            isLoading: false,
+          });
+          throw error;
         }
       },
       updateUserAvatar: async (file: File) => {
+        set({ isLoading: true, error: undefined });
         try {
-          const formData = new FormData();
-          formData.append("avatar", file);
-
-          const response: User = await apiClient.post(
-            "/users/me/avatar",
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            },
-          );
-
+          const updatedUser = await userService.updateUserAvatar(file);
           set((state) => ({
             data: state.data
-              ? {
-                  ...state.data,
-                  avatarUrl: response.avatarUrl,
-                }
+              ? { ...state.data, avatarUrl: updatedUser.avatarUrl }
               : undefined,
+            isLoading: false,
           }));
+          return updatedUser;
         } catch (error) {
-          console.error("Failed to update user avatar:", error);
-          throw new Error("Failed to update avatar. Please try again.");
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to update user avatar";
+          set({
+            error: errorMessage,
+            isLoading: false,
+          });
+          throw error;
         }
       },
-
       reset: () => set(initialState),
     }),
 

@@ -6,7 +6,7 @@ import { useUserStore } from "./userStore";
 
 interface WorkspaceState {
   loader: boolean;
-  workspaces: Workspace[];
+  workspaces: Workspace[] | undefined;
   currentWorkspace: Workspace | undefined;
   workspacesCreatedByCurrentUser: Workspace[] | undefined;
 }
@@ -29,13 +29,14 @@ interface WorkspaceActions {
     workspaceSlug: string,
     data: Partial<Workspace>,
   ) => Promise<Workspace>;
+  reset: () => void;
 }
 
 type WorkspaceStore = WorkspaceState & WorkspaceActions;
 
 const initialState: WorkspaceState = {
   loader: false,
-  workspaces: [],
+  workspaces: undefined,
   currentWorkspace: undefined,
   workspacesCreatedByCurrentUser: undefined,
 };
@@ -44,11 +45,6 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
   persist(
     (set, get) => ({
       ...initialState,
-      getWorkspaceBySlug: (workspaceSlug: string) => {
-        return get().workspaces.find(
-          (workspace) => workspace.slug === workspaceSlug,
-        );
-      },
       fetchWorkspaces: async () => {
         set({ loader: true });
         try {
@@ -61,6 +57,13 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           throw error;
         }
       },
+
+      getWorkspaceBySlug: (workspaceSlug: string) => {
+        return get().workspaces?.find(
+          (workspace) => workspace.slug === workspaceSlug,
+        );
+      },
+
       createWorkspace: async (data: Partial<Workspace>) => {
         try {
           const workspace: Workspace = await apiClient.post("workspaces", data);
@@ -76,7 +79,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         }
       },
       setCurrentWorkspace: (workspaceSlug: string) => {
-        const workspace = get().workspaces.find(
+        const workspace = get().workspaces?.find(
           (workspace) => workspace.slug === workspaceSlug,
         );
         if (workspace) {
@@ -88,7 +91,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         workspaceSlug: string,
         data: Partial<Workspace>,
       ) => {
-        const workspace = get().workspaces.find(
+        const workspace = get().workspaces?.find(
           (workspace) => workspace.slug === workspaceSlug,
         );
         if (!workspace) {
@@ -101,7 +104,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             data,
           );
           set({
-            workspaces: get().workspaces.map((w) =>
+            workspaces: get().workspaces?.map((w) =>
               w.slug === workspaceSlug ? updatedWorkspace : w,
             ),
             currentWorkspace: updatedWorkspace,
@@ -127,7 +130,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           );
 
           set((state) => ({
-            workspaces: state.workspaces.map((w) =>
+            workspaces: state.workspaces?.map((w) =>
               w.slug === slug ? updatedWorkspace : w,
             ),
             currentWorkspace:
@@ -145,13 +148,16 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         try {
           await apiClient.delete(`workspaces/${workspaceSlug}`);
           set({
-            workspaces: get().workspaces.filter(
+            workspaces: get().workspaces?.filter(
               (workspace) => workspace.slug !== workspaceSlug,
             ),
           });
         } catch (error) {
           throw error;
         }
+      },
+      reset() {
+        set(initialState);
       },
     }),
     {

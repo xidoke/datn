@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -59,17 +58,6 @@ export class WorkspaceInvitationsService {
     const { email, role } = inviteWorkspaceDto;
 
     try {
-      // First, check if the user with the given email exists
-      const user = await this.prisma.user.findUnique({
-        where: { email },
-      });
-
-      if (!user) {
-        throw new BadRequestException(
-          `User with email ${email} does not exist`,
-        );
-      }
-
       // Find the workspace by slug
       const workspace = await this.prisma.workspace.findUnique({
         where: { slug: workspaceSlug },
@@ -78,6 +66,51 @@ export class WorkspaceInvitationsService {
       if (!workspace) {
         throw new NotFoundException(
           `Workspace with slug ${workspaceSlug} not found`,
+        );
+      }
+
+      // Check if there's an existing invitation
+      const existingInvitation =
+        await this.prisma.workspaceInvitation.findFirst({
+          where: {
+            email,
+            workspaceId: workspace.id,
+          },
+        });
+
+      if (existingInvitation) {
+        if (existingInvitation.status === "PENDING") {
+          throw new ConflictException(
+            `An invitation for ${email} already exists in this workspace`,
+          );
+        }
+
+        // If the invitation was rejected, update it
+        if (existingInvitation.status === "REJECTED") {
+          const updatedInvitation =
+            await this.prisma.workspaceInvitation.update({
+              where: { id: existingInvitation.id },
+              data: {
+                status: "PENDING",
+                role: role ?? "MEMBER",
+              },
+              include: {
+                workspace: true,
+              },
+            });
+          return updatedInvitation;
+        }
+      }
+
+      // If no existing invitation or it's not rejected, proceed with creating a new one
+      // First, check if the user with the given email exists
+      const user = await this.prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (!user) {
+        throw new BadRequestException(
+          `User with email ${email} does not exist`,
         );
       }
 

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppProgressBar } from "@/lib/n-progress";
 import { ThemeProvider } from "next-themes";
 import { FC } from "react";
+import { SWRConfig } from "swr";
 
 export interface IAppProvider {
   children: React.ReactNode;
@@ -28,9 +29,19 @@ export const AppProvider: FC<IAppProvider> = (props) => {
       >
         {/* tooltip shadcn-ui */}
         <TooltipProvider delayDuration={0}>
-          <div className="relative flex min-h-screen flex-col bg-background">
-            {children}
-          </div>
+          <SWRConfig
+            value={{
+              refreshWhenHidden: false,
+              revalidateIfStale: true,
+              revalidateOnFocus: true,
+              revalidateOnMount: true,
+              errorRetryCount: 3,
+            }}
+          >
+            <div className="relative flex min-h-screen flex-col bg-background">
+              {children}
+            </div>
+          </SWRConfig>
           <Toaster />
         </TooltipProvider>
       </ThemeProvider>

@@ -13,6 +13,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { useAppRouter } from "@/hooks/use-app-router";
 import { useWorkspace } from "@/stores/workspaceStore";
+import { useLogout } from "@/hooks/useLogout";
 
 export default function CreateWorkspaceForm() {
   const router = useAppRouter();
@@ -112,6 +113,7 @@ export default function CreateWorkspaceForm() {
       {error && (
         <div className="text-red-500 text-sm font-medium">{error}</div>
       )}
+      {/* logout */}
     </form>
   );
 }

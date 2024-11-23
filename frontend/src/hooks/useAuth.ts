@@ -1,7 +1,7 @@
 import { useAuthStore } from "@/stores/authStore";
 
 export const useAuth = () => {
-  const { isLoading, error, login, register, logout, reset, isAuthenticated } =
+  const { isLoading, error, login, register, reset, isAuthenticated } =
     useAuthStore();
   return {
     isAuthenticated,
@@ -9,7 +9,6 @@ export const useAuth = () => {
     error,
     login,
     register,
-    logout,
     reset,
   };
 };

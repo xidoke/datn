@@ -2,6 +2,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { apiClient } from "@/lib/api/api-client";
+import { use } from "react";
+import { useUserStore } from "./userStore";
 
 interface AuthState {
   isLoading: boolean;
@@ -35,6 +37,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         set({ isLoading: true, error: undefined });
         try {
           await apiClient.post("/auth/login", { email, password });
+          useUserStore.getState().fetchCurrentUser();
           set({
             isLoading: false,
             isAuthenticated: true,
@@ -64,6 +67,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             firstName,
             lastName,
           });
+          useUserStore.getState().fetchCurrentUser();
           set({
             isLoading: false,
             isAuthenticated: true,

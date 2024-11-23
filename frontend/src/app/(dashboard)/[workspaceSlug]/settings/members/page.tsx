@@ -37,6 +37,8 @@ import { useWorkspace } from "@/stores/workspaceStore";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/stores/userStore";
 import { useMemberStore } from "@/stores/member/memberStore";
+import { API_BASE_URL } from "@/helpers/common.helper";
+import { hasPermission } from "@/helpers/permission";
 
 export default function MembersPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,22 +47,24 @@ export default function MembersPage() {
   const { toast } = useToast();
   const {
     currentWorkspace,
-    updateMemberRole,
-    removeMember,
-    leaveWorkspace,
-    inviteMember,
+    updateMemberRole, // TODO: Implement this function
+    removeMember, // TODO: Implement this function
+    leaveWorkspace, // TODO: Implement this function
   } = useWorkspace();
-  const { workspaceMemberMap } =  useMemberStore();
-  const {data: user} = useUser();
-  const members = workspaceMemberMap[currentWorkspace!.slug];
-  const currentUser = members.find(
-    (member) => member.user.id === user?.id,
-  );
-  const isAdmin = currentUser?.role === "ADMIN";
+  const { inviteMember } = useMemberStore();
+  const userPermission = currentWorkspace ? currentWorkspace.permissions : [];
+  const { workspaceMemberMap, workspaceMemberIds } = useMemberStore();
+  const { data: user } = useUser();
+  const membersRecord = workspaceMemberMap[currentWorkspace!.slug];
+  const members = workspaceMemberIds.map((id) => membersRecord[id]);
+  const currentUser = members.find((member) => member.user.id === user?.id);
 
+  console.dir(members);
   const filteredMembers = members.filter(
     (member) =>
-      member.user.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      member.user.displayName
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       member.user.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
@@ -71,7 +75,7 @@ export default function MembersPage() {
         title: "Role updated",
         description: "Member role has been updated successfully.",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update member role. Please try again.",
@@ -87,7 +91,7 @@ export default function MembersPage() {
         title: "Member removed",
         description: "Member has been removed from the workspace.",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to remove member. Please try again.",
@@ -104,7 +108,7 @@ export default function MembersPage() {
         description: "You have left the workspace successfully.",
       });
       // Redirect to workspace list or home page
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to leave workspace. Please try again.",
@@ -115,14 +119,14 @@ export default function MembersPage() {
 
   const handleInviteMember = async () => {
     try {
-      await inviteMember(currentWorkspace!.id, newMemberEmail);
+      await inviteMember(currentWorkspace!.slug, newMemberEmail, "MEMBER");
       setIsAddingMember(false);
       setNewMemberEmail("");
       toast({
         title: "Invitation sent",
         description: "An invitation has been sent to the email address.",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to send invitation. Please try again.",
@@ -146,9 +150,11 @@ export default function MembersPage() {
             />
           </div>
           <Dialog open={isAddingMember} onOpenChange={setIsAddingMember}>
-            <DialogTrigger asChild>
-              <Button>Add member</Button>
-            </DialogTrigger>
+            {hasPermission(userPermission, "INVITE_MEMBER") ? (
+              <DialogTrigger asChild>
+                <Button>Add member</Button>
+              </DialogTrigger>
+            ) : null}
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Add team member</DialogTitle>
@@ -175,7 +181,6 @@ export default function MembersPage() {
         <TableHeader>
           <TableRow>
             <TableHead>Full name</TableHead>
-            <TableHead>Display name</TableHead>
             <TableHead>Email address</TableHead>
             <TableHead>Role</TableHead>
             <TableHead className="w-24">Actions</TableHead>
@@ -187,21 +192,16 @@ export default function MembersPage() {
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
-                    <AvatarImage src={member.user.avatarUrl} />
-                    <AvatarFallback>
-                      {member.user.firstName[0]}
-                      {member.user.lastName[0]}
-                    </AvatarFallback>
+                    <AvatarImage src={API_BASE_URL + member.user.avatarUrl} />
+                    <AvatarFallback></AvatarFallback>
                   </Avatar>
-                  {member.user.firstName} {member.user.lastName}
+                  {member.user.displayName}
                 </div>
               </TableCell>
-              <TableCell>{member.user.firstName}</TableCell>
               <TableCell>{member.user.email}</TableCell>
               <TableCell>
-                {isAdmin 
-                && member.user.id !== currentUser?.user.id 
-                ? (
+                {hasPermission(userPermission, "UPDATE_MEMBER_ROLE") &&
+                member.user.id !== currentUser?.user.id ? (
                   <Select
                     value={member.role}
                     onValueChange={(value) =>
@@ -234,7 +234,7 @@ export default function MembersPage() {
                         Leave workspace
                       </DropdownMenuItem>
                     ) : (
-                      isAdmin && (
+                      hasPermission(userPermission, "REMOVE_MEMBER") && (
                         <DropdownMenuItem
                           onClick={() => handleRemoveMember(member.user.id)}
                         >

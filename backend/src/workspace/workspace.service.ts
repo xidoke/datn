@@ -6,6 +6,7 @@ import {
   NotFoundException,
   InternalServerErrorException,
 } from "@nestjs/common";
+import { WorkspaceRole } from "@prisma/client";
 import { FileStorageService } from "src/file-storage/file-storage.service";
 import { PermissionService } from "src/permission/permission.service";
 import { PrismaService } from "src/prisma/prisma.service";
@@ -112,6 +113,8 @@ export class WorkspaceService {
       role: workspace.members[0].role,
       memberCount: workspace._count.members,
       projectCount: workspace._count.projects,
+      createdAt: workspace.createdAt,
+      updatedAt: workspace.updatedAt,
       permissions: this.permissionService.getPermissionsForRole(
         workspace.members[0].role,
       ),
@@ -172,18 +175,19 @@ export class WorkspaceService {
     return this.formatWorkspaceResponse(workspace, member.role);
   }
 
-  private formatWorkspaceResponse(workspace: any, userRole: string) {
+  private formatWorkspaceResponse(workspace: any, memberRole: WorkspaceRole) {
     return {
       id: workspace.id,
       name: workspace.name,
       slug: workspace.slug,
       ownerId: workspace.owner.id,
       logoUrl: workspace.logoUrl,
+      role: memberRole,
       createdAt: workspace.createdAt,
       updatedAt: workspace.updatedAt,
       memberCount: workspace._count.members,
       projectCount: workspace._count.projects,
-      userRole: userRole,
+      permission: this.permissionService.getPermissionsForRole(memberRole),
     };
   }
 

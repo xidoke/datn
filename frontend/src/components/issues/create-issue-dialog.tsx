@@ -32,7 +32,7 @@ export function CreateIssueDialog({ children }: CreateIssueDialogProps) {
   const { workspaceSlug, projectId } = useParams();
   const [open, setOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const { createIssue } = useIssueStore();
+  const { addIssue } = useIssueStore();
 
   const [formData, setFormData] = React.useState({
     title: "",
@@ -49,7 +49,7 @@ export function CreateIssueDialog({ children }: CreateIssueDialogProps) {
     try {
         // tạm thời bỏ bớt một số field
         const { title, description } = formData;
-      await createIssue(workspaceSlug as string, projectId as string, {title, description});
+      await addIssue(workspaceSlug as string, projectId as string, {title, description});
       setOpen(false);
       setFormData({
         title: "",

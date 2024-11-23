@@ -26,6 +26,7 @@ interface ProjectActions {
     data: Partial<Project>,
   ) => Promise<Project>;
   deleteProject: (workspaceSlug: string, projectId: string) => Promise<void>;
+  reset: () => void;
 }
 
 export type ProjectStore = ProjectState & ProjectActions;
@@ -134,6 +135,7 @@ export const useProjectStore = create<ProjectStore>()(
           throw error;
         }
       },
+      reset: () => set(initialState),
     }),
     {
       name: "project-storage",

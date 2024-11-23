@@ -2,17 +2,17 @@ import { StateCreator } from "zustand";
 import { MemberStore } from "../memberStore";
 import { apiClient } from "@/lib/api/api-client";
 
-export enum EUserPermissions {
-  ADMIN = 20,
-  MEMBER = 15,
+export enum EWorkspaceRole {
+  ADMIN = "ADMIN",
+  MEMBER = "MEMBER",
 }
 export interface UserLite {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  displayName: string;
-  avatarUrl: string | undefined;
+  firstName?: string;
+  lastName?: string;
+  displayName?: string;
+  avatarUrl?: string;
 }
 
 export interface WorkspaceMember {
@@ -24,7 +24,7 @@ export interface WorkspaceMember {
   user: UserLite;
 }
 
-export type TUserPermissions = EUserPermissions.ADMIN | EUserPermissions.MEMBER;
+export type WorkspaceRole = EWorkspaceRole.ADMIN | EWorkspaceRole.MEMBER;
 
 export interface IWorkspaceMemberInvitation {
   accepted: boolean;
@@ -32,7 +32,7 @@ export interface IWorkspaceMemberInvitation {
   id: string;
   message: string;
   responded_at: Date;
-  role: TUserPermissions;
+  role: WorkspaceRole;
   token: string;
   workspace: {
     id: string;
@@ -65,6 +65,7 @@ export interface MemberResponse {
 
 interface WorkspaceMemberSliceActions {
   fetchWorkspaceMembers: (workspaceSlug: string) => Promise<MemberResponse>;
+  inviteMember: (workspaceSlug: string, email: string, role: string) => Promise<void>;
   // getWorkspaceMemberDetails: (workspaceMemberId: string) => WorkspaceMember | undefined;
   // getWorkspaceMemberInvitations: (workspaceId: string) => void;
   // addWorkspaceMember: (workspaceId: string, member: WorkspaceMembership) => void;
@@ -72,6 +73,7 @@ interface WorkspaceMemberSliceActions {
   // updateWorkspaceMember: (workspaceId: string, memberId: string, role: TUserPermissions) => void;
   // addWorkspaceMemberInvitation: (workspaceId: string, invitation: IWorkspaceMemberInvitation) => void;
   // removeWorkspaceMemberInvitation: (workspaceId: string, invitationId: string) => void;
+  resetWorkspaceMember: () => void;
 }
 
 export type WorkspaceMemberSlice = WorkspaceMemberSliceState &
@@ -113,7 +115,21 @@ export const workspaceMemberSlice: StateCreator<
       throw error;
     }
   },
+  inviteMember: async (workspaceSlug: string, email: string, role: string) => {
+    try {
+      await apiClient.post(`/workspaces/${workspaceSlug}/invitations`, {
+        email,
+        role,
+      });
+    } catch (error) {
+      console.error("Error inviting member:", error);
+      throw error;
+    }
+  },
   // TODO implement getWorkspaceMemberDetails
+  resetWorkspaceMember: () => {
+    set(initialState);
+  },
   
 
 });

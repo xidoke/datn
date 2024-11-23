@@ -9,15 +9,13 @@ import {
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
-import { useAuth } from "@/hooks/useAuth";
 import { useAppRouter } from "@/hooks/use-app-router";
 import { useUser } from "@/stores/userStore";
 import { API_BASE_URL } from "@/helpers/common.helper";
+import { useLogout } from "@/hooks/useLogout";
 
 const UserSidebar = () => {
-  const {
-    logout
-  } = useAuth();
+  const logout = useLogout();
   const {data: user} = useUser();
   const router = useAppRouter();
 
@@ -53,7 +51,10 @@ const UserSidebar = () => {
               <Settings className="mr-2" />
               <span>Setting</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={logout}>
+            <DropdownMenuItem onClick={async () => {
+              await logout();
+              router.replace("/");
+            }}>
               <LogOut className="mr-2" />
               <span>Sign out</span>
             </DropdownMenuItem>

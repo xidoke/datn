@@ -17,8 +17,8 @@ export default function SettingsLayout({
   const pathname = usePathname();
   const params = useParams();
   return (
-    <div className="container mx-auto flex gap-8 p-6">
-      <aside className="w-64 space-y-1">
+    <div className="container mx-auto flex gap-8 p-6 min-h-screen">
+      <aside className="border-r-2 border-sidebar-border w-40 space-y-1 pr-2">
         <div className="mb-4 px-2 text-sm font-medium text-muted-foreground">
           SETTINGS
         </div>

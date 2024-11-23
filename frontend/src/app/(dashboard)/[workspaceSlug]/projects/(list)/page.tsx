@@ -14,7 +14,7 @@ const ListProjectPage = () => {
             key={project.id}
             id={project.id}
             name={project.name}
-            identifier={"HElLO"}
+            identifier={"HElLO"} // TODO: Fix this
             createdAt={project.createdAt}
             workspaceSlug={params.workspaceSlug as string}
           />
