@@ -33,7 +33,7 @@ export function ProjectCard({
 }: ProjectCardProps) {
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-card transition-colors hover:border-primary">
-      <Link href={`/${workspaceSlug}/projects/${id}`} className="block">
+      <Link href={`/${workspaceSlug}/projects/${id}/issues`} className="block">
         <div className="relative h-[140px] w-full overflow-hidden">
           {coverImage ? (
             <Image

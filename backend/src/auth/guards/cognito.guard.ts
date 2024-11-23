@@ -54,7 +54,12 @@ export class CognitoAuthGuard implements CanActivate {
         throw new UnauthorizedException("User not found");
       }
 
-      request["user"] = { ...payload, role: user.role, userId: user.id };
+      request["user"] = {
+        ...payload,
+        role: user.role,
+        userId: user.id,
+        email: user.email,
+      };
 
       // Check role-based access
       const requiredRoles = this.reflector.get<string[]>(

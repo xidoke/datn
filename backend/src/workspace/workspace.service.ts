@@ -1,10 +1,14 @@
 import {
   BadRequestException,
   ForbiddenException,
-  HttpException,
+  ConflictException,
   Injectable,
   NotFoundException,
+  InternalServerErrorException,
 } from "@nestjs/common";
+import { WorkspaceRole } from "@prisma/client";
+import { FileStorageService } from "src/file-storage/file-storage.service";
+import { PermissionService } from "src/permission/permission.service";
 import { PrismaService } from "src/prisma/prisma.service";
 
 const RESTRICTED_WORKSPACE_SLUGS = [
@@ -20,37 +24,25 @@ const RESTRICTED_WORKSPACE_SLUGS = [
 
 @Injectable()
 export class WorkspaceService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private fileStorageService: FileStorageService,
+    private permissionService: PermissionService,
+  ) {}
 
   async findBySlug(slug: string) {
     return this.prisma.workspace.findUnique({
       where: { slug },
       include: {
-        members: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true,
-                role: true,
-              },
-            },
-          },
-        },
-        projects: {
+        owner: {
           select: {
             id: true,
-            name: true,
-            description: true,
           },
         },
         _count: {
           select: {
-            projects: true,
             members: true,
+            projects: true,
           },
         },
       },
@@ -84,37 +76,20 @@ export class WorkspaceService {
       whereClause.ownerId = userId;
     }
 
-    return this.prisma.workspace.findMany({
+    const workspaces = await this.prisma.workspace.findMany({
       where: whereClause,
       include: {
         owner: {
           select: {
             id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
           },
         },
         members: {
-          select: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true,
-              },
-            },
-            role: true,
+          where: {
+            userId: userId,
           },
-        },
-        projects: {
           select: {
-            id: true,
-            name: true,
-            description: true,
+            role: true,
           },
         },
         _count: {
@@ -128,62 +103,58 @@ export class WorkspaceService {
         updatedAt: "desc",
       },
     });
+
+    const formattedWorkspaces = workspaces.map((workspace) => ({
+      id: workspace.id,
+      name: workspace.name,
+      slug: workspace.slug,
+      ownerId: workspace.owner.id,
+      logoUrl: workspace.logoUrl,
+      role: workspace.members[0].role,
+      memberCount: workspace._count.members,
+      projectCount: workspace._count.projects,
+      createdAt: workspace.createdAt,
+      updatedAt: workspace.updatedAt,
+      permissions: this.permissionService.getPermissionsForRole(
+        workspace.members[0].role,
+      ),
+    }));
+
+    return {
+      workspaces: formattedWorkspaces,
+      totalCount: formattedWorkspaces.length,
+    };
   }
 
-  async createWorkspace(data: { name: string; userId: string; slug: string }) {
+  async createWorkspace(
+    createWorkspaceDto: {
+      name: string;
+      slug: string;
+    },
+    userId: string,
+  ) {
+    const isAvailable = await this.checkWorkspaceAvailability(
+      createWorkspaceDto.slug,
+    );
+    if (!isAvailable.status) {
+      throw new ConflictException("Slug already exists");
+    }
     try {
-      const isAvailable = await this.checkWorkspaceAvailability(data.slug);
-      if (!isAvailable.status) {
-        throw new BadRequestException("Slug already exists");
-      }
-
       return this.prisma.workspace.create({
         data: {
-          name: data.name,
-          slug: data.slug,
-          ownerId: data.userId, // Set the creator as owner
+          name: createWorkspaceDto.name,
+          slug: createWorkspaceDto.slug,
+          ownerId: userId, // Set the creator as owner
           members: {
             create: {
-              userId: data.userId,
+              userId: userId,
               role: "ADMIN", // The creator also gets ADMIN role in workspace_members
-            },
-          },
-        },
-        include: {
-          owner: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              avatarUrl: true,
-            },
-          },
-          members: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  email: true,
-                  firstName: true,
-                  lastName: true,
-                  avatarUrl: true,
-                  role: true,
-                },
-              },
-            },
-          },
-          projects: true,
-          _count: {
-            select: {
-              projects: true,
-              members: true,
             },
           },
         },
       });
     } catch (error) {
-      throw new HttpException(error.message, 400);
+      throw new InternalServerErrorException(error.message);
     }
   }
 
@@ -192,13 +163,32 @@ export class WorkspaceService {
     if (!workspace) {
       throw new NotFoundException("Workspace not found");
     }
-    const isMember = workspace.members.some(
-      (member) => member.userId === userId,
-    );
-    if (!isMember) {
+
+    const member = await this.prisma.workspaceMember.findFirst({
+      where: { workspaceId: workspace.id, userId: userId },
+    });
+
+    if (!member) {
       throw new ForbiddenException("You don't have access to this workspace");
     }
-    return workspace;
+
+    return this.formatWorkspaceResponse(workspace, member.role);
+  }
+
+  private formatWorkspaceResponse(workspace: any, memberRole: WorkspaceRole) {
+    return {
+      id: workspace.id,
+      name: workspace.name,
+      slug: workspace.slug,
+      ownerId: workspace.owner.id,
+      logoUrl: workspace.logoUrl,
+      role: memberRole,
+      createdAt: workspace.createdAt,
+      updatedAt: workspace.updatedAt,
+      memberCount: workspace._count.members,
+      projectCount: workspace._count.projects,
+      permission: this.permissionService.getPermissionsForRole(memberRole),
+    };
   }
 
   async updateWorkspace(slug: string, userId: string, data: { name?: string }) {
@@ -288,11 +278,6 @@ export class WorkspaceService {
         select: { id: true },
       });
 
-      // Delete all project members
-      await prisma.projectMember.deleteMany({
-        where: { projectId: { in: projectIds.map((p) => p.id) } },
-      });
-
       // Delete all issues associated with this workspace's projects
       await prisma.issue.deleteMany({
         where: { projectId: { in: projectIds.map((p) => p.id) } },
@@ -309,6 +294,37 @@ export class WorkspaceService {
       return prisma.workspace.delete({
         where: { id: workspace.id },
       });
+    });
+  }
+
+  async updateWorkspaceLogo(slug: string, logo: Express.Multer.File) {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { slug },
+    });
+    if (!workspace) {
+      throw new NotFoundException("Workspace not found");
+    }
+
+    // Delete old logo if it exists
+    if (workspace.logoUrl) {
+      const oldLogoFilename = workspace.logoUrl.split("/").pop();
+      if (oldLogoFilename) {
+        await this.fileStorageService.deleteFile(oldLogoFilename);
+      }
+    }
+
+    // Save new logo
+    const savedFilename = await this.fileStorageService.saveFile(
+      logo.buffer,
+      logo.originalname,
+    );
+    const logoUrl = this.fileStorageService.getFileUrl(savedFilename);
+
+    // Update workspace with new logo URL
+    workspace.logoUrl = logoUrl;
+    return this.prisma.workspace.update({
+      where: { slug },
+      data: { logoUrl },
     });
   }
 }

@@ -14,13 +14,12 @@ import {
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { FileAssetService } from "./file-asset.service";
-import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
 import { Role } from "src/auth/enums/role.enum";
 
 @Controller("file-assets")
-@UseGuards(CognitoAuthGuard, RolesGuard)
+@UseGuards(CognitoAuthGuard)
 export class FileAssetController {
   constructor(private readonly fileAssetService: FileAssetService) {}
 

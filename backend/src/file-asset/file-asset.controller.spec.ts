@@ -1,7 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { FileAssetController } from './file-asset.controller';
+import { Test, TestingModule } from "@nestjs/testing";
+import { FileAssetController } from "./file-asset.controller";
 
-describe('FileAssetController', () => {
+describe("FileAssetController", () => {
   let controller: FileAssetController;
 
   beforeEach(async () => {
@@ -12,7 +12,7 @@ describe('FileAssetController', () => {
     controller = module.get<FileAssetController>(FileAssetController);
   });
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(controller).toBeDefined();
   });
 });

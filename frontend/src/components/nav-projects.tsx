@@ -8,10 +8,6 @@ import {
   Folder,
   Layout,
   Settings,
-  Clock,
-  Layers,
-  View,
-  FileText,
 } from "lucide-react";
 import { useProjectStore } from "@/stores/projectStore";
 import { Button } from "@/components/ui/button";
@@ -41,17 +37,9 @@ import {
 import { cn } from "@/lib/utils";
 import { CreateProjectDialog } from "./projects/create-project-dialog";
 
-const projectSubItems = [
-  { name: "Issues", icon: Layout, href: "issues" },
-  { name: "Cycles", icon: Clock, href: "cycles" },
-  { name: "Modules", icon: Layers, href: "modules" },
-  { name: "Views", icon: View, href: "views" },
-  { name: "Pages", icon: FileText, href: "pages" },
-];
+const projectSubItems = [{ name: "Issues", icon: Layout, href: "issues" }];
 
 const expandedSubItems = [
-  { name: "Board View", icon: Layout, href: "board" },
-  { name: "List View", icon: Layout, href: "list" },
   { name: "Settings", icon: Settings, href: "settings" },
 ];
 
@@ -64,7 +52,7 @@ export function NavProjects() {
       <div className="flex items-center justify-between px-2">
         <SidebarGroupLabel>Projects</SidebarGroupLabel>
         <Button variant="ghost" size="icon" asChild className="h-6 w-6">
-          <CreateProjectDialog/>
+          <CreateProjectDialog />
         </Button>
       </div>
       <SidebarGroupContent>
@@ -100,7 +88,7 @@ export function NavProjects() {
                     </CollapsibleTrigger>
                     <SidebarMenuButton asChild className="flex-1">
                       <Link
-                        href={`/${workspaceSlug}/projects/${project.id}`}
+                        href={`/${workspaceSlug}/projects/${project.id}/issues`}
                         className="flex items-center gap-2 px-2"
                       >
                         <Folder className="h-4 w-4 text-primary" />

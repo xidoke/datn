@@ -8,11 +8,9 @@ export class CreateIssueDto {
   @IsOptional()
   description?: string;
 
+  @IsOptional()
   @IsUUID()
-  stateId: string;
-
-  @IsUUID()
-  projectId: string;
+  stateId?: string;
 
   @IsArray()
   @IsUUID(undefined, { each: true })

@@ -12,6 +12,7 @@ import {
   BreadcrumbLink,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
+import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 
 export const ProjectsBaseHeader = () => {
   // const { searchQuery, updateSearchQuery } = useProjectFilter();
@@ -50,13 +51,9 @@ export const ProjectsBaseHeader = () => {
           <div className="hidden md:block">
             <HeaderFilters />
           </div>
-          <Button
-            onClick={() => {
-              // TO DO: Add project
-            }}
-          >
-            <span className="hidden sm:inline-block">Add</span> Project
-          </Button>
+          <CreateProjectDialog>
+            <Button size={"sm"}>Add Project</Button>
+          </CreateProjectDialog>
         </div>
       </header>
       <Separator className="mb-2" />

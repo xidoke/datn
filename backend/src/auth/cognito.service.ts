@@ -10,6 +10,7 @@ import {
   AuthFlowType,
   AdminSetUserPasswordCommandInput,
   CognitoIdentityProviderServiceException,
+  AdminDeleteUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 import { createHmac } from "crypto";
 import { AWS_CONFIG } from "../config/aws.config";
@@ -138,6 +139,23 @@ export class CognitoService {
         throw new BadRequestException("Invalid password format");
       }
       throw error;
+    }
+  }
+
+  async deleteUser(username: string) {
+    const deleteUserCommand = new AdminDeleteUserCommand({
+      UserPoolId: AWS_CONFIG.cognito.userPoolId,
+      Username: username,
+    });
+
+    try {
+      await this.cognitoClient.send(deleteUserCommand);
+      return { message: `User ${username} successfully deleted from Cognito` };
+    } catch (error) {
+      console.error("Error deleting user from Cognito:", error);
+      throw new Error(
+        `Failed to delete user ${username} from Cognito: ${error.message}`,
+      );
     }
   }
 }

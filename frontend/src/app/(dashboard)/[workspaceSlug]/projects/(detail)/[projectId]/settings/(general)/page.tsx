@@ -1,79 +1,111 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useWorkspace } from "@/stores/workspaceStore";
+import { useProject } from "@/stores/projectStore";
+import { toast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
-// TODO: update other settings
-export default function GeneralSettingsPage() {
+export default function ProjectSettingsPage() {
   const params = useParams();
-  const { workspaces, updateWorkspace} = useWorkspace();
-  const workspace = workspaces.find((w) => w.slug === params.workspaceSlug);
+  const router = useRouter();
+  const { projects, updateProject, deleteProject } = useProject();
+  const project = projects.find((p) => p.id === params.projectId);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!workspace) return;
+    if (!project) return;
 
     setIsLoading(true);
     try {
       const formData = new FormData(e.target as HTMLFormElement);
-      await updateWorkspace(params.workspaceSlug as string,{
-        name: formData.get("name") as string,
+      const name = formData.get("name") as string;
+
+      await updateProject(params.workspaceSlug as string,params.projectId as string, { name });
+
+      toast({
+        title: "Project updated",
+        description: "Your project settings have been updated successfully.",
       });
     } catch (error) {
-      console.error("Failed to update workspace:", error);
+      console.error("Failed to update project:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update project. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!workspace) return null;
+  const handleDeleteProject = async () => {
+    if (!project || deleteConfirmation !== project.name) return;
+
+    setIsLoading(true);
+    try {
+      await deleteProject(params.workspaceSlug as string, project.id);
+      setIsDeleteDialogOpen(false);
+      toast({
+        title: "Project deleted",
+        description: "Your project has been deleted successfully.",
+      });
+      router.push(`/${params.workspaceSlug}`); // Redirect to workspace page
+    } catch (error) {
+      console.error("Failed to delete project:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete project. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!project) return null;
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">General Settings</h1>
+      <h1 className="text-2xl font-semibold">Project Settings</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle>Workspace Details</CardTitle>
+          <CardTitle>Project Details</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Workspace Name</Label>
+              <Label htmlFor="name">Project Name</Label>
               <Input
                 id="name"
                 name="name"
-                defaultValue={workspace.name}
+                defaultValue={project.name}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="url">Workspace URL</Label>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-muted-foreground">
-                  localhost:3000
-                </span>
-                <Input
-                  id="url"
-                  name="url"
-                  defaultValue={workspace.slug}
-                  disabled
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                name="description"
-                placeholder="Add a description for your workspace..."
+              <Label htmlFor="identifier">Project Identifier</Label>
+              <Input
+                id="identifier"
+                name="identifier"
+                defaultValue={project.id}
+                disabled
               />
             </div>
             <Button type="submit" disabled={isLoading}>
@@ -88,7 +120,48 @@ export default function GeneralSettingsPage() {
           <CardTitle>Danger Zone</CardTitle>
         </CardHeader>
         <CardContent>
-          <Button variant="destructive">Delete Workspace</Button>
+          <Dialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
+            <DialogTrigger asChild>
+              <Button variant="destructive">Delete Project</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you absolutely sure?</DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your project and remove all associated data from our servers.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p>
+                  Please type <strong>{project.name}</strong> to confirm.
+                </p>
+                <Input
+                  value={deleteConfirmation}
+                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  placeholder="Type project name to confirm"
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDeleteDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteProject}
+                  disabled={deleteConfirmation !== project.name || isLoading}
+                >
+                  {isLoading ? "Deleting..." : "Delete Project"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
     </div>

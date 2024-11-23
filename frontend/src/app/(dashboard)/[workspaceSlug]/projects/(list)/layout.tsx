@@ -1,13 +1,11 @@
 import { ContentWrapper } from "@/components/content-wrapper"
 import ListProjectHeader from "./header"
 import ListProjectPage from "./page";
-import { ProjectsBaseHeader } from "@/components/plane/projects/header";
 
 const ListProjectLayout = () => {
   return (
     <>
-      {/* <ListProjectHeader /> */}
-      <ProjectsBaseHeader />
+      <ListProjectHeader />
       <ContentWrapper>
         <ListProjectPage />
       </ContentWrapper>

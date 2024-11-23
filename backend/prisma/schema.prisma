@@ -20,37 +20,33 @@ datasource db {
 
 model FileAsset {
   id              String    @id @default(uuid())
-  asset           String    // The filename or path of the asset
-  size            Int       // File size in bytes
-  attributes      Json      // Stores additional attributes like name, type, etc.
-  entityType      String    // e.g., USER_AVATAR, WORKSPACE_LOGO, PROJECT_COVER, etc.
+  asset           String    
+  size            Int       
+  attributes      Json      
+  entityType      String    
   isUploaded      Boolean   @default(false)
   isDeleted       Boolean   @default(false)
-  storageMetadata Json?     // Stores metadata from the storage service
+  storageMetadata Json?     
 
-  // Timestamps
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
 
-  // Relationships
   workspaceId     String
   workspace       Workspace @relation(fields: [workspaceId], references: [id])
   
   createdById     String
   createdBy       User      @relation("CreatedAssets", fields: [createdById], references: [id])
 
-  // Optional relationships based on entityType
   userId          String?
-  user            User?     @relation("UserAssets", fields: [userId], references: [id])
+  user            User?     @relation("UserAssets", fields: [userId], references: [id], onDelete: SetNull)
 
   projectId       String?
-  project         Project?  @relation(fields: [projectId], references: [id])
+  project         Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   issueId         String?
-  issue           Issue?    @relation(fields: [issueId], references: [id])
+  issue           Issue?    @relation(fields: [issueId], references: [id], onDelete: Cascade)
 
-  // Indexes
   @@index([workspaceId])
   @@index([createdById])
   @@index([userId])
@@ -69,10 +65,9 @@ model User {
   avatarUrl     String?
   isActive      Boolean   @default(true)
   ownedWorkspaces Workspace[]
-  workspaces    WorkspaceMember[]
-  projectMembers  ProjectMember[]
-  createdAssets FileAsset[] @relation("CreatedAssets")
-  userAssets    FileAsset[] @relation("UserAssets")
+  workspaces      WorkspaceMember[]
+  createdAssets   FileAsset[] @relation("CreatedAssets")
+  userAssets      FileAsset[] @relation("UserAssets")
   createdIssues   Issue[]         @relation("CreatedIssues")
   assignedIssues  IssueAssignee[]
   comments        IssueComment[]
@@ -86,26 +81,48 @@ model Workspace {
   id            String    @id @default(uuid())
   slug          String    @unique
   name          String
-  owner       User     @relation(fields: [ownerId], references: [id])
-  ownerId     String   
-  logo_url    String?
-  FileAssets FileAsset[]
+  owner         User     @relation(fields: [ownerId], references: [id])
+  ownerId       String   
+  logoUrl      String?
+  FileAssets    FileAsset[]
   projects      Project[]
+  invitations   WorkspaceInvitation[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   members       WorkspaceMember[]
   @@map("workspaces")
 }
 
+model WorkspaceInvitation {
+  id          String    @id @default(uuid())
+  email       String
+  role        WorkspaceRole   @default(MEMBER) // You might want to use an enum here
+  status      String    // e.g., "PENDING", "ACCEPTED", "REJECTED"
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([email, workspaceId])
+}
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
 model WorkspaceMember {
-  id            String    @id @default(uuid())
-  role          String    @default("MEMBER")
-  user          User      @relation(fields: [userId], references: [id])
+  id            String        @id @default(uuid())
+  role          WorkspaceRole @default(MEMBER)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String
-  workspace     Workspace @relation(fields: [workspaceId], references: [id])
+  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId   String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  joinedAt      DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([userId, workspaceId])
+  @@index([workspaceId])
+  @@index([userId])
   @@map("workspace_members")
 }
 
@@ -116,7 +133,6 @@ model Project {
   description   String?
   workspace     Workspace       @relation(fields: [workspaceId], references: [id])
   workspaceId   String
-  members       ProjectMember[]
   issues        Issue[]
   states        State[]  
   labels        Label[] 
@@ -126,25 +142,13 @@ model Project {
   @@map("projects")
 }
 
-model ProjectMember {
-  id            String    @id @default(uuid())
-  role          String    @default("MEMBER")
-  user          User      @relation(fields: [userId], references: [id])
-  userId        String
-  project       Project   @relation(fields: [projectId], references: [id])
-  projectId     String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  @@map("project_members")
-}
-
 model Issue {
   id            String          @id @default(uuid())
   title         String
   description   String?
   state         State?          @relation(fields: [stateId], references: [id])
   stateId       String? // tạm thời để optional
-  project       Project        @relation(fields: [projectId], references: [id]) 
+  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade) 
   projectId     String
   creator       User           @relation("CreatedIssues", fields: [creatorId], references: [id])
   creatorId     String
@@ -196,10 +200,14 @@ model State {
   id        String   @id @default(uuid())
   name      String
   color     String
-  project   Project  @relation(fields: [projectId], references: [id])
+  order     Int
+  group     String
   projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  isDefault Boolean  @default(false)
   issues    Issue[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  @@map("states")
+
+  @@unique([projectId, name])
 }
