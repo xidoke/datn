@@ -57,7 +57,7 @@ export class FileAssetService {
         asset,
         fileUrl: this.fileStorage.getFileUrl(filename),
       };
-    } catch (error) {
+    } catch {
       throw new BadRequestException("Failed to create file asset");
     }
   }
@@ -94,7 +94,7 @@ export class FileAssetService {
       }
 
       return asset;
-    } catch (error) {
+    } catch {
       throw new NotFoundException("Asset not found or update failed");
     }
   }
@@ -109,7 +109,7 @@ export class FileAssetService {
         where: { id },
         data: { isDeleted: true, deletedAt: new Date() },
       });
-    } catch (error) {
+    } catch {
       throw new BadRequestException("Failed to delete file asset");
     }
   }
@@ -120,7 +120,7 @@ export class FileAssetService {
         where: { id },
         data: { isDeleted: false, deletedAt: null },
       });
-    } catch (error) {
+    } catch {
       throw new NotFoundException("Asset not found or restore failed");
     }
   }
@@ -138,7 +138,7 @@ export class FileAssetService {
           },
         },
       });
-    } catch (error) {
+    } catch {
       throw new BadRequestException("Failed to update file assets");
     }
   }

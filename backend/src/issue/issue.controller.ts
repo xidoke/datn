@@ -78,14 +78,12 @@ export class IssuesController {
 
     try {
       const issues = await this.issuesService.getIssuesList({
-        workspaceSlug,
         projectId,
         issueIds: issueIdList,
         orderBy,
         groupBy,
         subGroupBy,
         filters: req.query,
-        userId: req.user.userId,
       });
 
       //  You might want to implement a method to update recent visited task

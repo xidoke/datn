@@ -113,6 +113,22 @@ export class ProjectService {
   }
 
   async getProject(workspaceSlug: string, projectId: string, userId: string) {
+    // check workspace members
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { slug: workspaceSlug },
+      include: { members: true },
+    });
+
+    if (!workspace) {
+      throw new NotFoundException("Workspace not found");
+    }
+
+    const member = workspace.members.find((m) => m.userId === userId);
+
+    if (!member) {
+      throw new BadRequestException("User is not a member of this workspace");
+    }
+
     const project = await this.prisma.project.findFirst({
       where: {
         id: projectId,
@@ -131,11 +147,6 @@ export class ProjectService {
     if (!project) {
       throw new NotFoundException("Project not found");
     }
-
-    // const member = project.members.find((m) => m.userId === userId);
-    // if (!member) {
-    //   throw new BadRequestException("User is not a member of this project");
-    // }
 
     return project;
   }

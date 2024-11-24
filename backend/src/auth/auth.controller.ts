@@ -2,22 +2,14 @@ import {
   Controller,
   Post,
   Body,
-  UseGuards,
-  Req,
   HttpCode,
-  UnauthorizedException,
   HttpException,
   HttpStatus,
   Res,
-  Get,
 } from "@nestjs/common";
-import { UserService } from "../user/user.service";
 import { CreateUserDto } from "../user/dto/create-user.dto";
-import { CognitoAuthGuard } from "./guards/cognito.guard";
 import { LoginDto } from "../user/dto/login.dto";
-import { RequestWithUser } from "../user/interfaces/request.interface";
-import { ChangePasswordDto } from "../user/dto/change-password.dto";
-import { Response, Request } from "express";
+import { Response } from "express";
 import { AuthService } from "./auth.service";
 
 @Controller("auth")

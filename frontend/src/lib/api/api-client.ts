@@ -10,7 +10,6 @@ class ApiClient {
       
       withCredentials: true, // This ensures cookies are sent with requests
       headers: {
-        "Allow-Control-Allow-Origin": "*",
         "Content-Type": "application/json",
       },
     });

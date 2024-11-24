@@ -11,7 +11,6 @@ export abstract class APIService {
       baseURL,
       withCredentials: true,
       headers: {
-        "Allow-Control-Allow-Origin": "*",
         "Content-Type": "application/json",
       },
     });

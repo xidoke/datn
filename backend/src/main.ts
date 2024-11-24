@@ -11,7 +11,7 @@ async function bootstrap() {
     prefix: "/uploads/",
   });
   app.enableCors({
-    origin: "*",
+    origin: "https://xidok.vercel.app",
     credentials: true,
   });
 
