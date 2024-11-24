@@ -10,9 +10,33 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, "..", "uploads"), {
     prefix: "/uploads/",
   });
+  const allowedOrigins = [
+    "https://xidok.vercel.app",
+    "http://localhost:3000",
+    /^https:\/\/.*\.ngrok-free\.app$/, // Cho phép tất cả subdomain của ngrok-free.app
+  ];
+
   app.enableCors({
-    origin: "https://xidok.vercel.app",
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        allowedOrigins.some((o) =>
+          typeof o === "string" ? o === origin : o.test(origin),
+        )
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "ngrok-skip-browser-warning",
+    ],
   });
 
   app.useGlobalPipes(

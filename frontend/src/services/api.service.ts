@@ -11,6 +11,7 @@ export abstract class APIService {
       baseURL,
       withCredentials: true,
       headers: {
+        "ngrok-skip-browser-warning": "1",
         "Content-Type": "application/json",
       },
     });

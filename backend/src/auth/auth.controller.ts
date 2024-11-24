@@ -55,7 +55,7 @@ export class AuthController {
       response.cookie("access_token", result.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV !== "development", // Sử dụng HTTPS trong production
-        sameSite: "lax",
+        sameSite: "none",
         maxAge: 15 * 60 * 1000, // 15 phút
       });
 
@@ -70,7 +70,7 @@ export class AuthController {
           {
             httpOnly: true,
             secure: process.env.NODE_ENV !== "development",
-            sameSite: "lax",
+            sameSite: "none",
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
           },
         );
