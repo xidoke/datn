@@ -3,8 +3,9 @@ export interface State {
   name: string;
   color: string;
   // projectId: string;
-  description: string;
+  isDefault?: boolean;
+  description?: string;
   group: string;
-  // createdAt: string;
-  // updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

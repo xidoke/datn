@@ -1,180 +1,108 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import {
-  Issue,
-  IssueFilters,
-  IssueView,
-  GroupBy,
-  OrderBy,
-} from "@/types/issue";
-import { apiClient } from "@/lib/api/api-client";
+import { State, Label } from "@/types";
 
-interface IssueState {
-  issues: Record<string, Issue>;
-  filters: IssueFilters;
-  view: IssueView;
-  groupBy: GroupBy;
-  orderBy: OrderBy;
+export interface Issue {
+  id: string;
+  title: string;
+  description: string;
+  state: State;
+  labels: Label[];
+  assignee?: string;
+  priority: "low" | "medium" | "high" | "urgent";
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface IssueStore {
+  issues: Issue[];
   isLoading: boolean;
-  error: string | null;
-}
-
-interface IssueActions {
-  fetchIssues: (slug: string, projectId: string) => Promise<void>;
+  fetchIssues: (projectId: string) => Promise<void>;
   addIssue: (
-    slug: string,
-    projectId: string,
-    issue: Omit<Issue, "id">,
+    issue: Omit<Issue, "id" | "createdAt" | "updatedAt">,
   ) => Promise<void>;
-  updateIssue: (issueId: string, updates: Partial<Issue>) => Promise<void>;
-  deleteIssue: (issueId: string) => Promise<void>;
-  setFilters: (filters: IssueFilters) => void;
-  setView: (view: IssueView) => void;
-  setGroupBy: (groupBy: GroupBy) => void;
-  setOrderBy: (orderBy: OrderBy) => void;
-  reorderIssue: (issueId: string, newOrder: number) => Promise<void>;
-  moveIssue: (issueId: string, newStateId: string) => Promise<void>;
+  updateIssue: (id: string, updates: Partial<Issue>) => Promise<void>;
+  deleteIssue: (id: string) => Promise<void>;
 }
 
-export const useIssueStore = create<IssueState & IssueActions>()(
+const sampleIssues: Issue[] = [
+  {
+    id: "1",
+    title: "Implement user authentication",
+    description: "Set up user authentication system using JWT",
+    state: { id: "2", name: "Todo", color: "#3b82f6", group: "unstarted" },
+    labels: [{ id: "1", name: "Feature", color: "#4bce97" }],
+    priority: "high",
+    createdAt: "2023-06-01T10:00:00Z",
+    updatedAt: "2023-06-01T10:00:00Z",
+  },
+  {
+    id: "2",
+    title: "Design landing page",
+    description: "Create a responsive design for the landing page",
+    state: { id: "3", name: "In Progress", color: "#eab308", group: "started" },
+    labels: [{ id: "2", name: "Design", color: "#62b0fd" }],
+    priority: "medium",
+    createdAt: "2023-06-02T09:00:00Z",
+    updatedAt: "2023-06-02T14:00:00Z",
+  },
+  // Add more sample issues as needed
+];
+
+export const useIssueStore = create<IssueStore>()(
   devtools(
     persist(
       (set, get) => ({
-        // State
-        issues: {},
-        filters: {},
-        view: "kanban",
-        groupBy: "state",
-        orderBy: "manual",
+        issues: [],
         isLoading: false,
-        error: null,
 
-        // Actions
-        fetchIssues: async (slug: string, projectId: string) => {
-          set({ isLoading: true, error: null });
+        fetchIssues: async (projectId: string) => {
+          set({ isLoading: true });
           try {
-            const response = await apiClient.get<Issue[]>(
-              `workspaces/${slug}/projects/${projectId}/issues`,
-            );
-            const issues = response;
-            const issuesMap = issues.reduce(
-              (acc: Record<string, Issue>, issue: Issue) => {
-                acc[issue.id] = issue;
-                return acc;
-              },
-              {},
-            );
-            set({ issues: issuesMap, isLoading: false });
+            // Simulating API call
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            set({ issues: sampleIssues });
           } catch (error) {
-            console.error(error);
-            set({ error: "Failed to fetch issues", isLoading: false });
+            console.error("Failed to fetch issues:", error);
+          } finally {
+            set({ isLoading: false });
           }
         },
 
-        addIssue: async (slug: string, projectId: string, issue: Omit<Issue, "id">) => {
-          set({ isLoading: true, error: null });
-          try {
-            const response = await apiClient.post<Issue>(`workspaces/${slug}/projects/${projectId}/issues`, issue);
-            const newIssue = response;
-            set((state) => ({
-              issues: { ...state.issues, [newIssue.id]: newIssue },
-              isLoading: false,
-            }));
-          } catch (error) {
-            set({ error: "Failed to add issue", isLoading: false });
-          }
+        addIssue: async (issue) => {
+          const newIssue: Issue = {
+            ...issue,
+            id: Date.now().toString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          set((state) => ({ issues: [...state.issues, newIssue] }));
+          // Simulating API call
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         },
 
-        updateIssue: async (issueId: string, updates: Partial<Issue>) => {
-          set({ isLoading: true, error: null });
-          try {
-            const response = await apiClient.patch(
-              `/issues/${issueId}`,
-              updates,
-            );
-            const updatedIssue = response.data;
-            set((state) => ({
-              issues: { ...state.issues, [issueId]: updatedIssue },
-              isLoading: false,
-            }));
-          } catch (error) {
-            set({ error: "Failed to update issue", isLoading: false });
-          }
+        updateIssue: async (id, updates) => {
+          set((state) => ({
+            issues: state.issues.map((issue) =>
+              issue.id === id
+                ? { ...issue, ...updates, updatedAt: new Date().toISOString() }
+                : issue,
+            ),
+          }));
+          // Simulating API call
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         },
 
-        deleteIssue: async (issueId: string) => {
-          set({ isLoading: true, error: null });
-          try {
-            await apiClient.delete(`/issues/${issueId}`);
-            set((state) => {
-              const { [issueId]: _, ...rest } = state.issues;
-              return { issues: rest, isLoading: false };
-            });
-          } catch (error) {
-            set({ error: "Failed to delete issue", isLoading: false });
-          }
-        },
-
-        setFilters: (filters) => {
-          set({ filters });
-        },
-
-        setView: (view) => {
-          set({ view });
-        },
-
-        setGroupBy: (groupBy) => {
-          set({ groupBy });
-        },
-
-        setOrderBy: (orderBy) => {
-          set({ orderBy });
-        },
-
-        reorderIssue: async (issueId: string, newOrder: number) => {
-          set({ isLoading: true, error: null });
-          try {
-            await apiClient.post(`/issues/${issueId}/reorder`, {
-              newOrder,
-            });
-            set((state) => ({
-              issues: {
-                ...state.issues,
-                [issueId]: { ...state.issues[issueId], order: newOrder },
-              },
-              isLoading: false,
-            }));
-          } catch (error) {
-            set({ error: "Failed to reorder issue", isLoading: false });
-          }
-        },
-
-        moveIssue: async (issueId: string, newStateId: string) => {
-          set({ isLoading: true, error: null });
-          try {
-            await apiClient.post(`/issues/${issueId}/move`, {
-              newStateId,
-            });
-            set((state) => ({
-              issues: {
-                ...state.issues,
-                [issueId]: { ...state.issues[issueId], stateId: newStateId },
-              },
-              isLoading: false,
-            }));
-          } catch (error) {
-            set({ error: "Failed to move issue", isLoading: false });
-          }
+        deleteIssue: async (id) => {
+          set((state) => ({
+            issues: state.issues.filter((issue) => issue.id !== id),
+          }));
+          // Simulating API call
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         },
       }),
       {
         name: "issue-storage",
-        partialize: (state) => ({
-          view: state.view,
-          groupBy: state.groupBy,
-          orderBy: state.orderBy,
-          filters: state.filters,
-        }),
       },
     ),
   ),
