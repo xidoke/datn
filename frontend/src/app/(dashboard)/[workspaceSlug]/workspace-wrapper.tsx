@@ -20,7 +20,7 @@ const WorkspaceWrapper: React.FC<WorkspaceWrapperProps> = ({ children }) => {
   const params = useParams();
   const workspaceSlug = params?.workspaceSlug as string | undefined;
   const {
-    workspaces,
+    workspaces = [],
     loader: workspacesLoading,
     fetchWorkspaces,
     currentWorkspace,
@@ -58,7 +58,7 @@ const WorkspaceWrapper: React.FC<WorkspaceWrapperProps> = ({ children }) => {
 
   useEffect(() => {
     // Fetch workspaces if not already loaded
-    if (!workspaces.length && !workspacesLoading) {
+    if (workspaces.length === 0 && !workspacesLoading) {
       fetchWorkspaces();
     }
   }, [fetchWorkspaces, workspaces.length, workspacesLoading]);

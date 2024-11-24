@@ -25,7 +25,7 @@ export default function GeneralSettingsPage() {
   const router = useRouter();
   const { workspaces, updateWorkspace, updateWorkspaceLogo, deleteWorkspace } =
     useWorkspace();
-  const workspace = workspaces.find((w) => w.slug === params.workspaceSlug);
+  const workspace = (workspaces ?? []).find((w) => w.slug === params.workspaceSlug);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
@@ -45,12 +45,10 @@ export default function GeneralSettingsPage() {
         title: "Workspace updated",
         description: "Your workspace settings have been updated successfully.",
       });
-    } catch (error) {
-      console.error("Failed to update workspace:", error);
+    } catch  {
       toast({
         title: "Error",
         description:
-          error?.response?.data?.message ??
           "Failed to update workspace. Please try again.",
         variant: "destructive",
       });
@@ -93,12 +91,10 @@ export default function GeneralSettingsPage() {
         title: "Success",
         description: "Logo updated successfully",
       });
-    } catch (error) {
-      console.error("Failed to update logo:", error);
+    } catch {
       toast({
         title: "Error",
         description:
-          error?.response?.data?.message ??
           "Failed to update logo. Please try again.",
         variant: "destructive",
       });

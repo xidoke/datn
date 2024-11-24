@@ -10,6 +10,9 @@ export abstract class APIService {
     this.axiosInstance = axios.create({
       baseURL,
       withCredentials: true,
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     this.setupInterceptors();

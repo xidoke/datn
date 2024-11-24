@@ -47,10 +47,14 @@ export default function MembersPage() {
   const { toast } = useToast();
   const {
     currentWorkspace,
-    updateMemberRole, // TODO: Implement this function
-    removeMember, // TODO: Implement this function
-    leaveWorkspace, // TODO: Implement this function
+    // updateMemberRole, // TODO: Implement this function
+    // removeMember, // TODO: Implement this function
+    // leaveWorkspace, // TODO: Implement this function
   } = useWorkspace();
+  const updateMemberRole = (...agvs: string[]) => {};
+  const removeMember = (...agvs: string[]) => {};
+  const leaveWorkspace = (...agvs: string[]) => {};
+
   const { inviteMember } = useMemberStore();
   const userPermission = currentWorkspace ? currentWorkspace.permissions : [];
   const { workspaceMemberMap, workspaceMemberIds } = useMemberStore();

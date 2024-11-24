@@ -37,7 +37,7 @@ const PRESET_COLORS = [
 export default function LabelSettingsPage() {
   const params = useParams();
   const projectId = params.projectId as string;
-  const { labels, isLoading, fetchLabels, addLabel, updateLabel, deleteLabel } =
+  const { labels, fetchLabels, addLabel, updateLabel, deleteLabel } =
     useProjectLabelStore();
 
   useEffect(() => {
@@ -99,7 +99,7 @@ export default function LabelSettingsPage() {
       }
       setEditingName("");
       setEditingColor("");
-    } catch (error) {
+    } catch  {
       toast({
         title: "Error",
         description: "Failed to save label. Please try again.",
@@ -118,7 +118,7 @@ export default function LabelSettingsPage() {
   const handleDeleteLabel = async (id: string) => {
     try {
       await deleteLabel(id);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to delete label. Please try again.",

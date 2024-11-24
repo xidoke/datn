@@ -12,9 +12,9 @@ import { FileStorageModule } from "./file-storage/file-storage.module";
 import { FileAssetModule } from "./file-asset/file-asset.module";
 import { ConfigModule } from "@nestjs/config";
 import { WorkspaceInvitationsModule } from "./workspace-invitations/workspace-invitations.module";
-import { StateModule } from './state/state.module';
-import { WorkspaceMemberModule } from './workspace-member/workspace-member.module';
-import { PermissionModule } from './permission/permission.module';
+import { StateModule } from "./state/state.module";
+import { WorkspaceMemberModule } from "./workspace-member/workspace-member.module";
+import { PermissionModule } from "./permission/permission.module";
 
 @Module({
   controllers: [],

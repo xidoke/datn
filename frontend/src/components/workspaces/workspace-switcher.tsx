@@ -35,7 +35,7 @@ export function WorkspaceSwitcher() {
   if (
     workspaceSlug &&
     workspaceSlug !== currentWorkspace?.slug &&
-    workspaces.some((w) => w.slug === workspaceSlug)
+    workspaces?.some((w) => w.slug === workspaceSlug)
   ) {
     setCurrentWorkspace(workspaceSlug as string);
   }
@@ -63,10 +63,13 @@ export function WorkspaceSwitcher() {
             className="object-cover"
             sizes="24px"
             onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
-              (e.target as HTMLImageElement).nextSibling?.classList.remove(
-                "hidden",
-              );
+              const target = e.target as HTMLImageElement;
+              target.style.display = "none";
+              const nextElement = target.nextSibling as HTMLElement | null;
+
+              if (nextElement?.classList) {
+                nextElement.classList.remove("hidden");
+              }
             }}
           />
           <Briefcase className="hidden size-4" />
@@ -107,7 +110,7 @@ export function WorkspaceSwitcher() {
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Workspaces
             </DropdownMenuLabel>
-            {workspaces.map((workspace) => (
+            {workspaces?.map((workspace) => (
               <DropdownMenuItem
                 key={workspace.id}
                 className="gap-2 p-2"

@@ -11,7 +11,7 @@ async function bootstrap() {
     prefix: "/uploads/",
   });
   app.enableCors({
-    origin: "http://localhost:3000",
+    origin: "https://xidok.vercel.app",
     credentials: true,
   });
 
@@ -27,6 +27,6 @@ async function bootstrap() {
   );
   app.use(cookieParser());
   await app.listen(8000);
-  console.log("Server is running on http://localhost:8000");
+  console.log("Server is running");
 }
 bootstrap();

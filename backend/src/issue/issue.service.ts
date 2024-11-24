@@ -139,14 +139,12 @@ export class IssuesService {
   }
 
   async getIssuesList({
-    workspaceSlug,
     projectId,
     issueIds,
     orderBy,
     groupBy,
     subGroupBy,
     filters,
-    userId,
   }) {
     const issues = await this.prisma.issue.findMany({
       where: {

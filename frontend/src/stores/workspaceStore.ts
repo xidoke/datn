@@ -68,7 +68,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         try {
           const workspace: Workspace = await apiClient.post("workspaces", data);
           set({
-            workspaces: [...get().workspaces, workspace],
+            workspaces: [...(get().workspaces || []), workspace],
             currentWorkspace: workspace,
           });
           useUserStore.getState().lastWorkspaceSlug = workspace.slug;
