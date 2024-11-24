@@ -6,7 +6,7 @@ class ApiClient {
 
   constructor() {
     this.axiosInstance = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL,
+      baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
       withCredentials: true, // This ensures cookies are sent with requests
       headers: {
         "Content-Type": "application/json",
