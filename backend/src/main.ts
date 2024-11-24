@@ -27,6 +27,6 @@ async function bootstrap() {
   );
   app.use(cookieParser());
   await app.listen(8000);
-  console.log("Server is running on http://localhost:8000");
+  console.log("Server is running");
 }
 bootstrap();
