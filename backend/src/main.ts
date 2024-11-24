@@ -11,7 +11,7 @@ async function bootstrap() {
     prefix: "/uploads/",
   });
   app.enableCors({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "http://xidok.vercel.app"],
     credentials: true,
   });
 
