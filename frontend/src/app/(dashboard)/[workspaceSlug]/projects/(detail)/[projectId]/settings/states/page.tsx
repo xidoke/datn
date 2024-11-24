@@ -121,7 +121,7 @@ export default function StateSettingsPage() {
         setEditingName("");
         setEditingDescription("");
         setEditingColor("");
-      } catch (error) {
+      } catch {
         toast({
           title: "Error",
           description: "Failed to update state. Please try again.",
@@ -162,7 +162,7 @@ export default function StateSettingsPage() {
 
     try {
       await deleteState(id);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to delete state. Please try again.",
@@ -178,7 +178,7 @@ export default function StateSettingsPage() {
         title: "Success",
         description: "Default state updated successfully.",
       });
-    } catch (error) {
+    } catch{
       toast({
         title: "Error",
         description: "Failed to set default state. Please try again.",
@@ -199,7 +199,7 @@ export default function StateSettingsPage() {
   const renderStateItem = (state: State, isEditing: boolean) => {
     const GroupIcon =
       stateGroups.find((group) => group.name === state.group)?.icon || Circle;
-    const isAddingNew = addingToGroup === state.group;
+    // const isAddingNew = addingToGroup === state.group;
 
     return (
       <div

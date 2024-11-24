@@ -111,7 +111,7 @@ const UserInvitationsPage = () => {
       <div className="container mx-auto px-4 py-8">
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
-            <Spinner size="lg" />
+            <Spinner size="large" />
           </div>
         ) : invitations ? (
           invitations.length > 0 ? (

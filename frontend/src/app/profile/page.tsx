@@ -81,11 +81,10 @@ export default function ProfileSettings() {
       } else {
         throw new Error(result.error);
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
-        description:
-          error.message || "Failed to update profile. Please try again.",
+        description: "Failed to update profile. Please try again.",
         variant: "destructive",
       });
     } finally {

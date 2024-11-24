@@ -49,7 +49,7 @@ export function CreateIssueDialog({ children }: CreateIssueDialogProps) {
     try {
         // tạm thời bỏ bớt một số field
         const { title, description } = formData;
-      await addIssue(workspaceSlug as string, projectId as string, {title, description});
+      // await addIssue(workspaceSlug as string, projectId as string, {title, description});
       setOpen(false);
       setFormData({
         title: "",
