@@ -10,6 +10,7 @@ class ApiClient {
       
       withCredentials: true, // This ensures cookies are sent with requests
       headers: {
+        "ngrok-skip-browser-warning": "1",
         "Content-Type": "application/json",
       },
     });
