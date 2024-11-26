@@ -131,19 +131,24 @@ model Project {
   id            String          @id @default(uuid())
   name          String
   description   String?
+  token         String    @db.VarChar(5)
   workspace     Workspace       @relation(fields: [workspaceId], references: [id])
   workspaceId   String
   issues        Issue[]
   states        State[]  
   labels        Label[] 
   FileAssets FileAsset[]
+  lastIssueNumber Int     @default(0)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+
+  @@unique([workspaceId, token])
   @@map("projects")
 }
 
 model Issue {
   id            String          @id @default(uuid())
+  sequenceNumber Int
   title         String
   description   String?
   state         State?          @relation(fields: [stateId], references: [id])
@@ -156,8 +161,17 @@ model Issue {
   labels        Label[]
   comments      IssueComment[]
   FileAssets    FileAsset[]
+  priority      Int             @default(0) // 0: Low, 1: Medium, 2: High, 3: Urgent
+  dueDate       DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  
+  @@unique([projectId, sequenceNumber])
+  @@index([projectId])
+  @@index([stateId])
+  @@index([creatorId])
+  @@index([priority])
+  @@index([dueDate])
   @@map("issues")
 }
 
