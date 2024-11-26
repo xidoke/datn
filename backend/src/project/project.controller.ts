@@ -8,7 +8,6 @@ import {
   Delete,
   UseGuards,
   Req,
-  SetMetadata,
 } from "@nestjs/common";
 import { ProjectService } from "./project.service";
 import { CognitoAuthGuard } from "../auth/guards/cognito.guard";
@@ -16,6 +15,7 @@ import { RequestWithUser } from "../user/interfaces/request.interface";
 import { CreateProjectDto } from "./dto/create-project.dto";
 import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
 import { WorkspacePermission } from "src/permission/permission.type";
+import { Permissions } from "src/permission/permission.decorator";
 
 @Controller("workspaces/:workspaceSlug/projects")
 @UseGuards(CognitoAuthGuard, WorkspacePermissionGuard)
@@ -23,18 +23,14 @@ export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
   @Post()
-  @SetMetadata("workspace_permission", WorkspacePermission.CREATE_PROJECT)
+  @Permissions(WorkspacePermission.CREATE_PROJECT)
   create(
     @Param("workspaceSlug") workspaceSlug: string,
     @Req() req: RequestWithUser,
     @Body() createProjectDto: CreateProjectDto,
   ) {
     try {
-      return this.projectService.createProject(
-        createProjectDto,
-        workspaceSlug,
-        req.user.userId,
-      );
+      return this.projectService.createProject(createProjectDto, workspaceSlug);
     } catch (error) {
       console.error("Failed to create project:", error);
       throw error;

@@ -16,9 +16,10 @@ import { CreateIssueDto } from "./dto/create-issue.dto";
 import { UpdateIssueDto } from "./dto/update-issue.dto";
 import { CognitoAuthGuard } from "../auth/guards/cognito.guard";
 import { RequestWithUser } from "src/user/interfaces/request.interface";
+import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
 
 @Controller("workspaces/:workspaceSlug/projects/:projectId/issues")
-@UseGuards(CognitoAuthGuard)
+@UseGuards(CognitoAuthGuard, WorkspacePermissionGuard)
 export class IssuesController {
   constructor(private readonly issuesService: IssuesService) {}
 

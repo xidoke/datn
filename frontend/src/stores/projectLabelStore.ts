@@ -1,21 +1,18 @@
 import { Label } from "@/types";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
+import { LabelService } from "@/services/label.service";
 
 interface ProjectLabelStore {
   labels: Label[];
   isLoading: boolean;
-  fetchLabels: (projectId: string) => Promise<void>;
-  addLabel: (label: Omit<Label, "id">) => Promise<void>;
-  updateLabel: (id: string, updates: Partial<Label>) => Promise<void>;
-  deleteLabel: (id: string) => Promise<void>;
+  fetchLabels: (workspaceSlug: string, projectId: string) => Promise<void>;
+  addLabel: (workspaceSlug: string, projectId: string, label: Omit<Label, "id">) => Promise<void>;
+  updateLabel: (workspaceSlug: string, projectId: string, id: string, updates: Partial<Label>) => Promise<void>;
+  deleteLabel: (workspaceSlug: string, projectId: string, id: string) => Promise<void>;
 }
 
-const sampleLabels: Label[] = [
-  { id: "1", name: "Bug", color: "#e5484d" },
-  { id: "2", name: "Feature", color: "#4bce97" },
-  { id: "3", name: "Enhancement", color: "#62b0fd" },
-];
+const labelService = new LabelService();
 
 export const useProjectLabelStore = create<ProjectLabelStore>()(
   devtools(
@@ -24,69 +21,56 @@ export const useProjectLabelStore = create<ProjectLabelStore>()(
         labels: [],
         isLoading: false,
 
-        fetchLabels: async (projectId: string) => {
+        fetchLabels: async (workspaceSlug: string, projectId: string) => {
           set({ isLoading: true });
           try {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-
-            const currentLabels = get().labels;
-            if (currentLabels.length === 0) {
-              set({ labels: sampleLabels });
-            }
+            const labels = await labelService.fetchLabels(workspaceSlug, projectId);
+            set({ labels });
           } catch (error) {
-            throw new Error("Failed to fetch labels");
+            console.error("Failed to fetch labels:", error);
+            throw error;
           } finally {
             set({ isLoading: false });
           }
         },
 
-        addLabel: async (label: Omit<Label, "id">) => {
-          const newLabel = { ...label, id: Date.now().toString() };
-          set((state) => ({ labels: [...state.labels, newLabel] }));
-
+        addLabel: async (workspaceSlug: string, projectId: string, label: Omit<Label, "id">) => {
           try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            // throw new Error("Failed to add label");
-            // If API call succeeds, the optimistic update remains
+            const newLabel = await labelService.addLabel(workspaceSlug, projectId, label);
+            set((state) => ({ labels: [...state.labels, newLabel] }));
           } catch (error) {
-            // If API call fails, revert the optimistic update
-            set((state) => ({
-              labels: state.labels.filter((l) => l.id !== newLabel.id),
-            }));
+            console.error("Failed to add label:", error);
             throw error;
           }
         },
 
-        updateLabel: async (id: string, updates: Partial<Label>) => {
+        updateLabel: async (workspaceSlug: string, projectId: string, id: string, updates: Partial<Label>) => {
           const previousLabels = get().labels;
           set((state) => ({
             labels: state.labels.map((label) =>
-              label.id === id ? { ...label, ...updates } : label,
+              label.id === id ? { ...label, ...updates } : label
             ),
           }));
 
           try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            // If API call succeeds, the optimistic update remains
+            await labelService.updateLabel(workspaceSlug, projectId, id, updates);
           } catch (error) {
-            // If API call fails, revert the optimistic update
+            console.error("Failed to update label:", error);
             set({ labels: previousLabels });
             throw error;
           }
         },
 
-        deleteLabel: async (id: string) => {
+        deleteLabel: async (workspaceSlug: string, projectId: string, id: string) => {
           const previousLabels = get().labels;
           set((state) => ({
             labels: state.labels.filter((label) => label.id !== id),
           }));
 
           try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            throw new Error("Failed to delete label");
-            // If API call succeeds, the optimistic update remains
+            await labelService.deleteLabel(workspaceSlug, projectId, id);
           } catch (error) {
-            // If API call fails, revert the optimistic update
+            console.error("Failed to delete label:", error);
             set({ labels: previousLabels });
             throw error;
           }
@@ -94,7 +78,7 @@ export const useProjectLabelStore = create<ProjectLabelStore>()(
       }),
       {
         name: "project-label-storage",
-      },
-    ),
-  ),
+      }
+    )
+  )
 );

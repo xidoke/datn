@@ -187,7 +187,7 @@ export class WorkspaceService {
       updatedAt: workspace.updatedAt,
       memberCount: workspace._count.members,
       projectCount: workspace._count.projects,
-      permission: this.permissionService.getPermissionsForRole(memberRole),
+      permissions: this.permissionService.getPermissionsForRole(memberRole),
     };
   }
 

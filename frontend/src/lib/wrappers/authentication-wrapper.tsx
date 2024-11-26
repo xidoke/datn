@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, ReactNode, use, useEffect } from "react";
+import { FC, ReactNode } from "react";
 import { useSearchParams, usePathname } from "next/navigation";
 import useSWR from "swr";
 import { Spinner } from "@/components/ui/spinner";

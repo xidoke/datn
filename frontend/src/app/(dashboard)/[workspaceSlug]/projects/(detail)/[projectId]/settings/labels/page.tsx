@@ -37,12 +37,13 @@ const PRESET_COLORS = [
 export default function LabelSettingsPage() {
   const params = useParams();
   const projectId = params.projectId as string;
+  const workspaceSlug = params.workspaceSlug as string;
   const { labels, fetchLabels, addLabel, updateLabel, deleteLabel } =
     useProjectLabelStore();
 
   useEffect(() => {
-    fetchLabels(projectId);
-  }, [fetchLabels, projectId]);
+    fetchLabels(workspaceSlug, projectId);
+  }, [fetchLabels, workspaceSlug, projectId]);
 
   const [editingLabel, setEditingLabel] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
@@ -88,10 +89,13 @@ export default function LabelSettingsPage() {
 
     try {
       if (isAddingNew) {
-        await addLabel({ name: editingName, color: editingColor });
+        await addLabel(workspaceSlug, projectId, {
+          name: editingName,
+          color: editingColor,
+        });
         setIsAddingNew(false);
       } else if (editingLabel) {
-        await updateLabel(editingLabel, {
+        await updateLabel(workspaceSlug, projectId, editingLabel, {
           name: editingName,
           color: editingColor,
         });
@@ -99,7 +103,7 @@ export default function LabelSettingsPage() {
       }
       setEditingName("");
       setEditingColor("");
-    } catch  {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to save label. Please try again.",
@@ -117,7 +121,7 @@ export default function LabelSettingsPage() {
 
   const handleDeleteLabel = async (id: string) => {
     try {
-      await deleteLabel(id);
+      await deleteLabel(workspaceSlug, projectId, id);
     } catch {
       toast({
         title: "Error",

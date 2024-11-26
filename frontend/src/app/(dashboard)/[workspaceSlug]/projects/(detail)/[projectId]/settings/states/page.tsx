@@ -57,12 +57,20 @@ const PRESET_COLORS = [
 export default function StateSettingsPage() {
   const params = useParams();
   const projectId = params.projectId as string;
-  const { states, isLoading, fetchStates, addState, updateState, deleteState } =
-    useProjectStateStore();
+  const workspaceSlug = params.workspaceSlug as string;
+  const {
+    states,
+    isLoading,
+    fetchStates,
+    addState,
+    updateState,
+    deleteState,
+    setDefaultState,
+  } = useProjectStateStore();
 
   useEffect(() => {
-    fetchStates(projectId);
-  }, [fetchStates, projectId]);
+    fetchStates(workspaceSlug, projectId);
+  }, [fetchStates, workspaceSlug, projectId]);
 
   const [editingState, setEditingState] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
@@ -103,7 +111,7 @@ export default function StateSettingsPage() {
 
       try {
         if (addingToGroup) {
-          await addState({
+          await addState(workspaceSlug, projectId, {
             name: editingName,
             color: editingColor,
             group: addingToGroup,
@@ -111,7 +119,7 @@ export default function StateSettingsPage() {
           });
           setAddingToGroup(null);
         } else if (id) {
-          await updateState(id, {
+          await updateState(workspaceSlug, projectId, id, {
             name: editingName,
             color: editingColor,
             description: editingDescription,
@@ -161,7 +169,7 @@ export default function StateSettingsPage() {
     }
 
     try {
-      await deleteState(id);
+      await deleteState(workspaceSlug, projectId, id);
     } catch {
       toast({
         title: "Error",
@@ -173,12 +181,12 @@ export default function StateSettingsPage() {
 
   const handleSetDefault = async (id: string) => {
     try {
-      await updateState(id, { isDefault: true });
+      await setDefaultState(workspaceSlug, projectId, id);
       toast({
         title: "Success",
         description: "Default state updated successfully.",
       });
-    } catch{
+    } catch {
       toast({
         title: "Error",
         description: "Failed to set default state. Please try again.",
@@ -199,7 +207,6 @@ export default function StateSettingsPage() {
   const renderStateItem = (state: State, isEditing: boolean) => {
     const GroupIcon =
       stateGroups.find((group) => group.name === state.group)?.icon || Circle;
-    // const isAddingNew = addingToGroup === state.group;
 
     return (
       <div

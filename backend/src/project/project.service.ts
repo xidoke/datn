@@ -10,27 +10,7 @@ import { CreateProjectDto } from "./dto/create-project.dto";
 export class ProjectService {
   constructor(private prisma: PrismaService) {}
 
-  async createProject(
-    data: CreateProjectDto,
-    workspaceSlug: string,
-    userId: string,
-  ) {
-    const workspace = await this.prisma.workspace.findUnique({
-      where: { slug: workspaceSlug },
-      include: { members: true },
-    });
-
-    if (!workspace) {
-      throw new NotFoundException("Workspace not found");
-    }
-
-    const member = workspace.members.find((m) => m.userId === userId);
-    if (!member || (member.role !== "ADMIN" && workspace.ownerId !== userId)) {
-      throw new BadRequestException(
-        "Only workspace owners and admins can create projects",
-      );
-    }
-
+  async createProject(data: CreateProjectDto, workspaceSlug: string) {
     return this.prisma.$transaction(async (prisma) => {
       const project = await prisma.project.create({
         data: {
@@ -44,24 +24,38 @@ export class ProjectService {
 
       const defaultStates = [
         {
-          name: "To Do",
-          color: "#E2E8F0",
-          group: "unstarted",
-          order: 1,
+          name: "Backlog",
+          color: "#9333ea",
+          group: "backlog",
+          description: "Initial state for new issues",
           isDefault: true,
         },
         {
+          name: "Todo",
+          color: "#3b82f6",
+          group: "unstarted",
+          description: "Issues to be worked on",
+          isDefault: false,
+        },
+        {
           name: "In Progress",
-          color: "#3182CE",
+          color: "#eab308",
           group: "started",
-          order: 2,
+          description: "Issues currently being worked on",
           isDefault: false,
         },
         {
           name: "Done",
-          color: "#38A169",
+          color: "#22c55e",
           group: "completed",
-          order: 3,
+          description: "Completed issues",
+          isDefault: false,
+        },
+        {
+          name: "Cancelled",
+          color: "#ef4444",
+          group: "cancelled",
+          description: "Cancelled or abandoned issues",
           isDefault: false,
         },
       ];
@@ -76,7 +70,6 @@ export class ProjectService {
       // Fetch the created states to include in the response
       const states = await prisma.state.findMany({
         where: { projectId: project.id },
-        orderBy: { order: "asc" },
       });
 
       return { ...project, states };
@@ -108,12 +101,20 @@ export class ProjectService {
             issues: true,
           },
         },
+        states: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+            group: true,
+            isDefault: true,
+          },
+        },
       },
     });
   }
 
   async getProject(workspaceSlug: string, projectId: string, userId: string) {
-    // check workspace members
     const workspace = await this.prisma.workspace.findUnique({
       where: { slug: workspaceSlug },
       include: { members: true },
@@ -139,6 +140,16 @@ export class ProjectService {
         _count: {
           select: {
             issues: true,
+          },
+        },
+        states: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+            group: true,
+            description: true,
+            isDefault: true,
           },
         },
       },
@@ -169,16 +180,6 @@ export class ProjectService {
       throw new NotFoundException("Project not found");
     }
 
-    // const member = project.members.find((m) => m.userId === userId);
-    // if (
-    //   !member ||
-    //   (member.role !== "ADMIN" && project.workspace.ownerId !== userId)
-    // ) {
-    //   throw new BadRequestException(
-    //     "Only project admins and workspace owners can update projects",
-    //   );
-    // }
-
     return this.prisma.project.update({
       where: { id: projectId },
       data,
@@ -187,6 +188,16 @@ export class ProjectService {
         _count: {
           select: {
             issues: true,
+          },
+        },
+        states: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+            group: true,
+            description: true,
+            isDefault: true,
           },
         },
       },
@@ -215,6 +226,11 @@ export class ProjectService {
         "Only workspace owners can delete projects",
       );
     }
+
+    // Delete associated states
+    await this.prisma.state.deleteMany({
+      where: { projectId: projectId },
+    });
 
     return this.prisma.project.delete({
       where: { id: projectId },

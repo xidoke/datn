@@ -185,29 +185,33 @@ model IssueAssignee {
 }
 
 model Label {
-  id          String    @id @default(uuid()) 
+  id          String   @id @default(uuid())
   name        String
   color       String
-  project     Project   @relation(fields: [projectId], references: [id])
   projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
   issues      Issue[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  @@map("labels")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([name, projectId])
+  @@index([projectId])
 }
 
 model State {
-  id        String   @id @default(uuid())
-  name      String
-  color     String
-  order     Int
-  group     String
-  projectId String
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  isDefault Boolean  @default(false)
-  issues    Issue[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  name        String
+  color       String
+  group       String
+  description String?
+  isDefault   Boolean  @default(false)
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  issues      Issue[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@unique([projectId, name])
+  @@unique([name, projectId])
+  @@index([projectId])
+  @@index([projectId, isDefault])
 }

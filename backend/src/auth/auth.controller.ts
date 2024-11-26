@@ -89,10 +89,21 @@ export class AuthController {
   }
 
   @Post("logout")
+  @HttpCode(HttpStatus.OK)
   async logout(@Res({ passthrough: true }) response: Response) {
-    response.clearCookie("access_token");
-    response.clearCookie("refresh_token");
-    return;
+    response.clearCookie("access_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== "development",
+      sameSite: "none",
+      path: "/",
+    });
+    response.clearCookie("refresh_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== "development",
+      sameSite: "none",
+      path: "/",
+    });
+    return { message: "Logged out successfully" };
   }
 
   // @Post("global-sign-out")
