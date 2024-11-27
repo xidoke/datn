@@ -36,8 +36,6 @@ export class WorkspaceMemberController {
     );
   }
 
-  // ! Hiện tại không hỗ trợ thêm thành viên mà không thông qua invitation
-  // ! Nếu cần hỗ trợ chức năng này, cần thêm permission vào permission service
   @Post()
   @Permissions(WorkspacePermission.ADD_MEMBER)
   async addMemberToWorkspace(

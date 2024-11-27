@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
+import { ApiResponse } from "@/types";
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 export abstract class APIService {
   protected baseURL: string;
@@ -39,30 +40,30 @@ export abstract class APIService {
     });
   }
 
-  get(url: string, params = {}, config: AxiosRequestConfig = {}) {
-    return this.axiosInstance.get(url, {
-      ...params,
+ get<T>(url: string, params = {}, config: AxiosRequestConfig = {}): Promise<AxiosResponse<ApiResponse<T>>> {
+    return this.axiosInstance.get<ApiResponse<T>>(url, {
+      params,
       ...config,
     });
   }
 
-  post(url: string, data = {}, config: AxiosRequestConfig = {}) {
-    return this.axiosInstance.post(url, data, config);
+  post<T>(url: string, data = {}, config: AxiosRequestConfig = {}): Promise<AxiosResponse<ApiResponse<T>>> {
+    return this.axiosInstance.post<ApiResponse<T>>(url, data, config);
   }
 
-  put(url: string, data = {}, config: AxiosRequestConfig = {}) {
-    return this.axiosInstance.put(url, data, config);
+  put<T>(url: string, data = {}, config: AxiosRequestConfig = {}): Promise<AxiosResponse<ApiResponse<T>>> {
+    return this.axiosInstance.put<ApiResponse<T>>(url, data, config);
   }
 
-  patch(url: string, data = {}, config: AxiosRequestConfig = {}) {
-    return this.axiosInstance.patch(url, data, config);
+  patch<T>(url: string, data = {}, config: AxiosRequestConfig = {}): Promise<AxiosResponse<ApiResponse<T>>> {
+    return this.axiosInstance.patch<ApiResponse<T>>(url, data, config);
   }
 
-  delete(url: string, data?: any, config: AxiosRequestConfig = {}) {
-    return this.axiosInstance.delete(url, { data, ...config });
+  delete<T>(url: string, data?: Record<string, unknown>, config: AxiosRequestConfig = {}): Promise<AxiosResponse<ApiResponse<T>>> {
+    return this.axiosInstance.delete<ApiResponse<T>>(url, { data, ...config });
   }
 
-  request(config = {}) {
-    return this.axiosInstance(config);
+  request<T>(config: AxiosRequestConfig = {}): Promise<AxiosResponse<ApiResponse<T>>> {
+    return this.axiosInstance.request<ApiResponse<T>>(config);
   }
 }

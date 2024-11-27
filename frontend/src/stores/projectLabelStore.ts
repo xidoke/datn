@@ -3,6 +3,13 @@ import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { LabelService } from "@/services/label.service";
 
+
+// state
+export interface ProjectLabelState {
+  labels: Label[];
+  isLoading: boolean;
+}
+
 interface ProjectLabelStore {
   labels: Label[];
   isLoading: boolean;
@@ -10,17 +17,21 @@ interface ProjectLabelStore {
   addLabel: (workspaceSlug: string, projectId: string, label: Omit<Label, "id">) => Promise<void>;
   updateLabel: (workspaceSlug: string, projectId: string, id: string, updates: Partial<Label>) => Promise<void>;
   deleteLabel: (workspaceSlug: string, projectId: string, id: string) => Promise<void>;
+  reset: () => void;
 }
 
 const labelService = new LabelService();
 
+// init values
+const initialState: ProjectLabelState = {
+  labels: [],
+  isLoading: false,
+};
 export const useProjectLabelStore = create<ProjectLabelStore>()(
   devtools(
     persist(
       (set, get) => ({
-        labels: [],
-        isLoading: false,
-
+        ...initialState,
         fetchLabels: async (workspaceSlug: string, projectId: string) => {
           set({ isLoading: true });
           try {
@@ -33,6 +44,7 @@ export const useProjectLabelStore = create<ProjectLabelStore>()(
             set({ isLoading: false });
           }
         },
+        reset: () => set(initialState),
 
         addLabel: async (workspaceSlug: string, projectId: string, label: Omit<Label, "id">) => {
           try {
@@ -76,6 +88,7 @@ export const useProjectLabelStore = create<ProjectLabelStore>()(
           }
         },
       }),
+
       {
         name: "project-label-storage",
       }

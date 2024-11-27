@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useParams } from "next/navigation";
 import { Plus } from "lucide-react";
-import { useIssueStore } from "@/stores/issue/issueStore";
+import useIssueStore from "@/stores/issueStore";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -23,42 +23,80 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useProjectLabelStore } from "@/stores/projectLabelStore";
+import { useProjectStateStore } from "@/stores/projectStateStore";
+import { toast } from "@/hooks/use-toast";
 
 interface CreateIssueDialogProps {
   children?: React.ReactNode;
+  stateId?: string;
 }
 
-export function CreateIssueDialog({ children }: CreateIssueDialogProps) {
-  const { workspaceSlug, projectId } = useParams();
+export function CreateIssueDialog({ stateId, children }: CreateIssueDialogProps) {
+  const { createIssue } = useIssueStore();
+  // const { labels } = useProjectLabelStore();
+  const { states } = useProjectStateStore();
+  const defaultState = states.find((state) => state.isDefault === true);
+
+  const params = useParams();
+  const workspaceSlug = params.workspaceSlug as string;
+  const projectId = params.projectId as string;
   const [open, setOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const { addIssue } = useIssueStore();
 
   const [formData, setFormData] = React.useState({
     title: "",
     description: "",
-    priority: "medium",
-    status: "todo",
+    priority: 2,
+    stateId: stateId || defaultState?.id || "",
   });
 
+  // Reset form data when dialog opens
+  React.useEffect(() => {
+    if (open) {
+      setFormData({
+        title: "",
+        description: "",
+        priority: 2,
+        stateId: stateId || defaultState?.id || "",
+      });
+    }
+  }, [open, stateId, defaultState]);
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!workspaceSlug || !projectId) return;
 
     setIsSubmitting(true);
     try {
-        // tạm thời bỏ bớt một số field
-        const { title, description } = formData;
-      // await addIssue(workspaceSlug as string, projectId as string, {title, description});
+      const { title, description, priority, stateId } = formData;
+
+      await createIssue(workspaceSlug, projectId, {
+        title,
+        description,
+        priority,
+        stateId,
+      });
       setOpen(false);
       setFormData({
         title: "",
         description: "",
-        priority: "medium",
-        status: "todo",
+        priority: 2,
+        stateId: "",
+      });
+      // toast hook
+      toast({
+        title: "Issue created",
+        description: "Your issue has been created successfully.",
+        variant: "default",
       });
     } catch (error) {
-      console.error("Failed to create issue:", error);
+      console.error(error);
+      toast({
+        title: "Issue creation failed",
+        description: "An error occurred while creating the issue.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -121,18 +159,23 @@ export function CreateIssueDialog({ children }: CreateIssueDialogProps) {
             <div className="flex-1">
               <Label htmlFor="priority">Priority</Label>
               <Select
-                value={formData.priority}
+                value={formData.priority.toString()}
                 onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, priority: value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    priority: parseInt(value),
+                  }))
                 }
               >
                 <SelectTrigger className="mt-1.5">
                   <SelectValue placeholder="Select priority" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="0">None</SelectItem>
+                  <SelectItem value="1">Low</SelectItem>
+                  <SelectItem value="2">Medium</SelectItem>
+                  <SelectItem value="3">High</SelectItem>
+                  <SelectItem value="4">Urgent</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -140,18 +183,20 @@ export function CreateIssueDialog({ children }: CreateIssueDialogProps) {
             <div className="flex-1">
               <Label htmlFor="status">Status</Label>
               <Select
-                value={formData.status}
+                value={formData.stateId}
                 onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, status: value }))
+                  setFormData((prev) => ({ ...prev, stateId: value }))
                 }
               >
                 <SelectTrigger className="mt-1.5">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todo">To Do</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="done">Done</SelectItem>
+                  {states.map((state) => (
+                    <SelectItem key={state.id} value={state.id}>
+                      {state.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

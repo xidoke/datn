@@ -16,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
 
 interface CreateProjectDialogProps {
   children?: React.ReactNode;
@@ -26,6 +27,7 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { createProject } = useProjectStore();
+  const { toast } = useToast();
 
   const [formData, setFormData] = React.useState({
     name: "",
@@ -34,7 +36,14 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!workspaceSlug) return;
+    if (!workspaceSlug) {
+      toast({
+        title: "Error",
+        description: "Workspace slug is missing.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -44,8 +53,17 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
         name: "",
         description: "",
       });
+      toast({
+        title: "Success",
+        description: "Project created successfully.",
+      });
     } catch (error) {
       console.error("Failed to create project:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create project. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }

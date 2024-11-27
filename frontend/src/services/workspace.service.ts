@@ -1,14 +1,14 @@
 import { API_BASE_URL } from "@/helpers/common.helper";
 import { APIService } from "./api.service";
-import { InvitationsResponse } from "@/types";
+import { ApiResponse, InvitationsResponse, Workspace } from "@/types";
 
 export class WorkspaceService extends APIService {
   constructor() {
     super(API_BASE_URL);
   }
 
-  async fetchUserWorkspaces() : Promise<any> {
-    return this.get("/users/me/workspaces")
+  async fetchUserWorkspaces() : Promise<ApiResponse<{workspaces: Workspace[], totalCount: number}>> {
+    return this.get<{workspaces: Workspace[], totalCount: number}>("/workspaces")
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;

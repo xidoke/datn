@@ -10,6 +10,8 @@ import {
   Req,
   Query,
   BadRequestException,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { IssuesService } from "./issue.service";
 import { CreateIssueDto } from "./dto/create-issue.dto";
@@ -17,6 +19,9 @@ import { UpdateIssueDto } from "./dto/update-issue.dto";
 import { CognitoAuthGuard } from "../auth/guards/cognito.guard";
 import { RequestWithUser } from "src/user/interfaces/request.interface";
 import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
+import { WorkspacePermission } from "src/permission/permission.type";
+import { Permissions } from "src/permission/permission.decorator";
+import { ResponseMessage } from "src/common/decorator/response-message.decorator";
 
 @Controller("workspaces/:workspaceSlug/projects/:projectId/issues")
 @UseGuards(CognitoAuthGuard, WorkspacePermissionGuard)
@@ -24,16 +29,20 @@ export class IssuesController {
   constructor(private readonly issuesService: IssuesService) {}
 
   @Post()
-  create(
+  @Permissions(WorkspacePermission.CREATE_ISSUE)
+  @ResponseMessage("Issue created successfully")
+  async create(
     @Body() createIssueDto: CreateIssueDto,
     @Req() req: RequestWithUser,
     @Param("projectId") projectId: string,
+    @Param("workspaceSlug") workspaceSlug: string,
   ) {
     try {
-      return this.issuesService.create(
+      return await this.issuesService.create(
         createIssueDto,
         projectId,
         req.user.userId,
+        workspaceSlug,
       );
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -41,59 +50,85 @@ export class IssuesController {
   }
 
   @Get()
-  findAll(@Param("projectId") projectId: string) {
-    return this.issuesService.findAll(projectId);
+  @Permissions(WorkspacePermission.VIEW_ISSUE)
+  @ResponseMessage("Issues retrieved successfully")
+  async findAll(
+    @Param("projectId") projectId: string,
+    @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query("pageSize", new DefaultValuePipe(10), ParseIntPipe) pageSize: number,
+    @Query("sortBy", new DefaultValuePipe("createdAt")) sortBy: string,
+    @Query("sortOrder", new DefaultValuePipe("desc")) sortOrder: "asc" | "desc",
+  ) {
+    return this.issuesService.findAll(
+      projectId,
+      page,
+      pageSize,
+      sortBy,
+      sortOrder,
+    );
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
+  @Permissions(WorkspacePermission.VIEW_ISSUE)
+  @ResponseMessage("Issue retrieved successfully")
+  async findOne(@Param("id") id: string) {
     return this.issuesService.findOne(id);
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateIssueDto: UpdateIssueDto) {
+  @Permissions(WorkspacePermission.UPDATE_ISSUE)
+  @ResponseMessage("Issue updated successfully")
+  async update(
+    @Param("id") id: string,
+    @Body() updateIssueDto: UpdateIssueDto,
+  ) {
     return this.issuesService.update(id, updateIssueDto);
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
+  @Permissions(WorkspacePermission.DELETE_ISSUE)
+  @ResponseMessage("Issue deleted successfully")
+  async remove(@Param("id") id: string) {
     return this.issuesService.remove(id);
   }
 
-  @Get("list")
-  async getIssues(
-    @Param("workspaceSlug") workspaceSlug: string,
-    @Param("projectId") projectId: string,
-    @Query("issues") issueIds: string,
-    @Query("order_by") orderBy: string = "createdAt",
-    @Query("group_by") groupBy: string,
-    @Query("sub_group_by") subGroupBy: string,
-    @Req() req: RequestWithUser,
-  ) {
-    if (!issueIds) {
-      throw new BadRequestException("Issues are required");
-    }
+  // @Get("list")
+  // @Permissions(WorkspacePermission.VIEW_ISSUE)
+  // @ResponseMessage("Issues list retrieved successfully")
+  // async getIssues(
+  //   @Param("workspaceSlug") workspaceSlug: string,
+  //   @Param("projectId") projectId: string,
+  //   @Query("issues") issueIds: string,
+  //   @Query("order_by") orderBy: string = "createdAt",
+  //   @Query("group_by") groupBy: string,
+  //   @Query("sub_group_by") subGroupBy: string,
+  //   @Req() req: RequestWithUser,
+  // ) {
+  //   if (!issueIds) {
+  //     throw new BadRequestException("Issues are required");
+  //   }
 
-    // Split the issue IDs from the string
-    const issueIdList = issueIds.split(",").filter((id) => id !== "");
+  //   const issueIdList = issueIds.split(",").filter((id) => id !== "");
 
-    try {
-      const issues = await this.issuesService.getIssuesList({
-        projectId,
-        issueIds: issueIdList,
-        orderBy,
-        groupBy,
-        subGroupBy,
-        filters: req.query,
-      });
+  //   try {
+  //     const issues = await this.issuesService.getIssuesList({
+  //       projectId,
+  //       issueIds: issueIdList,
+  //       orderBy,
+  //       groupBy,
+  //       subGroupBy,
+  //       filters: req.query,
+  //     });
 
-      //  You might want to implement a method to update recent visited task
-      // await this.issuesService.updateRecentVisitedTask(workspaceSlug, projectId, req.user.userId);
+  //     await this.issuesService.updateRecentVisitedTask(
+  //       workspaceSlug,
+  //       projectId,
+  //       req.user.userId,
+  //     );
 
-      return issues;
-    } catch (error) {
-      // Handle specific errors if needed
-      throw new BadRequestException(error.message);
-    }
-  }
+  //     return issues;
+  //   } catch (error) {
+  //     throw new BadRequestException(error.message);
+  //   }
+  // }
 }

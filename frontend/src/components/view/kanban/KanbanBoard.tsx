@@ -4,9 +4,6 @@ import React, { useEffect, useMemo } from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { Plus, Search } from "lucide-react";
 import { AlignLeft, Clock, Circle, CheckCircle2, XCircle } from "lucide-react";
-import { useIssueStore } from "../_stores/issueStore";
-import { useProjectStateStore } from "../_stores/projectStateStore";
-import { useProjectLabelStore } from "../_stores/projectLabelStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,7 +15,11 @@ import {
 } from "@/components/ui/select";
 import Column from "./Column";
 import IssueModal from "./IssueModal";
-import { Issue } from "../_types/kanban";
+import { Issue } from "../../../app/kanban/_types/kanban";
+import useIssueStore from "@/stores/issueStore";
+import { useProjectLabelStore } from "@/stores/projectLabelStore";
+import { useProjectStateStore } from "@/stores/projectStateStore";
+import { useParams } from "next/navigation";
 
 const stateGroups = [
   { name: "backlog", label: "Backlog", icon: AlignLeft },
@@ -34,11 +35,12 @@ export default function KanbanBoard() {
   const { labels, fetchLabels } = useProjectLabelStore();
   const [selectedIssue, setSelectedIssue] = React.useState<Issue | null>(null);
 
+  const { workspaceSlug, projectId } = useParams();
   useEffect(() => {
-    fetchIssues("project-id"); // Replace with actual project ID
-    fetchStates("project-id");
-    fetchLabels("project-id");
-  }, [fetchIssues, fetchStates, fetchLabels]);
+    fetchIssues(workspaceSlug as string, projectId as string); // Replace with actual project ID
+    fetchStates(workspaceSlug as string, projectId as string);
+    fetchLabels(workspaceSlug as string, projectId as string);
+  }, [fetchIssues, fetchStates, fetchLabels, workspaceSlug, projectId]);
 
   const columns = useMemo(() => {
     return stateGroups
@@ -74,7 +76,7 @@ export default function KanbanBoard() {
     const newState = states.find((s) => s.id === destColumn.id);
     if (!newState) return;
 
-    updateIssue(issue.id, { state: newState });
+    updateIssue(workspaceSlug as string, projectId as string, issue.id, { stateId: newState.id });
   };
 
   const handleIssueClick = (issue: Issue) => {

@@ -148,7 +148,7 @@ export class WorkspaceService {
           members: {
             create: {
               userId: userId,
-              role: "ADMIN", // The creator also gets ADMIN role in workspace_members
+              role: "OWNER", // The creator also gets ADMIN role in workspace_members
             },
           },
         },

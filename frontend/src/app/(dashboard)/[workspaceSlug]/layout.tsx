@@ -2,7 +2,7 @@ import { AppSidebar } from "@/components/workspaces/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ReactNode } from "react";
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
-import WorkspaceWrapper from "./workspace-wrapper";
+import WorkspaceWrapper from "../../../layouts/auth-layout/workspace-wrapper";
 
 const WorkspaceLayout = ({
   children,

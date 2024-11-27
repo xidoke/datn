@@ -66,7 +66,6 @@ export class WorkspaceMemberService {
         email: member.user.email,
         firstName: member.user.firstName,
         lastName: member.user.lastName,
-        displayName: `${member.user.firstName} ${member.user.lastName}`,
         avatarUrl: member.user.avatarUrl,
       },
     }));
@@ -147,6 +146,14 @@ export class WorkspaceMemberService {
     newRole: WorkspaceRole,
     currentUserId: string,
   ) {
+    if (newRole === "OWNER") {
+      throw new BadRequestException("Cannot change member role to OWNER");
+    }
+
+    if (newRole !== "ADMIN" && newRole !== "MEMBER") {
+      throw new BadRequestException("Invalid role");
+    }
+
     const workspace = await this.prisma.workspace.findUnique({
       where: { slug: workspaceSlug },
       include: { members: true },

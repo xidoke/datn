@@ -9,7 +9,7 @@ export class LabelService extends APIService {
 
   async fetchLabels(workspaceSlug: string, projectId: string): Promise<Label[]> {
     return this.get(`/workspaces/${workspaceSlug}/projects/${projectId}/labels`)
-      .then((response) => response?.data)
+      .then((response) => response?.data.data as Label[])
       .catch((error) => {
         console.error(error);
         if (error.response) {
@@ -24,7 +24,7 @@ export class LabelService extends APIService {
 
   async addLabel(workspaceSlug: string, projectId: string, label: Omit<Label, "id">): Promise<Label> {
     return this.post(`/workspaces/${workspaceSlug}/projects/${projectId}/labels`, label)
-      .then((response) => response?.data)
+      .then((response) => response?.data.data as Label)
       .catch((error) => {
         if (error.response) {
           throw new Error(error.response.data.message || "Failed to add label");
@@ -38,7 +38,7 @@ export class LabelService extends APIService {
 
   async updateLabel(workspaceSlug: string, projectId: string, labelId: string, updates: Partial<Label>): Promise<Label> {
     return this.patch(`/workspaces/${workspaceSlug}/projects/${projectId}/labels/${labelId}`, updates)
-      .then((response) => response?.data)
+      .then((response) => response?.data.data as Label)
       .catch((error) => {
         if (error.response) {
           throw new Error(error.response.data.message || "Failed to update label");

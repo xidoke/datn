@@ -161,7 +161,7 @@ model Issue {
   labels        Label[]
   comments      IssueComment[]
   FileAssets    FileAsset[]
-  priority      Int             @default(0) // 0: Low, 1: Medium, 2: High, 3: Urgent
+  priority      Int             @default(0) // 0: None, 1: Low, 2: Medium, 3: High, 4: Urgent
   dueDate       DateTime?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt

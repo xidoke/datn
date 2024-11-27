@@ -1,8 +1,8 @@
 export interface WorkspaceMember {
   id: string;
-  role: string;
   userId: string;
-  workspaceId: string;
-  createdAt: string;
-  updatedAt: string;
+  role: string;
+  workspaceSlug: string;
+  joinedAt: Date;
+  user: UserLite;
 }

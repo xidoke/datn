@@ -1,10 +1,8 @@
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
-import { AppService } from "./app.service";
 import { UserModule } from "./user/user.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { RequestLoggerMiddleware } from "./middleware/request-logger.middleware";
 import { WorkspaceModule } from "./workspace/workspace.module";
-import { CognitoService } from "./auth/cognito.service";
 import { AuthModule } from "./auth/auth.module";
 import { ProjectModule } from "./project/project.module";
 import { IssueModule } from "./issue/issue.module";
@@ -15,17 +13,19 @@ import { WorkspaceInvitationsModule } from "./workspace-invitations/workspace-in
 import { StateModule } from "./state/state.module";
 import { WorkspaceMemberModule } from "./workspace-member/workspace-member.module";
 import { PermissionModule } from "./permission/permission.module";
-import { LabelModule } from './label/label.module';
+import { LabelModule } from "./label/label.module";
 
 @Module({
   controllers: [],
-  providers: [AppService, CognitoService],
   imports: [
     ConfigModule.forRoot(),
-    UserModule,
+    // global module
     PrismaModule,
-    WorkspaceModule,
+    PermissionModule,
     AuthModule,
+    // feature modules
+    UserModule,
+    WorkspaceModule,
     ProjectModule,
     IssueModule,
     FileStorageModule,
@@ -33,7 +33,6 @@ import { LabelModule } from './label/label.module';
     WorkspaceInvitationsModule,
     StateModule,
     WorkspaceMemberModule,
-    PermissionModule,
     LabelModule,
   ],
 })

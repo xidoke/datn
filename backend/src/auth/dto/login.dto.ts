@@ -10,7 +10,7 @@ export class LoginDto {
   @IsEmail({}, { message: "Email must be a valid email address" })
   email: string;
 
-  @IsString()
+  @IsString({ message: "Password must be a string" })
   @MinLength(8, { message: "Password must be at least 8 characters long" })
   @MaxLength(99, { message: "Password must be at most 99 characters long" })
   @Matches(/[A-Z]/, {
@@ -24,5 +24,7 @@ export class LoginDto {
     message:
       "Password must contain at least one special character (@, $, !, %, *, ?, &)",
   })
+  // không chứa khoảng trắng
+  @Matches(/^[^\s]+$/, { message: "Password must not contain any spaces" })
   password: string;
 }

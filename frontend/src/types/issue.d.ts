@@ -26,6 +26,8 @@ export interface Issue {
   priority: Priority;
   assignees: IssueAssignee[];
   labels: IssueLabel[];
+  labelIds: string[];
+  fullIdentifier: string;
   startDate?: string;
   dueDate?: string;
   estimate?: number;

@@ -1,5 +1,8 @@
-// src/issues/issues.service.ts
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateIssueDto } from "./dto/create-issue.dto";
 import { UpdateIssueDto } from "./dto/update-issue.dto";
@@ -13,53 +16,85 @@ export class IssuesService {
     createIssueDto: CreateIssueDto,
     projectId: string,
     creatorId: string,
+    workspaceSlug: string,
   ) {
     const { assigneeIds, labelIds, stateId, ...issueData } = createIssueDto;
 
-    let effectiveStateId = stateId;
-
-    if (!effectiveStateId) {
-      // If no state is provided, find the default state for the project
-      const defaultState = await this.prisma.state.findFirst({
-        where: { projectId, isDefault: true },
+    return this.prisma.$transaction(async (prisma) => {
+      const project = await prisma.project.findFirst({
+        where: { id: projectId, workspace: { slug: workspaceSlug } },
+        select: { id: true, lastIssueNumber: true, token: true },
       });
 
-      if (!defaultState) {
-        throw new Error("No default state found for this project");
+      if (!project) {
+        throw new NotFoundException(
+          `Project not found in workspace ${workspaceSlug}`,
+        );
       }
 
-      effectiveStateId = defaultState.id;
-    }
+      let effectiveStateId = stateId;
+      if (!effectiveStateId) {
+        const defaultState = await prisma.state.findFirst({
+          where: { projectId, isDefault: true },
+          select: { id: true },
+        });
+        if (!defaultState) {
+          throw new BadRequestException(
+            "No default state found for this project",
+          );
+        }
+        effectiveStateId = defaultState.id;
+      }
 
-    return this.prisma.issue.create({
-      data: {
-        ...issueData,
-        projectId,
-        creatorId,
-        stateId: effectiveStateId,
-        assignees: {
-          create: assigneeIds?.map((userId) => ({ userId })) || [],
-        },
-        labels: {
-          connect: labelIds?.map((id) => ({ id })) || [],
-        },
-      },
-      include: {
-        state: true,
-        project: true,
-        creator: true,
-        assignees: {
-          include: {
-            user: true,
+      const updatedProject = await prisma.project.update({
+        where: { id: projectId },
+        data: { lastIssueNumber: { increment: 1 } },
+        select: { lastIssueNumber: true },
+      });
+
+      const newIssue = await prisma.issue.create({
+        data: {
+          ...issueData,
+          projectId,
+          creatorId,
+          stateId: effectiveStateId,
+          sequenceNumber: updatedProject.lastIssueNumber,
+          assignees: {
+            create: assigneeIds?.map((userId) => ({ userId })) || [],
+          },
+          labels: {
+            connect: labelIds?.map((id) => ({ id })) || [],
           },
         },
-        labels: true,
-      },
+        include: {
+          state: true,
+          project: true,
+          creator: true,
+          assignees: {
+            include: {
+              user: true,
+            },
+          },
+          labels: true,
+        },
+      });
+
+      return {
+        ...newIssue,
+        fullIdentifier: `${project.token}-${newIssue.sequenceNumber}`,
+      };
     });
   }
 
-  async findAll(projectId: string) {
-    return this.prisma.issue.findMany({
+  async findAll(
+    projectId: string,
+    page: number,
+    pageSize: number,
+    sortBy: string,
+    sortOrder: "asc" | "desc",
+  ) {
+    const skip = (page - 1) * pageSize;
+    const issues = await this.prisma.issue.findMany({
       where: { projectId },
       include: {
         state: true,
@@ -72,7 +107,25 @@ export class IssuesService {
         },
         labels: true,
       },
+      skip,
+      take: pageSize,
+      orderBy: { [sortBy]: sortOrder },
     });
+
+    const totalCount = await this.prisma.issue.count({ where: { projectId } });
+
+    return {
+      issues: issues.map((issue) => ({
+        ...issue,
+        fullIdentifier: `${issue.project.token}-${issue.sequenceNumber}`,
+      })),
+      pagination: {
+        totalCount,
+        page,
+        pageSize: pageSize,
+        totalPages: Math.ceil(totalCount / pageSize),
+      },
+    };
   }
 
   async findOne(id: string) {
@@ -100,13 +153,16 @@ export class IssuesService {
       throw new NotFoundException(`Issue with ID ${id} not found`);
     }
 
-    return issue;
+    return {
+      ...issue,
+      fullIdentifier: `${issue.project.token}-${issue.sequenceNumber}`,
+    };
   }
 
   async update(id: string, updateIssueDto: UpdateIssueDto) {
     const { assigneeIds, labelIds, ...issueData } = updateIssueDto;
 
-    return this.prisma.issue.update({
+    const updatedIssue = await this.prisma.issue.update({
       where: { id },
       data: {
         ...issueData,
@@ -130,6 +186,11 @@ export class IssuesService {
         labels: true,
       },
     });
+
+    return {
+      ...updatedIssue,
+      fullIdentifier: `${updatedIssue.project.token}-${updatedIssue.sequenceNumber}`,
+    };
   }
 
   async remove(id: string) {
@@ -148,33 +209,31 @@ export class IssuesService {
   }) {
     const issues = await this.prisma.issue.findMany({
       where: {
-        // workspace: { slug: workspaceSlug },
         projectId: projectId,
         id: { in: issueIds },
       },
       include: {
-        // workspace: true,
         project: true,
         state: true,
-        // parent: true,
-        assignees: true,
-        labels: true,
-        // modules: true,
-        _count: {
-          select: {
-            // links: true,
-            // attachments: true,
-            // subIssues: true,
+        assignees: {
+          include: {
+            user: true,
           },
+        },
+        labels: true,
+        _count: {
+          select: {},
         },
       },
       orderBy: this.getOrderBy(orderBy),
     });
 
-    // Apply filters
-    const filteredIssues = this.applyFilters(issues, filters);
+    const issuesWithFullIdentifier = issues.map((issue) => ({
+      ...issue,
+      fullIdentifier: `${issue.project.token}-${issue.sequenceNumber}`,
+    }));
 
-    // Apply grouping
+    const filteredIssues = this.applyFilters(issuesWithFullIdentifier, filters);
     const groupedIssues = this.applyGrouping(
       filteredIssues,
       groupBy,
@@ -191,7 +250,6 @@ export class IssuesService {
 
   private applyFilters(issues, filters) {
     // Implement filter logic here
-    // Example:
     if (filters.state) {
       return issues.filter((issue) => issue.state.id === filters.state);
     }
@@ -222,5 +280,17 @@ export class IssuesService {
     }
 
     return groupedIssues;
+  }
+
+  async updateRecentVisitedTask(
+    workspaceSlug: string,
+    projectId: string,
+    userId: string,
+  ) {
+    // Implement logic to update recent visited task
+    // This could involve updating a user's metadata or a separate table tracking recent activities
+    console.log(
+      `Updating recent visited task for user ${userId} in project ${projectId} of workspace ${workspaceSlug}`,
+    );
   }
 }

@@ -1,15 +1,21 @@
+"use client";
 import React, { useState } from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { Calendar, PlusCircle, Tag } from "lucide-react";
-import { Issue, Label } from "../_types/kanban";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
-import { useProjectLabelStore } from "../_stores/projectLabelStore";
-import { useIssueStore } from "../_stores/issueStore";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useProjectLabelStore } from "../../../app/kanban/_stores/projectLabelStore";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import useIssueStore from "@/stores/issueStore";
+import { Issue, Label } from "@/types";
+import { useParams } from "next/navigation";
 
 interface IssueCardProps {
   issue: Issue;
@@ -21,6 +27,7 @@ export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
   const { labels: projectLabels } = useProjectLabelStore();
   const { updateIssue } = useIssueStore();
   const [isLabelPopoverOpen, setIsLabelPopoverOpen] = useState(false);
+  const { workspaceSlug, projectId } = useParams();
 
   const handleLabelToggle = (e: React.MouseEvent, label: Label) => {
     e.stopPropagation();
@@ -28,7 +35,9 @@ export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
       ? issue.labels.filter((l) => l.id !== label.id)
       : [...(issue.labels || []), label];
 
-    updateIssue(issue.id, { labels: updatedLabels });
+    updateIssue(workspaceSlug as string, projectId as string, issue.id, {
+      labelIds: updatedLabels.map((l) => l.id),
+    });
   };
 
   const handleLabelClick = (e: React.MouseEvent) => {
@@ -53,7 +62,7 @@ export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
           <div className="space-y-2">
             <div className="flex items-start justify-between gap-2">
               <span className="text-xs font-medium text-gray-400">
-                {issue.id}
+                {issue.fullIdentifier}
               </span>
               {issue.assignee && (
                 <Avatar className="h-5 w-5 border-2 border-gray-800 group-hover:border-gray-700">
@@ -143,7 +152,18 @@ export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
             <div className="flex items-center gap-2 text-xs text-gray-400">
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
-                <span>{new Date(issue.updatedAt).toLocaleDateString()}</span>
+                {
+                  <span>
+                    {issue.startDate &&
+                      new Date(issue.startDate).toLocaleDateString()}
+                    {issue.startDate &&
+                      issue.dueDate &&
+                      " - " + new Date(issue.dueDate).toLocaleDateString()}
+                  </span>
+                }
+                <span>
+                  updated: {new Date(issue.updatedAt).toLocaleDateString()}
+                </span>
               </div>
             </div>
           </div>

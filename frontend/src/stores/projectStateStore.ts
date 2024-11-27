@@ -3,6 +3,17 @@ import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { StateService } from "@/services/state.service";
 
+
+interface ProjectState {
+  states: State[];
+  isLoading: boolean;
+}
+
+// init value
+const initialState: ProjectState = {
+  states: [],
+  isLoading: false,
+};
 interface ProjectStateStore {
   states: State[];
   isLoading: boolean;
@@ -11,6 +22,7 @@ interface ProjectStateStore {
   updateState: (workspaceSlug: string, projectId: string, id: string, updates: Partial<State>) => Promise<void>;
   deleteState: (workspaceSlug: string, projectId: string, id: string) => Promise<void>;
   setDefaultState: (workspaceSlug: string, projectId: string, id: string) => Promise<void>;
+  reset: () => void;
 }
 
 const stateService = new StateService();
@@ -19,8 +31,9 @@ export const useProjectStateStore = create<ProjectStateStore>()(
   devtools(
     persist(
       (set, get) => ({
-        states: [],
-        isLoading: false,
+        ...initialState,
+
+        reset: () => set(initialState),
 
         fetchStates: async (workspaceSlug: string, projectId: string) => {
           set({ isLoading: true });

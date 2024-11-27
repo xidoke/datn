@@ -1,11 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from "@/lib/api/api-client";
 import { Workspace } from "@/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useUserStore } from "./userStore";
+import { WorkspaceService } from "@/services/workspace.service";
 
 interface WorkspaceState {
   loader: boolean;
+  error: string | undefined;
+  totalCount: number | undefined;
   workspaces: Workspace[] | undefined;
   currentWorkspace: Workspace | undefined;
   workspacesCreatedByCurrentUser: Workspace[] | undefined;
@@ -36,24 +40,27 @@ type WorkspaceStore = WorkspaceState & WorkspaceActions;
 
 const initialState: WorkspaceState = {
   loader: false,
+  totalCount: undefined,
   workspaces: undefined,
+  error: undefined,
   currentWorkspace: undefined,
   workspacesCreatedByCurrentUser: undefined,
 };
 
+const workspaceService = new WorkspaceService();
 export const useWorkspaceStore = create<WorkspaceStore>()(
   persist(
     (set, get) => ({
       ...initialState,
       fetchWorkspaces: async () => {
-        set({ loader: true });
+        set({ loader: true, error: undefined });
         try {
-          const response: { workspaces: Workspace[]; totalCount: number } =
-            await apiClient.get("workspaces");
-          set({ workspaces: response.workspaces, loader: false });
-          return response.workspaces;
-        } catch (error) {
-          set({ loader: false });
+          const result = await workspaceService.fetchUserWorkspaces();
+          const { workspaces, totalCount } = result.data;
+          set({ workspaces: workspaces, loader: false, totalCount });
+          return workspaces;
+        } catch (error : any) {
+          set({ loader: false, error: error.message });
           throw error;
         }
       },

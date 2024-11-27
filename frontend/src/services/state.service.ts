@@ -9,7 +9,7 @@ export class StateService extends APIService {
 
   async fetchStates(workspaceSlug: string, projectId: string): Promise<State[]> {
     return this.get(`/workspaces/${workspaceSlug}/projects/${projectId}/states`)
-      .then((response) => response?.data)
+      .then((response) => response?.data.data as State[])
       .catch((error) => {
         console.error(error);
         if (error.response) {
@@ -24,7 +24,7 @@ export class StateService extends APIService {
 
   async addState(workspaceSlug: string, projectId: string, state: Omit<State, "id">): Promise<State> {
     return this.post(`/workspaces/${workspaceSlug}/projects/${projectId}/states`, state)
-      .then((response) => response?.data)
+      .then((response) => response?.data.data as State)
       .catch((error) => {
         if (error.response) {
           throw new Error(error.response.data.message || "Failed to add state");
@@ -38,7 +38,7 @@ export class StateService extends APIService {
 
   async updateState(workspaceSlug: string, projectId: string, stateId: string, updates: Partial<State>): Promise<State> {
     return this.patch(`/workspaces/${workspaceSlug}/projects/${projectId}/states/${stateId}`, updates)
-      .then((response) => response?.data)
+      .then((response) => response?.data.data as State)
       .catch((error) => {
         if (error.response) {
           throw new Error(error.response.data.message || "Failed to update state");
@@ -66,7 +66,7 @@ export class StateService extends APIService {
 
   async setDefaultState(workspaceSlug: string, projectId: string, stateId: string): Promise<State> {
     return this.patch(`/workspaces/${workspaceSlug}/projects/${projectId}/states/${stateId}/set-default`)
-      .then((response) => response?.data)
+      .then((response) => response?.data.data as State)
       .catch((error) => {
         if (error.response) {
           throw new Error(error.response.data.message || "Failed to set default state");

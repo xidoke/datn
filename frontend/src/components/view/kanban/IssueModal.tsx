@@ -1,6 +1,5 @@
 import React from "react";
 import { X } from "lucide-react";
-import { Issue } from "../_types/kanban";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Issue } from "@/types";
 
 interface IssueModalProps {
   issue: Issue;
@@ -37,16 +37,16 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
           <div className="space-y-2">
             <div>
               <span className="font-medium">Assignee:</span>
-              {issue.assignee && (
+              {issue?.assignees && (
                 <div className="mt-1 flex space-x-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage
                       src="/placeholder.svg?height=32&width=32"
-                      alt={issue.assignee}
+                      alt={issue.assignees[0]?.name}
                     />
-                    <AvatarFallback>{issue.assignee[0]}</AvatarFallback>
+                    <AvatarFallback>{issue.assignees[0]?.avatar}</AvatarFallback>
                   </Avatar>
-                  <span>{issue.assignee}</span>
+                  <span>{issue.assignees[0]?.name}</span>
                 </div>
               )}
             </div>

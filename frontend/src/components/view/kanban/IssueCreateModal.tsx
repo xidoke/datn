@@ -22,10 +22,10 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { useIssueStore } from "../_stores/issueStore";
-import { useProjectStateStore } from "../_stores/projectStateStore";
-import { useProjectLabelStore } from "../_stores/projectLabelStore";
-import { State, Label as LabelType } from "../_types/kanban";
+import { useIssueStore } from "../../../app/kanban/_stores/issueStore";
+import { useProjectStateStore } from "../../../app/kanban/_stores/projectStateStore";
+import { useProjectLabelStore } from "../../../app/kanban/_stores/projectLabelStore";
+import { State, Label as LabelType } from "../../../app/kanban/_types/kanban";
 import { LabelSelect } from "./LabelSelect";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -237,4 +237,3 @@ export default function IssueCreateModal({
     </Dialog>
   );
 }
-

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Droppable } from 'react-beautiful-dnd'
 import { MoreHorizontal, Plus } from 'lucide-react'
-import { Column as ColumnType, Issue, State } from '../_types/kanban'
+import { Column as ColumnType, Issue, State } from '../../../app/kanban/_types/kanban'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,

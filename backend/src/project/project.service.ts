@@ -5,74 +5,96 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateProjectDto } from "./dto/create-project.dto";
+import { Project } from "@prisma/client";
 
 @Injectable()
 export class ProjectService {
   constructor(private prisma: PrismaService) {}
 
-  async createProject(data: CreateProjectDto, workspaceSlug: string) {
-    return this.prisma.$transaction(async (prisma) => {
-      const project = await prisma.project.create({
-        data: {
-          ...data,
-          workspace: { connect: { slug: workspaceSlug } },
-        },
-        include: {
-          workspace: true,
+  private generateToken(): string {
+    return Math.random().toString(36).substring(2, 7).toUpperCase();
+  }
+
+  private getDefaultStates() {
+    return [
+      {
+        name: "Backlog",
+        color: "#9333ea",
+        group: "backlog",
+        description: "Initial state for new issues",
+        isDefault: true,
+      },
+      {
+        name: "Todo",
+        color: "#3b82f6",
+        group: "unstarted",
+        description: "Issues to be worked on",
+        isDefault: false,
+      },
+      {
+        name: "In Progress",
+        color: "#eab308",
+        group: "started",
+        description: "Issues currently being worked on",
+        isDefault: false,
+      },
+      {
+        name: "Done",
+        color: "#22c55e",
+        group: "completed",
+        description: "Completed issues",
+        isDefault: false,
+      },
+      {
+        name: "Cancelled",
+        color: "#ef4444",
+        group: "cancelled",
+        description: "Cancelled or abandoned issues",
+        isDefault: false,
+      },
+    ];
+  }
+
+  async createProject(
+    workspaceSlug: string,
+    data: CreateProjectDto,
+  ): Promise<Project> {
+    let token: string;
+    let isUnique = false;
+
+    while (!isUnique) {
+      token = this.generateToken();
+      const existingProject = await this.prisma.project.findFirst({
+        where: {
+          token,
+          workspace: { slug: workspaceSlug },
         },
       });
+      isUnique = !existingProject;
+    }
 
-      const defaultStates = [
-        {
-          name: "Backlog",
-          color: "#9333ea",
-          group: "backlog",
-          description: "Initial state for new issues",
-          isDefault: true,
-        },
-        {
-          name: "Todo",
-          color: "#3b82f6",
-          group: "unstarted",
-          description: "Issues to be worked on",
-          isDefault: false,
-        },
-        {
-          name: "In Progress",
-          color: "#eab308",
-          group: "started",
-          description: "Issues currently being worked on",
-          isDefault: false,
-        },
-        {
-          name: "Done",
-          color: "#22c55e",
-          group: "completed",
-          description: "Completed issues",
-          isDefault: false,
-        },
-        {
-          name: "Cancelled",
-          color: "#ef4444",
-          group: "cancelled",
-          description: "Cancelled or abandoned issues",
-          isDefault: false,
-        },
-      ];
+    const defaultStates = this.getDefaultStates();
 
-      await prisma.state.createMany({
-        data: defaultStates.map((state) => ({
-          ...state,
-          projectId: project.id,
-        })),
-      });
-
-      // Fetch the created states to include in the response
-      const states = await prisma.state.findMany({
-        where: { projectId: project.id },
-      });
-
-      return { ...project, states };
+    return this.prisma.project.create({
+      data: {
+        ...data,
+        workspace: {
+          connect: { slug: workspaceSlug },
+        },
+        token,
+        states: {
+          create: defaultStates,
+        },
+      },
+      include: {
+        states: true,
+        workspace: true,
+        _count: {
+          select: {
+            issues: true,
+          },
+        },
+      },
     });
   }
 

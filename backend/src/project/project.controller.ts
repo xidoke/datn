@@ -30,7 +30,7 @@ export class ProjectController {
     @Body() createProjectDto: CreateProjectDto,
   ) {
     try {
-      return this.projectService.createProject(createProjectDto, workspaceSlug);
+      return this.projectService.createProject(workspaceSlug, createProjectDto);
     } catch (error) {
       console.error("Failed to create project:", error);
       throw error;
@@ -38,6 +38,7 @@ export class ProjectController {
   }
 
   @Get()
+  @Permissions(WorkspacePermission.VIEW_PROJECT)
   findAll(
     @Param("workspaceSlug") workspaceSlug: string,
     @Req() req: RequestWithUser,
@@ -46,6 +47,7 @@ export class ProjectController {
   }
 
   @Get(":id")
+  @Permissions(WorkspacePermission.VIEW_PROJECT)
   findOne(
     @Param("workspaceSlug") workspaceSlug: string,
     @Param("id") id: string,
@@ -55,6 +57,7 @@ export class ProjectController {
   }
 
   @Patch(":id")
+  @Permissions(WorkspacePermission.UPDATE_PROJECT)
   update(
     @Param("workspaceSlug") workspaceSlug: string,
     @Param("id") id: string,
@@ -70,6 +73,7 @@ export class ProjectController {
   }
 
   @Delete(":id")
+  @Permissions(WorkspacePermission.DELETE_PROJECT)
   remove(
     @Param("workspaceSlug") workspaceSlug: string,
     @Param("id") id: string,
