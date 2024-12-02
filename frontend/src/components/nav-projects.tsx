@@ -8,6 +8,7 @@ import {
   Folder,
   Layout,
   Settings,
+  RefreshCcw,
 } from "lucide-react";
 import { useProjectStore } from "@/stores/projectStore";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,10 @@ import {
 import { cn } from "@/lib/utils";
 import { CreateProjectDialog } from "./projects/create-project-dialog";
 
-const projectSubItems = [{ name: "Issues", icon: Layout, href: "issues" }];
+const projectSubItems = [
+  { name: "Issues", icon: Layout, href: "issues" },
+  { name: "Cycles", icon: RefreshCcw, href: "cycles" },
+];
 
 const expandedSubItems = [
   { name: "Settings", icon: Settings, href: "settings" },

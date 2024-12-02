@@ -14,6 +14,7 @@ interface ProjectLabelStore {
   labels: Label[];
   isLoading: boolean;
   fetchLabels: (workspaceSlug: string, projectId: string) => Promise<void>;
+  getLabelById: (id: string) => Label | undefined;
   addLabel: (workspaceSlug: string, projectId: string, label: Omit<Label, "id">) => Promise<void>;
   updateLabel: (workspaceSlug: string, projectId: string, id: string, updates: Partial<Label>) => Promise<void>;
   deleteLabel: (workspaceSlug: string, projectId: string, id: string) => Promise<void>;
@@ -44,6 +45,7 @@ export const useProjectLabelStore = create<ProjectLabelStore>()(
             set({ isLoading: false });
           }
         },
+        getLabelById: (id: string) => get().labels.find((label) => label.id === id),
         reset: () => set(initialState),
 
         addLabel: async (workspaceSlug: string, projectId: string, label: Omit<Label, "id">) => {

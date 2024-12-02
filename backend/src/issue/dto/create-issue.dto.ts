@@ -8,9 +8,11 @@ import {
   Min,
   IsDate,
   IsDateString,
+  MinLength,
 } from "class-validator";
 export class CreateIssueDto {
   @IsString()
+  @MinLength(1)
   title: string;
 
   @IsString()

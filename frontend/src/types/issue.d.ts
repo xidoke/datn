@@ -1,5 +1,5 @@
-export type Priority = "urgent" | "high" | "medium" | "low" | "none";
-
+// Define the priority types
+type TIssuePriorities = '0' | '1' | '2' | '3' | '4';
 export interface IssueLabel {
   id: string;
   name: string;
@@ -12,32 +12,37 @@ export interface IssueAssignee {
   avatar?: string;
 }
 
-export interface Issue {
+
+interface Issue {
   id: string;
-  projectId: string;
   title: string;
-  description: string;
+  description?: string;
+  fullIdentifier: string;
+  sequenceNumber: number;
+  project: {
+  title: string;
+  description?: string;
+  stateId: string;
+  state: State;
+    id: string;
+    name: string;
+    token: string;
+  };
+  stateId: string;
   state: {
     id: string;
     name: string;
     color: string;
     group: string;
   };
-  priority: Priority;
-  assignees: IssueAssignee[];
-  labels: IssueLabel[];
+  creator: User;
+  assignees: User[];
   labelIds: string[];
-  fullIdentifier: string;
-  startDate?: string;
+  labels: Label[];
+  priority: number;
   dueDate?: string;
-  estimate?: number;
-  parentId?: string;
-  moduleId?: string;
-  cycleId?: string;
   createdAt: string;
   updatedAt: string;
-  createdBy: string;
-  order: number;
 }
 
 export interface IssueFilters {
@@ -61,3 +66,14 @@ export type OrderBy =
   | "startDate"
   | "dueDate"
   | "createdAt";
+
+  export interface Column {
+  id: string;
+  title: string;
+  issues: Issue[];
+  icon: React.ComponentType<{ className: string, style: object }>;
+}
+
+export interface Board {
+  columns: Column[];
+}

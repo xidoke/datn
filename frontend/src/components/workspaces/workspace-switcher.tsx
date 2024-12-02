@@ -30,15 +30,9 @@ import Image from "next/image";
 import { API_BASE_URL } from "@/helpers/common.helper";
 
 export function WorkspaceSwitcher() {
-  const { workspaces, currentWorkspace, setCurrentWorkspace } = useWorkspace();
+  const { workspaces} = useWorkspace();
   const { workspaceSlug } = useParams();
-  if (
-    workspaceSlug &&
-    workspaceSlug !== currentWorkspace?.slug &&
-    workspaces?.some((w) => w.slug === workspaceSlug)
-  ) {
-    setCurrentWorkspace(workspaceSlug as string);
-  }
+  const currentWorkspace = workspaces?.find((w) => w.slug === workspaceSlug);
   const router = useAppRouter();
 
   const handleAddWorkspace = React.useCallback(() => {

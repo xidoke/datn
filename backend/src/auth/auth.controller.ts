@@ -20,20 +20,46 @@ export class AuthController {
   @Post("register")
   @HttpCode(HttpStatus.CREATED)
   @ResponseMessage("Registration successful")
-  async register(@Body() createUserDto: CreateUserDto) {
+  async register(@Body() createUserDto: CreateUserDto,
+ @Res({ passthrough: true }) response: Response,) {
     const user = await this.authService.create(createUserDto);
     if (!user || !user.id) {
       throw new HttpException("Registration failed", HttpStatus.BAD_REQUEST);
     }
 
     try {
-      const loginResult = await this.authService.login({
+      const result = await this.authService.login({
         email: createUserDto.email,
         password: createUserDto.password,
       });
 
+      // Set access token in HTTP-only cookie
+    response.cookie("access_token", result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== "development",
+      sameSite: "none",
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    // Set refresh token in HTTP-only cookie (if available)
+    if (result.refreshToken) {
+      response.cookie(
+        "refresh_token",
+        JSON.stringify({
+          token: result.refreshToken,
+          username: result.user.cognitoId,
+        }),
+        {
+          httpOnly: true,
+          secure: process.env.NODE_ENV !== "development",
+          sameSite: "none",
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        },
+      );
+    }
+
       return {
-        user: loginResult.user,
+        user: result.user,
       };
     } catch {
       throw new HttpException(

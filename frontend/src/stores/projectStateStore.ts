@@ -17,6 +17,7 @@ const initialState: ProjectState = {
 interface ProjectStateStore {
   states: State[];
   isLoading: boolean;
+  getStateById: (id: string) => State | undefined;
   fetchStates: (workspaceSlug: string, projectId: string) => Promise<void>;
   addState: (workspaceSlug: string, projectId: string, state: Omit<State, "id">) => Promise<void>;
   updateState: (workspaceSlug: string, projectId: string, id: string, updates: Partial<State>) => Promise<void>;
@@ -48,6 +49,7 @@ export const useProjectStateStore = create<ProjectStateStore>()(
           }
         },
 
+        getStateById: (id: string) => get().states.find((state) => state.id === id),
         addState: async (workspaceSlug: string, projectId: string, state: Omit<State, "id">) => {
           try {
             const newState = await stateService.addState(workspaceSlug, projectId, state);

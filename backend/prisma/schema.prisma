@@ -126,6 +126,21 @@ model WorkspaceMember {
   @@map("workspace_members")
 }
 
+model Cycle {
+  id            String    @id @default(uuid())
+  name          String
+  description   String?
+  startDate     DateTime
+  dueDate       DateTime
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId     String
+  issues        Issue[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([projectId])
+  @@map("cycles")
+}
 
 model Project {
   id            String          @id @default(uuid())
@@ -138,6 +153,7 @@ model Project {
   states        State[]  
   labels        Label[] 
   FileAssets FileAsset[]
+  cycles          Cycle[]
   lastIssueNumber Int     @default(0)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -155,6 +171,8 @@ model Issue {
   stateId       String? // tạm thời để optional
   project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade) 
   projectId     String
+  cycle         Cycle?    @relation(fields: [cycleId], references: [id])
+  cycleId       String?
   creator       User           @relation("CreatedIssues", fields: [creatorId], references: [id])
   creatorId     String
   assignees     IssueAssignee[]
@@ -172,6 +190,7 @@ model Issue {
   @@index([creatorId])
   @@index([priority])
   @@index([dueDate])
+  @@index([cycleId])
   @@map("issues")
 }
 
@@ -203,7 +222,7 @@ model Label {
   name        String
   color       String
   projectId   String
-  project     Project  @relation(fields: [projectId], references: [id])
+  project     Project  @relation(fields: [projectId], references: [id] , onDelete: Cascade)
   issues      Issue[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -220,7 +239,7 @@ model State {
   description String?
   isDefault   Boolean  @default(false)
   projectId   String
-  project     Project  @relation(fields: [projectId], references: [id])
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   issues      Issue[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

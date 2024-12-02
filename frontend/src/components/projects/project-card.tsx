@@ -44,7 +44,7 @@ export function ProjectCard({
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
-            <PlaceholderImage width={280} height={140} />
+            <PlaceholderImage width={270} height={140} />
           )}
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-transparent p-4">
             <div className="flex items-center gap-2">

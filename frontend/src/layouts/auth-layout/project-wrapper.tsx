@@ -16,6 +16,8 @@ import { useUser } from "@/stores/userStore";
 import { Project, Workspace, User } from "@/types";
 import { useProjectLabelStore } from "@/stores/projectLabelStore";
 import { useProjectStateStore } from "@/stores/projectStateStore";
+import { useCycle } from "framer-motion";
+import { useCycleStore } from "@/stores/cycleStore";
 
 interface ProjectWrapperProps {
   children: ReactNode;
@@ -28,6 +30,7 @@ export const ProjectWrapper: FC<ProjectWrapperProps> = ({ children }) => {
   const { fetchCurrentUser } = useUser();
   const { fetchLabels } = useProjectLabelStore();
   const { fetchStates } = useProjectStateStore();
+  const { fetchCycles } = useCycleStore();
 
   const { data: projectData, error: projectError } = useSWR<Project>(
     workspaceSlug && projectId
@@ -63,6 +66,14 @@ export const ProjectWrapper: FC<ProjectWrapperProps> = ({ children }) => {
       ? `PROJECT_STATE_${workspaceSlug}_${projectId}`
       : null,
     () => fetchStates(workspaceSlug as string, projectId as string),
+  );
+
+  // fetch cycles for the project
+  useSWR(
+    workspaceSlug && projectId
+      ? `PROJECT_CYCLES_${workspaceSlug}_${projectId}`
+      : null,
+    () => fetchCycles(workspaceSlug as string, projectId as string),
   );
   
 

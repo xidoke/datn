@@ -20,16 +20,6 @@ import { ModeToggle } from "../mode-toggle";
 // This is sample data.
 const data = {
   navMain: [
-    // {
-    //   title: "Search",
-    //   url: "/search",
-    //   icon: Search,
-    // },
-    {
-      title: "Ask AI",
-      url: "/ai",
-      icon: Sparkles,
-    },
     {
       title: "Home",
       url: "",
@@ -41,12 +31,6 @@ const data = {
       url: "projects",
       icon: Projector,
       // isActive: true,
-    },
-    {
-      title: "Inbox",
-      url: "/inbox",
-      icon: Inbox,
-      badge: "10",
     },
   ],
   favorites: [

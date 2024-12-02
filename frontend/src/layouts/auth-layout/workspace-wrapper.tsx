@@ -23,14 +23,14 @@ const WorkspaceWrapper: React.FC<WorkspaceWrapperProps> = ({ children }) => {
     workspaces = [],
     loader: workspacesLoading,
     fetchWorkspaces,
-    currentWorkspace,
-    setCurrentWorkspace,
   } = useWorkspace();
   const {
     lastWorkspaceSlug,
     updateLastWorkspaceSlug,
     isLoading: userLoading,
   } = useUser();
+
+  const currentWorkspace = workspaces.find((w) => w.slug === workspaceSlug);
   const { fetchProjects } = useProject();
 
   const { fetchWorkspaceMembers } = useMemberStore();
@@ -76,7 +76,6 @@ const WorkspaceWrapper: React.FC<WorkspaceWrapperProps> = ({ children }) => {
           // Don't redirect, show the "Workspace not found" UI instead
           return;
         }
-        setCurrentWorkspace(urlWorkspaceSlug);
         await updateLastWorkspaceSlug(urlWorkspaceSlug);
         return;
       }
@@ -88,7 +87,6 @@ const WorkspaceWrapper: React.FC<WorkspaceWrapperProps> = ({ children }) => {
             (w) => w.slug === lastWorkspaceSlug,
           );
           if (workspaceExists) {
-            setCurrentWorkspace(lastWorkspaceSlug);
             router.push(`/${lastWorkspaceSlug}`);
             return;
           }
@@ -96,7 +94,6 @@ const WorkspaceWrapper: React.FC<WorkspaceWrapperProps> = ({ children }) => {
 
         if (workspaces.length > 0) {
           const newWorkspaceSlug = workspaces[0].slug;
-          setCurrentWorkspace(newWorkspaceSlug);
           await updateLastWorkspaceSlug(newWorkspaceSlug);
           router.push(`/${newWorkspaceSlug}`);
           return;
@@ -113,7 +110,6 @@ const WorkspaceWrapper: React.FC<WorkspaceWrapperProps> = ({ children }) => {
     currentWorkspace,
     lastWorkspaceSlug,
     workspaces,
-    setCurrentWorkspace,
     updateLastWorkspaceSlug,
     workspacesLoading,
     userLoading,

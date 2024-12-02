@@ -15,8 +15,8 @@ export class WorkspaceService extends APIService {
       });
   }
 
-  async userWorkspaceInvitations(): Promise<InvitationsResponse> {
-    return this.get("/users/me/invitations?status=PENDING")
+  async userWorkspaceInvitations(): Promise<ApiResponse<InvitationsResponse>> {
+    return this.get<InvitationsResponse>("/users/me/invitations?status=PENDING")
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;
@@ -39,5 +39,12 @@ export class WorkspaceService extends APIService {
       });
   }
 
+  async getWorkspaceDashboard(workspaceSlug: string) {
+    return this.get(`/workspaces/${workspaceSlug}/dashboard`)
+      .then((response) => response?.data.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
 
 }

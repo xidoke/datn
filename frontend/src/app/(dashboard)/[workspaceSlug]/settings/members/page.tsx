@@ -39,6 +39,7 @@ import { useUser } from "@/stores/userStore";
 import { useMemberStore } from "@/stores/member/memberStore";
 import { API_BASE_URL } from "@/helpers/common.helper";
 import { hasPermission } from "@/helpers/permission";
+import { useParams } from "next/navigation";
 
 export default function MembersPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,12 +47,14 @@ export default function MembersPage() {
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const { toast } = useToast();
   const {
-    currentWorkspace,
+    getWorkspaceBySlug
     // leaveWorkspace, // TODO: Implement this function
   } = useWorkspace();
 
   const leaveWorkspace = (...agvs: string[]) => {};
 
+  const { workspaceSlug } = useParams();
+  const currentWorkspace = getWorkspaceBySlug(workspaceSlug as string)
   const { inviteMember, updateMemberRole, removeMember } = useMemberStore();
   const userPermission = currentWorkspace ? currentWorkspace.permissions : [];
   const { workspaceMemberMap, workspaceMemberIds } = useMemberStore();

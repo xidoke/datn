@@ -4,6 +4,9 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useWorkspace } from "@/stores/workspaceStore";
+import { hasPermission } from "@/helpers/permission";
 
 interface WorkspaceLogoProps {
   logoUrl: string | null;
@@ -20,7 +23,13 @@ export default function WorkspaceLogo({
 }: WorkspaceLogoProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const { workspaceSlug } = useParams();
 
+  const { workspaces } = useWorkspace();
+  const currentWorkspace = (workspaces ?? []).find(
+    (w) => w.slug === workspaceSlug,
+  );
+  const permissions = currentWorkspace?.permissions || [];
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     setError(null);
@@ -63,7 +72,7 @@ export default function WorkspaceLogo({
         <Button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          disabled={isLoading}
+          disabled={!hasPermission(permissions, "UPDATE_WORKSPACE") || isLoading}
           variant="secondary"
         >
           <Upload className="mr-2 h-4 w-4" />

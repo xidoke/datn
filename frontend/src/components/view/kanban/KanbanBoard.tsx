@@ -15,11 +15,11 @@ import {
 } from "@/components/ui/select";
 import Column from "./Column";
 import IssueModal from "./IssueModal";
-import { Issue } from "../../../app/kanban/_types/kanban";
 import useIssueStore from "@/stores/issueStore";
 import { useProjectLabelStore } from "@/stores/projectLabelStore";
 import { useProjectStateStore } from "@/stores/projectStateStore";
 import { useParams } from "next/navigation";
+import { Issue } from "@/types";
 
 const stateGroups = [
   { name: "backlog", label: "Backlog", icon: AlignLeft },
@@ -51,7 +51,7 @@ export default function KanbanBoard() {
         return groupStates.map((state) => ({
           ...state,
           icon: group.icon,
-          issues: issues.filter((issue) => issue.state.id === state.id),
+          issues: issues.filter((issue) => issue.state?.id === state.id),
           state, // Add the state object to pass to Column
         }));
       })
@@ -76,7 +76,9 @@ export default function KanbanBoard() {
     const newState = states.find((s) => s.id === destColumn.id);
     if (!newState) return;
 
-    updateIssue(workspaceSlug as string, projectId as string, issue.id, { stateId: newState.id });
+    updateIssue(workspaceSlug as string, projectId as string, issue.id, {
+      stateId: newState.id,
+    });
   };
 
   const handleIssueClick = (issue: Issue) => {
@@ -88,19 +90,16 @@ export default function KanbanBoard() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-gray-900">
-      <div className="flex items-center justify-between border-b border-gray-800 px-4 py-2">
+    <div className="flex h-screen flex-col">
+      <div className="flex items-center justify-end px-4 py-2">
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input
-              className="w-64 border-gray-700 bg-gray-800 pl-8 text-sm"
-              placeholder="Tìm kiếm công việc..."
-            />
+            <Input className="w-64 pl-8 text-sm" placeholder="Search..." />
           </div>
           <Select>
-            <SelectTrigger className="w-[180px] border-gray-700 bg-gray-800 text-sm">
-              <SelectValue placeholder="Lọc theo nhãn" />
+            <SelectTrigger className="w-[180px] text-sm">
+              <SelectValue placeholder="Filter" />
             </SelectTrigger>
             <SelectContent>
               {labels.map((label) => (
@@ -111,10 +110,6 @@ export default function KanbanBoard() {
             </SelectContent>
           </Select>
         </div>
-        <Button size="sm">
-          <Plus className="mr-1 h-4 w-4" />
-          Thêm công việc
-        </Button>
       </div>
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex-1 overflow-x-auto">

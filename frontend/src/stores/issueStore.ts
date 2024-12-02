@@ -1,29 +1,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import { Label, State, User } from '@/types';
+import { Issue, Label, State, User } from '@/types';
 import { apiClient } from '@/lib/api/api-client';
-
-interface Issue {
-  id: string;
-  sequenceNumber: number;
-  title: string;
-  description?: string;
-  stateId: string;
-  state: State;
-  project: {
-    id: string;
-    name: string;
-    token: string;
-  };
-  creator: User;
-  assignees: User[];
-  labels: Label[];
-  priority: number;
-  dueDate?: string;
-  createdAt: string;
-  updatedAt: string;
-  fullIdentifier: string;
-}
 
 interface PaginationInfo {
   page: number;
@@ -65,25 +43,31 @@ interface IssueStore {
   deleteIssue: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
   setFilters: (filters: IssueFilters) => void;
   setGrouping: (groupBy: string | null, subGroupBy: string | null) => void;
+  reset: () => void;
 }
 
+const initialState  = {
+   issues: [],
+  isLoading: false,
+  error: null,
+  pagination: {
+    page: 1,
+    pageSize: 20,
+    totalCount: 0,
+    totalPages: 0,
+  },
+  filters: {
+  },
+  groupBy: null,
+  subGroupBy: null,
+};
 const useIssueStore = create<IssueStore>()(
   devtools(
     persist(
     (set, get) => ({
-      issues: [],
-      isLoading: false,
-      error: null,
-      pagination: {
-        page: 1,
-        pageSize: 20,
-        totalCount: 0,
-        totalPages: 0,
-      },
-      filters: {},
-      groupBy: null,
-      subGroupBy: null,
+      ...initialState,
 
+      reset: () => set(initialState),
       fetchIssues: async (workspaceSlug, projectId, page = 1, pageSize = 20) => {
         set({ isLoading: true, error: null });
         try {

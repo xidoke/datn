@@ -115,4 +115,13 @@ export class WorkspaceController {
   ) {
     return this.workspaceService.updateWorkspaceLogo(slug, logo);
   }
+
+  @Get(":slug/dashboard")
+  async getWorkspaceDashboard(@Param("slug") slug: string,
+  @Req() req: RequestWithUser,
+) {
+    return this.workspaceService.getWorkspaceDashboard(slug, req.user.userId);
+  }
+
+
 }

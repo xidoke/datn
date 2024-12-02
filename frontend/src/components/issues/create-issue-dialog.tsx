@@ -16,23 +16,31 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useProjectLabelStore } from "@/stores/projectLabelStore";
 import { useProjectStateStore } from "@/stores/projectStateStore";
 import { toast } from "@/hooks/use-toast";
+import { StateDropdown } from "../dropdown/state";
+import { PriorityDropdown } from "../dropdown/priority";
+import { TIssuePriorities } from "@/types";
+import { LabelDropdown } from "../dropdown/label";
 
 interface CreateIssueDialogProps {
   children?: React.ReactNode;
   stateId?: string;
 }
 
-export function CreateIssueDialog({ stateId, children }: CreateIssueDialogProps) {
+interface FormData {
+  title: string;
+  description: string;
+  priority: number;
+  stateId: string;
+  dueDate?: string;
+  labelIds?: string[];
+}
+
+export function CreateIssueDialog({
+  stateId,
+  children,
+}: CreateIssueDialogProps) {
   const { createIssue } = useIssueStore();
   // const { labels } = useProjectLabelStore();
   const { states } = useProjectStateStore();
@@ -44,11 +52,12 @@ export function CreateIssueDialog({ stateId, children }: CreateIssueDialogProps)
   const [open, setOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = React.useState<FormData>({
     title: "",
     description: "",
-    priority: 2,
+    priority: 0,
     stateId: stateId || defaultState?.id || "",
+    labelIds: [],
   });
 
   // Reset form data when dialog opens
@@ -57,25 +66,27 @@ export function CreateIssueDialog({ stateId, children }: CreateIssueDialogProps)
       setFormData({
         title: "",
         description: "",
-        priority: 2,
+        priority: 0,
         stateId: stateId || defaultState?.id || "",
+        labelIds: [],
       });
     }
   }, [open, stateId, defaultState]);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!workspaceSlug || !projectId) return;
 
     setIsSubmitting(true);
     try {
-      const { title, description, priority, stateId } = formData;
+      const { title, description, priority, stateId, labelIds } = formData;
 
       await createIssue(workspaceSlug, projectId, {
         title,
         description,
         priority,
         stateId,
+        labelIds,
       });
       setOpen(false);
       setFormData({
@@ -83,6 +94,7 @@ export function CreateIssueDialog({ stateId, children }: CreateIssueDialogProps)
         description: "",
         priority: 2,
         stateId: "",
+        labelIds: [],
       });
       // toast hook
       toast({
@@ -155,8 +167,41 @@ export function CreateIssueDialog({ stateId, children }: CreateIssueDialogProps)
             />
           </div>
 
+          <hr />
           <div className="flex space-x-4">
-            <div className="flex-1">
+            <div>
+              <StateDropdown
+                value={formData.stateId}
+                projectId={projectId}
+                onChange={(value) =>
+                  setFormData((prev) => ({ ...prev, stateId: value }))
+                }
+              />
+            </div>
+            <div>
+              <PriorityDropdown
+                value={formData.priority.toString() as TIssuePriorities}
+                onChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    priority: parseInt(value),
+                  }))
+                }
+              />
+            </div>
+            <div>
+              <LabelDropdown
+                projectId={projectId}
+                showCount={false}
+                maxDisplayedLabels={3}
+                values={formData.labelIds ?? []}
+                onChange={(values) =>
+                  setFormData((prev) => ({ ...prev, labelIds: values }))
+                }
+              />
+            </div>
+
+            {/* <div className="flex-1">
               <Label htmlFor="priority">Priority</Label>
               <Select
                 value={formData.priority.toString()}
@@ -199,7 +244,7 @@ export function CreateIssueDialog({ stateId, children }: CreateIssueDialogProps)
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">

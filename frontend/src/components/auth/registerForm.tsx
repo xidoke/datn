@@ -21,10 +21,11 @@ import {
   FormItem,
   FormMessage,
 } from "../ui/form";
-import { useAuth } from "@/hooks/useAuth";
 import { Spinner } from "../ui/spinner";
 import { PasswordInput } from "../ui/password-input";
 import { toast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/stores/authStore";
+import { useAppRouter } from "@/hooks/use-app-router";
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -42,8 +43,9 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
-  const { register, isLoading, error } = useAuth();
+  const { register, isLoading, error } = useAuthStore();
 
+  const router = useAppRouter();
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -62,8 +64,9 @@ export default function RegisterForm() {
         firstName: values.firstName,
         lastName: values.lastName,
       });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err : any) {
+      router.push("/");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
       toast({
         title: "Error",
         description: err.message,

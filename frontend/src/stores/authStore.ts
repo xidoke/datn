@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware";
 import { useUserStore } from "./userStore";
 import { LoginDto, RegisterDto, User } from "@/types";
 import { AuthService } from "@/services/auth.service";
+import { use } from "react";
 
 interface AuthState {
   isLoading: boolean;
@@ -50,6 +51,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             error:errorMessage,
             isLoading: false,
             isAuthenticated: false,
+            
           });
           throw new Error(errorMessage);
         }
@@ -60,7 +62,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         set({ isLoading: true, error: undefined });
         try {
           const result = await authService.register(registerDto);
-          useUserStore.getState().fetchCurrentUser();
+           useUserStore.getState().fetchCurrentUser();
           set({
             isLoading: false,
             isAuthenticated: true,
@@ -85,7 +87,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           await authService.signOut();
 
           // Ensure isLoading is set to false after the request completes
-          set({ isLoading: false, user: undefined});
+          set(initialState);
         } catch (error: any) {
           const errorMessage = error?.message || "Failed to logout. Please try again.";
 

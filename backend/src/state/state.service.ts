@@ -100,22 +100,37 @@ export class StateService {
   }
 
   async deleteState(projectId: string, stateId: string) {
-    const state = await this.getState(projectId, stateId);
+    return this.prisma.$transaction(async (prisma) => {
+      const state = await prisma.state.findUnique({
+        where: { id: stateId, projectId },
+        include: { issues: { select: { id: true }, take: 1 } },
+      });
 
-    if (state.isDefault) {
-      throw new ConflictException("Cannot delete the default state");
-    }
+      if (!state) {
+        throw new NotFoundException("State not found");
+      }
 
-    const statesCount = await this.prisma.state.count({
-      where: { projectId, group: state.group },
-    });
+      if (state.isDefault) {
+        throw new ConflictException("Cannot delete the default state");
+      }
 
-    if (statesCount <= 1) {
-      throw new ConflictException("Cannot delete the last state in a group");
-    }
+      if (state.issues.length > 0) {
+        throw new ConflictException(
+          "Cannot delete a state that has associated issues",
+        );
+      }
 
-    return this.prisma.state.delete({
-      where: { id: state.id },
+      const statesCount = await prisma.state.count({
+        where: { projectId, group: state.group },
+      });
+
+      if (statesCount <= 1) {
+        throw new ConflictException("Cannot delete the last state in a group");
+      }
+
+      return prisma.state.delete({
+        where: { id: state.id },
+      });
     });
   }
 }

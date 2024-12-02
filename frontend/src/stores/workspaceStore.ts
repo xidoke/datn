@@ -11,7 +11,6 @@ interface WorkspaceState {
   error: string | undefined;
   totalCount: number | undefined;
   workspaces: Workspace[] | undefined;
-  currentWorkspace: Workspace | undefined;
   workspacesCreatedByCurrentUser: Workspace[] | undefined;
 }
 
@@ -19,6 +18,7 @@ interface WorkspaceActions {
   getWorkspaceBySlug: (workspaceSlug: string) => Workspace | undefined;
   // getWorkspaceById: (workspaceId: string) => Workspace | undefined;
   // fetch actions
+  getPermissions: (workspaceSlug: string) => any;
   fetchWorkspaces: () => Promise<Workspace[]>;
   // // crud actions
   createWorkspace: (data: Partial<Workspace>) => Promise<Workspace>;
@@ -28,7 +28,6 @@ interface WorkspaceActions {
   // ) => Promise<Workspace>;
   updateWorkspaceLogo: (workspaceSlug: string, logoFile: File) => void;
   deleteWorkspace: (workspaceSlug: string) => Promise<void>;
-  setCurrentWorkspace: (workspaceSlug: string) => void;
   updateWorkspace: (
     workspaceSlug: string,
     data: Partial<Workspace>,
@@ -43,7 +42,7 @@ const initialState: WorkspaceState = {
   totalCount: undefined,
   workspaces: undefined,
   error: undefined,
-  currentWorkspace: undefined,
+
   workspacesCreatedByCurrentUser: undefined,
 };
 
@@ -70,28 +69,23 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           (workspace) => workspace.slug === workspaceSlug,
         );
       },
-
+      getPermissions: (workspaceSlug: string) => {
+        return get().workspaces?.find(
+          (workspace) => workspace.slug === workspaceSlug,
+        )?.permissions;
+      },
       createWorkspace: async (data: Partial<Workspace>) => {
         try {
-          const workspace: Workspace = await apiClient.post("workspaces", data);
+          const res = await apiClient.post("workspaces", data);
+          const workspace = res.data
           set({
             workspaces: [...(get().workspaces || []), workspace],
-            currentWorkspace: workspace,
           });
           useUserStore.getState().lastWorkspaceSlug = workspace.slug;
           return workspace;
         } catch (error) {
           // TODO: Handle error
           throw error;
-        }
-      },
-      setCurrentWorkspace: (workspaceSlug: string) => {
-        const workspace = get().workspaces?.find(
-          (workspace) => workspace.slug === workspaceSlug,
-        );
-        if (workspace) {
-          set({ currentWorkspace: workspace });
-          useUserStore.getState().updateLastWorkspaceSlug(workspaceSlug);
         }
       },
       updateWorkspace: async (
@@ -106,15 +100,15 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           throw new Error("Workspace not found");
         }
         try {
-          const updatedWorkspace: Workspace = await apiClient.patch(
+          const res = await apiClient.patch(
             `workspaces/${workspaceSlug}`,
             data,
           );
+          const updatedWorkspace = res.data;
           set({
             workspaces: get().workspaces?.map((w) =>
               w.slug === workspaceSlug ? updatedWorkspace : w,
             ),
-            currentWorkspace: updatedWorkspace,
           });
           return updatedWorkspace;
         } catch (error) {
@@ -126,7 +120,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           const formData = new FormData();
           formData.append("logo", logoFile);
 
-          const updatedWorkspace: Workspace = await apiClient.patch(
+          const res = await apiClient.patch(
             `workspaces/${slug}/logo`,
             formData,
             {
@@ -136,14 +130,12 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             },
           );
 
+          const updatedWorkspace = res.data;
+
           set((state) => ({
             workspaces: state.workspaces?.map((w) =>
               w.slug === slug ? updatedWorkspace : w,
             ),
-            currentWorkspace:
-              state.currentWorkspace?.slug === slug
-                ? updatedWorkspace
-                : state.currentWorkspace,
           }));
 
           return updatedWorkspace;
