@@ -1,3 +1,5 @@
+import { User } from "./user";
+
 // Define the priority types
 type TIssuePriorities = '0' | '1' | '2' | '3' | '4';
 export interface IssueLabel {
@@ -36,15 +38,22 @@ interface Issue {
     group: string;
   };
   creator: User;
-  assignees: User[];
+  assignees: IssueAssignee[];
   labelIds: string[];
   labels: Label[];
   priority: number;
-  dueDate?: string;
+  startDate?: Date;
+  dueDate?: Date;
   createdAt: string;
   updatedAt: string;
 }
 
+export interface IssueAssignee {
+  id: string;
+  user: User;
+  userId: string;
+  issueId: string;
+}
 export interface IssueFilters {
   state?: string[];
   assignees?: string[];
@@ -71,7 +80,7 @@ export type OrderBy =
   id: string;
   title: string;
   issues: Issue[];
-  icon: React.ComponentType<{ className: string, style: object }>;
+  icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>;
 }
 
 export interface Board {

@@ -98,9 +98,7 @@ const PriorityDropdown = (props: PriorityDropdownProps) => {
           >
             <div className="flex items-center gap-1">
               <PriorityIcon priority={value ?? "0"} />
-              {selectedPriority?.key === "0" ? (
-                null
-              ) : (
+              {selectedPriority?.key === "0" ? null : (
                 <span className="flex-grow truncate">
                   {selectedPriority?.title ?? "select priority"}
                 </span>

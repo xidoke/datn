@@ -1,9 +1,9 @@
 export interface ICycle {
   id: string;
-  name: string;
+  title: string;
   description?: string;
-  startDate: string; // ISO date string
-  dueDate: string; // ISO date string
+  startDate: Date | undefined; // ISO date string
+  dueDate: Date | undefined; // ISO date string
 //   status: 'draft' | 'upcoming' | 'active' | 'completed';
 //   projectId: string;
 //   createdAt: string; // ISO date string

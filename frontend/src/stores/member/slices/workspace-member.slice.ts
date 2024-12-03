@@ -3,7 +3,7 @@
 import { StateCreator } from "zustand";
 import { MemberStore } from "../memberStore";
 import { MemberService } from "@/services/member.service";
-import { MemberResponse, WorkspaceMember } from "@/types";
+import { MemberResponse, User, WorkspaceMember } from "@/types";
 
 export enum EWorkspaceRole {
   OWNER = "OWNER",
@@ -52,7 +52,7 @@ const initialState: WorkspaceMemberSliceState = {
 };
 
 interface WorkspaceMemberSliceActions {
-  fetchWorkspaceMembers: (workspaceSlug: string) => Promise<MemberResponse>;
+  fetchWorkspaceMembers: (workspaceSlug: string) => Promise<WorkspaceMember[]>;
   inviteMember: (workspaceSlug: string, email: string, role: string) => Promise<WorkspaceMember>;
   updateMemberRole: (workspaceSlug: string, memberId: string, role: string) => Promise<WorkspaceMember>;
   removeMember: (workspaceSlug: string, memberId: string) => Promise<void>;
@@ -92,7 +92,7 @@ export const workspaceMemberSlice: StateCreator<
         };
       })
 
-      return response;
+      return response.members;
     } catch (error) {
       console.error("Error fetching workspace members:", error);
       throw error;

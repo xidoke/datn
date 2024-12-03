@@ -24,8 +24,7 @@ interface CreateCycleModalProps {
     title: string;
     description: string;
     startDate?: Date;
-    endDate?: Date;
-    isDraft: boolean;
+    dueDate?: Date;
   }) => void;
 }
 
@@ -48,8 +47,7 @@ export default function CreateCycleModal({
         title,
         description,
         startDate: dateRange?.from,
-        endDate: dateRange?.to,
-        isDraft: isDraft || !dateRange?.from || !dateRange?.to,
+        dueDate: dateRange?.to,
       });
       onClose();
     }

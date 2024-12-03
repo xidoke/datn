@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import { Issue, Label, State, User } from '@/types';
+import { Issue } from '@/types';
 import { apiClient } from '@/lib/api/api-client';
+import { IssueService } from '@/services/issue.service';
 
 interface PaginationInfo {
   page: number;
@@ -25,7 +26,8 @@ interface IssueUpdateDto {
   assigneeIds?: string[];
   labelIds?: string[];
   priority?: number;
-  dueDate?: string;
+  dueDate?: Date;
+  startDate?: Date;
 }
 interface IssueStore {
   issues: Issue[];
@@ -61,6 +63,9 @@ const initialState  = {
   groupBy: null,
   subGroupBy: null,
 };
+
+const issueService = new IssueService();
+
 const useIssueStore = create<IssueStore>()(
   devtools(
     persist(
@@ -68,21 +73,20 @@ const useIssueStore = create<IssueStore>()(
       ...initialState,
 
       reset: () => set(initialState),
-      fetchIssues: async (workspaceSlug, projectId, page = 1, pageSize = 20) => {
+      fetchIssues: async (workspaceSlug, projectId, page = 1, pageSize = 100) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await apiClient.get(`/workspaces/${workspaceSlug}/projects/${projectId}/issues`, {
-            params: {
+          const issues : { issues: Issue[], pagination: any} = await issueService.fetchIssues(workspaceSlug, projectId, {
               page,
               pageSize,
               ...get().filters,
               group_by: get().groupBy,
               sub_group_by: get().subGroupBy,
-            },
+
           });
           set({
-            issues: response.data.issues,
-            pagination: response.data.pagination,
+            issues: issues.issues,
+            pagination: issues.pagination,
             isLoading: false,
           });
         } catch (error) {

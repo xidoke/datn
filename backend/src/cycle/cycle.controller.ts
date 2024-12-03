@@ -1,59 +1,84 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { CycleService } from './cycle.service';
-import { WorkspacePermissionGuard } from 'src/permission/workspace-permission.guard';
-import { CognitoAuthGuard } from 'src/auth/guards/cognito.guard';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from "@nestjs/common";
+import { CycleService } from "./cycle.service";
+import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
+import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
+import { areDatesValid, CreateCycleDto } from "./dto/create-cycle.dto";
 
-@Controller('workspaces/:workspaceSlug/projects/:projectId/cycles')
-UseGuards(CognitoAuthGuard, WorkspacePermissionGuard)
+@Controller("workspaces/:workspaceSlug/projects/:projectId/cycles")
+@UseGuards(CognitoAuthGuard, WorkspacePermissionGuard)
 export class CycleController {
-    constructor(private readonly cycleService: CycleService) {
-    }
+  constructor(private readonly cycleService: CycleService) {}
 
-
-    @Get()
+  @Get()
   async getCycles(
-    @Param('workspaceSlug') workspaceSlug: string,
-    @Param('projectId') projectId: string,
+    @Param("workspaceSlug") workspaceSlug: string,
+    @Param("projectId") projectId: string,
   ) {
     return this.cycleService.getCycles(workspaceSlug, projectId);
   }
-  
-    @Post()
+
+  @Post()
   async createCycle(
-    @Param('workspaceSlug') workspaceSlug: string,
-    @Param('projectId') projectId: string,
-    @Body() cycleData: any
+    @Param("workspaceSlug") workspaceSlug: string,
+    @Param("projectId") projectId: string,
+    @Body() createCycleDto: CreateCycleDto,
   ) {
-    return this.cycleService.createCycle(workspaceSlug, projectId, cycleData);
+    if (!areDatesValid(createCycleDto.startDate, createCycleDto.dueDate)) {
+      throw new BadRequestException(
+        "Both start and end dates must be provided or both must be undefined",
+      );
+    }
+    return this.cycleService.createCycle(
+      workspaceSlug,
+      projectId,
+      createCycleDto,
+    );
   }
 
-  @Patch('/:cycleId')
+  @Patch("/:cycleId")
   async updateCycle(
-    @Param('workspaceSlug') workspaceSlug: string,
-    @Param('projectId') projectId: string,
-    @Param('cycleId') cycleId: string,
-    @Body() updateData: any
+    @Param("workspaceSlug") workspaceSlug: string,
+    @Param("projectId") projectId: string,
+    @Param("cycleId") cycleId: string,
+    @Body() updateData: any,
   ) {
-    return this.cycleService.updateCycle(workspaceSlug, projectId, cycleId, updateData);
+    return this.cycleService.updateCycle(
+      workspaceSlug,
+      projectId,
+      cycleId,
+      updateData,
+    );
   }
 
-  @Delete('/:cycleId')
+  @Delete("/:cycleId")
   async deleteCycle(
-    @Param('workspaceSlug') workspaceSlug: string,
-    @Param('projectId') projectId: string,
-    @Param('cycleId') cycleId: string
+    @Param("workspaceSlug") workspaceSlug: string,
+    @Param("projectId") projectId: string,
+    @Param("cycleId") cycleId: string,
   ) {
     return this.cycleService.deleteCycle(workspaceSlug, projectId, cycleId);
   }
 
-  @Post('/date-check')
+  @Post("/date-check")
   async cycleDateCheck(
-    @Param('workspaceSlug') workspaceSlug: string,
-    @Param('projectId') projectId: string,
-    @Body() dateCheckData: any
+    @Param("workspaceSlug") workspaceSlug: string,
+    @Param("projectId") projectId: string,
+    @Body() dateCheckData: any,
   ) {
-    return this.cycleService.cycleDateCheck(workspaceSlug, projectId, dateCheckData);
+    return this.cycleService.cycleDateCheck(
+      workspaceSlug,
+      projectId,
+      dateCheckData,
+    );
   }
-    
 }
-

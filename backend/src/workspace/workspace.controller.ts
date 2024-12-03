@@ -117,11 +117,10 @@ export class WorkspaceController {
   }
 
   @Get(":slug/dashboard")
-  async getWorkspaceDashboard(@Param("slug") slug: string,
-  @Req() req: RequestWithUser,
-) {
+  async getWorkspaceDashboard(
+    @Param("slug") slug: string,
+    @Req() req: RequestWithUser,
+  ) {
     return this.workspaceService.getWorkspaceDashboard(slug, req.user.userId);
   }
-
-
 }

@@ -1,5 +1,12 @@
-import { IsNotEmpty, IsString, IsOptional, IsDate, ValidateIf, IsBoolean } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsDate,
+  ValidateIf,
+  IsBoolean,
+} from "class-validator";
+import { Type } from "class-transformer";
 
 export class CreateCycleDto {
   @IsNotEmpty()
@@ -20,16 +27,18 @@ export class CreateCycleDto {
   @IsDate()
   @Type(() => Date)
   @ValidateIf((o) => o.startDate !== undefined || o.endDate !== undefined)
-  endDate?: Date;
-
-  @IsBoolean()
-  isDraft: boolean;
+  dueDate?: Date;
 }
 
-export function areDatesValid(startDate: Date | undefined, endDate: Date | undefined): boolean {
-  if ((startDate === undefined && endDate === undefined) || (startDate !== undefined && endDate !== undefined)) {
+export function areDatesValid(
+  startDate: Date | undefined,
+  dueDate: Date | undefined,
+): boolean {
+  if (
+    (startDate === undefined && dueDate === undefined) ||
+    (startDate !== undefined && dueDate !== undefined)
+  ) {
     return true;
   }
   return false;
 }
-

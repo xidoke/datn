@@ -1,9 +1,8 @@
 "use client";
-import { CalendarIcon, FlagIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { Card } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Avatar } from "../ui/avatar";
-import { Badge } from "../ui/badge";
+import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupList, AvatarImage, AvatarOverflowIndicator } from "../ui/avatar";
 import { useUserStore } from "@/stores/userStore";
 import { useDashboardData } from "@/hooks/useDashboard";
 import { useParams } from "next/navigation";
@@ -11,12 +10,10 @@ import { Skeleton } from "../ui/skeleton";
 import { PriorityIcon } from "../icons/priority-icon";
 import { TIssuePriorities } from "@/types";
 import { IssuesByStatePieChart } from "./pie-chart";
+import { API_BASE_URL } from "@/helpers/common.helper";
+import Image from "next/image";
 
-interface DashboardProps {
-  // children: React.ReactNode;
-}
-
-export const DashBoardWorkspace = (props: DashboardProps) => {
+export const DashBoardWorkspace = () => {
   const { data: user } = useUserStore();
 
   const { workspaceSlug } = useParams();
@@ -204,19 +201,26 @@ export const DashBoardWorkspace = (props: DashboardProps) => {
                                   issue?.priority?.toString() as TIssuePriorities
                                 }
                               />
-                              {issue.assignees[0] && (
-                                <Avatar className="h-8 w-8">
-                                  {issue.assignees[0].user.avatar ? (
-                                    <img
-                                      src={issue.assignees[0].user.avatar}
-                                      alt={issue.assignees[0].user.name}
-                                    />
-                                  ) : (
-                                    <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground">
-                                      {issue.assignees[0].user.name[0].toUpperCase()}
-                                    </div>
-                                  )}
-                                </Avatar>
+                              {issue.assignees && (
+                                <AvatarGroup limit={3}>
+                                  <AvatarGroupList>
+                                    {issue.assignees.map((assignee, i) => (
+                                      <Avatar key={i}>
+                                        <AvatarImage
+                                          src={
+                                            API_BASE_URL +
+                                            assignee.user?.avatarUrl
+                                          }
+                                          alt={assignee.user?.email}
+                                        />
+                                        <AvatarFallback>
+                                          {assignee.user?.email?.charAt(0) ?? "U"}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                    ))}
+                                  </AvatarGroupList>
+                                  <AvatarOverflowIndicator />
+                                </AvatarGroup>
                               )}
                             </div>
                           </div>
@@ -250,19 +254,26 @@ export const DashBoardWorkspace = (props: DashboardProps) => {
                                   issue?.priority?.toString() as TIssuePriorities
                                 }
                               />
-                              {issue.assignees[0] && (
-                                <Avatar className="h-8 w-8">
-                                  {issue.assignees[0].user.avatar ? (
-                                    <img
-                                      src={issue.assignees[0].user.avatar}
-                                      alt={issue.assignees[0].user.name}
-                                    />
-                                  ) : (
-                                    <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground">
-                                      {issue.assignees[0].user.name[0].toUpperCase()}
-                                    </div>
-                                  )}
-                                </Avatar>
+                              {issue.assignees && (
+                                <AvatarGroup limit={3}>
+                                  <AvatarGroupList>
+                                    {issue.assignees.map((assignee, i) => (
+                                      <Avatar key={i}>
+                                        <AvatarImage
+                                          src={
+                                            API_BASE_URL +
+                                            assignee.user?.avatarUrl
+                                          }
+                                          alt={assignee.user?.email}
+                                        />
+                                        <AvatarFallback>
+                                          {assignee.user?.email.charAt(0)}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                    ))}
+                                  </AvatarGroupList>
+                                  <AvatarOverflowIndicator />
+                                </AvatarGroup>
                               )}
                             </div>
                           </div>
@@ -274,7 +285,7 @@ export const DashBoardWorkspace = (props: DashboardProps) => {
         </div>
 
         <div className="">
-          <IssuesByStatePieChart data={data?.issuesByStateGroup ?? []}/>
+          <IssuesByStatePieChart data={data?.issuesByStateGroup ?? []} />
         </div>
       </div>
     </>

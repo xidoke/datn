@@ -158,39 +158,104 @@ export class IssuesService {
       fullIdentifier: `${issue.project.token}-${issue.sequenceNumber}`,
     };
   }
-
   async update(id: string, updateIssueDto: UpdateIssueDto) {
     const { assigneeIds, labelIds, ...issueData } = updateIssueDto;
 
-    const updatedIssue = await this.prisma.issue.update({
-      where: { id },
-      data: {
-        ...issueData,
-        assignees: assigneeIds && {
-          deleteMany: {},
-          create: assigneeIds.map((userId) => ({ userId })),
+    // Validate that the issue exists
+    const existingIssue = await this.prisma.issue.findUnique({ where: { id } });
+    if (!existingIssue) {
+      throw new NotFoundException(`Issue with ID ${id} not found`);
+    }
+
+    // Validate assignees
+    if (assigneeIds && assigneeIds.length > 0) {
+      const validUserIds = await this.prisma.user.findMany({
+        where: { id: { in: assigneeIds } },
+        select: { id: true },
+      });
+
+      const validAssigneeIds = validUserIds.map((user) => user.id);
+      const invalidAssigneeIds = assigneeIds.filter(
+        (id) => !validAssigneeIds.includes(id),
+      );
+
+      if (invalidAssigneeIds.length > 0) {
+        throw new BadRequestException({
+          message: "Invalid assignee IDs detected",
+          invalidIds: invalidAssigneeIds,
+          details:
+            "These user IDs do not exist in the database or are not valid assignees for this project.",
+        });
+      }
+    }
+
+    // Validate labels
+    if (labelIds && labelIds.length > 0) {
+      const validLabelIds = await this.prisma.label.findMany({
+        where: {
+          id: { in: labelIds },
+          projectId: existingIssue.projectId, // Ensure labels belong to the same project
         },
-        labels: labelIds && {
-          set: labelIds.map((id) => ({ id })),
-        },
-      },
-      include: {
-        state: true,
-        project: true,
-        creator: true,
-        assignees: {
-          include: {
-            user: true,
+        select: { id: true },
+      });
+
+      const invalidLabelIds = labelIds.filter(
+        (id) => !validLabelIds.map((label) => label.id).includes(id),
+      );
+
+      if (invalidLabelIds.length > 0) {
+        throw new BadRequestException({
+          message: "Invalid label IDs detected",
+          invalidIds: invalidLabelIds,
+          details:
+            "These label IDs do not exist in the database or are not associated with this project.",
+        });
+      }
+    }
+
+    try {
+      const updatedIssue = await this.prisma.issue.update({
+        where: { id },
+        data: {
+          ...issueData,
+          assignees: {
+            deleteMany: {},
+            create: assigneeIds?.map((userId) => ({ userId })) || [],
+          },
+          labels: {
+            set: labelIds?.map((id) => ({ id })) || [],
           },
         },
-        labels: true,
-      },
-    });
+        include: {
+          state: true,
+          project: true,
+          creator: true,
+          assignees: {
+            include: {
+              user: true,
+            },
+          },
+          labels: true,
+        },
+      });
 
-    return {
-      ...updatedIssue,
-      fullIdentifier: `${updatedIssue.project.token}-${updatedIssue.sequenceNumber}`,
-    };
+      return {
+        ...updatedIssue,
+        fullIdentifier: `${updatedIssue.project.token}-${updatedIssue.sequenceNumber}`,
+      };
+    } catch (error) {
+      if (error.code === "P2002") {
+        throw new BadRequestException(
+          "Unique constraint violated. This could be due to a duplicate label or state.",
+        );
+      }
+      if (error.code === "P2003") {
+        throw new BadRequestException(
+          "Foreign key constraint violated. This could be due to an invalid label ID or state ID.",
+        );
+      }
+      throw error;
+    }
   }
 
   async remove(id: string) {

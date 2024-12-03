@@ -2,27 +2,17 @@
 
 import React, { useState } from "react";
 import { Draggable } from "react-beautiful-dnd";
-import { Calendar, MoreHorizontal, PlusCircle } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Calendar,
+  CalendarCheck2,
+  CalendarClock,
+  MoreHorizontal,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import useIssueStore from "@/stores/issueStore";
-import { Issue, Label } from "@/types";
+import { Issue, TIssuePriorities } from "@/types";
 import { useParams } from "next/navigation";
-import { useProjectLabelStore } from "@/stores/projectLabelStore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +23,8 @@ import { PriorityDropdown } from "@/components/dropdown/priority";
 import { LabelDropdown } from "@/components/dropdown/label";
 import { DeleteIssueDialog } from "@/components/issues/delete-issue-dialog";
 import { EditIssueDialog } from "@/components/issues/edit-issue-dialog";
+import { DatePicker } from "@/components/ui/date-picker";
+import { AssigneeDropdown } from "@/components/dropdown/assignees";
 
 interface IssueCardProps {
   issue: Issue;
@@ -47,13 +39,12 @@ export default function IssueCard({
   onClick,
   isSelected = false,
 }: IssueCardProps) {
-  const { labels: projectLabels } = useProjectLabelStore();
+  const { updateIssue } = useIssueStore();
 
-  const [isLabelPopoverOpen, setIsLabelPopoverOpen] = useState(false);
   const { workspaceSlug, projectId } = useParams();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
-  const { id, fullIdentifier, title, assignees, labels, dueDate, priority } =
+  const { id, fullIdentifier, title, assignees, labels, dueDate, startDate } =
     issue;
 
   return (
@@ -71,46 +62,86 @@ export default function IssueCard({
                 <span className="text-xs font-medium text-muted-foreground">
                   {fullIdentifier}
                 </span>
-                {assignees && (
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                    <AvatarFallback>{assignees[0]}</AvatarFallback>
-                  </Avatar>
-                )}
               </div>
               <h3 className="text-sm font-medium leading-tight">{title}</h3>
-              {labels.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {labels.map((label) => (
-                    <Badge
-                      key={label.id}
-                      className="h-5 rounded-sm text-[11px] font-medium"
-                      style={{
-                        backgroundColor: `${label.color}20`,
-                        color: label.color,
-                      }}
-                      variant="secondary"
-                    >
-                      {label.name}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-              <PriorityDropdown
-                onChange={() => {}}
-                value={issue.priority.toString()}
-              />
-              {/* <LabelDropdown
+              <LabelDropdown
                 projectId={projectId as string}
-                onChange={() => {}}
+                onChange={async (values) => {
+                  await updateIssue(
+                    workspaceSlug as string,
+                    projectId as string,
+                    id,
+                    { labelIds: values },
+                  );
+                }}
                 values={labels.map((label) => label.id)}
-                maxDisplayedLabels={3}
-              /> */}
+                maxDisplayedLabels={2}
+              />
+              <br />
+              <div className="flex gap-2">
+                <PriorityDropdown
+                  onChange={async (newPriority) => {
+                    await updateIssue(
+                      workspaceSlug as string,
+                      projectId as string,
+                      id,
+                      { priority: +newPriority },
+                    );
+                  }}
+                  value={issue.priority.toString() as TIssuePriorities}
+                />
+                <AssigneeDropdown
+                  projectId={projectId as string}
+                  values={assignees.map((assignee) => assignee.user?.id)}
+                  onChange={async (values) => {
+                    console.log(values);
+                    await updateIssue(
+                      workspaceSlug as string,
+                      projectId as string,
+                      id,
+                      { assigneeIds: values },
+                    );
+                  }}
+                />
+              </div>
+
+              <DatePicker
+                date={startDate}
+                Icon={CalendarCheck2}
+                onDateChange={(date) => {
+                  updateIssue(
+                    workspaceSlug as string,
+                    projectId as string,
+                    id,
+                    {
+                      startDate: date,
+                    },
+                  );
+                }}
+                maxDate={issue.dueDate}
+                // placeholder="start date"
+              />
+              <DatePicker
+                date={dueDate}
+                Icon={CalendarClock}
+                onDateChange={(date) => {
+                  updateIssue(
+                    workspaceSlug as string,
+                    projectId as string,
+                    id,
+                    {
+                      dueDate: date,
+                    },
+                  );
+                }}
+                minDate={issue.startDate}
+                // placeholder="due date"
+              />
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 {dueDate && (
                   <div className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    <span>{dueDate}</span>
+                    <span>{typeof dueDate}</span>
                   </div>
                 )}
                 <DropdownMenu>

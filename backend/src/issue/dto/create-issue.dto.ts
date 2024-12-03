@@ -43,4 +43,9 @@ export class CreateIssueDto {
   @IsDateString()
   @IsOptional()
   dueDate?: Date;
+
+  // Due date field
+  @IsDateString()
+  @IsOptional()
+  startDate?: Date;
 }

@@ -1,5 +1,6 @@
 import useSWR from 'swr'
 import { WorkspaceService } from '@/services/workspace.service'
+import { User } from '@/types'
 
 interface DashboardData {
   stats: {
@@ -39,11 +40,7 @@ interface DashboardData {
       token: string
     }
     assignees: Array<{
-      user: {
-        id: string
-        name: string
-        avatar: string
-      }
+      user: User
     }>
   }>
   issuesByStateGroup: Array<{

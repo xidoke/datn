@@ -6,3 +6,11 @@ export interface WorkspaceMember {
   joinedAt: Date;
   user: UserLite;
 }
+
+export interface UserLite {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  avatarUrl?: string;
+}

@@ -2,9 +2,8 @@
 
 import React, { useEffect, useMemo } from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { AlignLeft, Clock, Circle, CheckCircle2, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -49,8 +48,9 @@ export default function KanbanBoard() {
           (state) => state.group === group.name,
         );
         return groupStates.map((state) => ({
-          ...state,
+          id: state.id,
           icon: group.icon,
+          title: state.name,
           issues: issues.filter((issue) => issue.state?.id === state.id),
           state, // Add the state object to pass to Column
         }));

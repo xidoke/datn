@@ -17,6 +17,7 @@ import {
 } from "../ui/command";
 import { cn } from "@/lib/utils";
 import { Spinner } from "../ui/spinner";
+import { Badge } from "../ui/badge";
 
 export interface LabelDropdownProps extends TDropdownProps {
   button?: ReactNode;
@@ -99,21 +100,17 @@ const LabelDropdown = (props: LabelDropdownProps) => {
     return (
       <div className="flex flex-wrap items-center gap-1">
         {selectedLabels.map((label) => (
-          <Button
+          <Badge
             key={label?.id}
+            className="h-5 rounded-sm text-[11px] font-medium"
+            style={{
+              backgroundColor: `${label?.color}20`,
+              color: label?.color,
+            }}
             variant="secondary"
-            size="sm"
-            className="h-6 px-2 py-0 text-xs"
-            asChild
           >
-            <div>
-                <div
-                  className="mr-1 h-2 w-2 rounded-full"
-                  style={{ backgroundColor: label?.color }}
-                />
-                {label?.name}
-            </div>
-          </Button>
+            {label?.name}
+          </Badge>
         ))}
       </div>
     );

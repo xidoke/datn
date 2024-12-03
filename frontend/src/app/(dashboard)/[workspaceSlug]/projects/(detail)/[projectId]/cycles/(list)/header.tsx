@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import CreateCycleModal from "@/components/cycle/modal";
 import HeaderFilters from "@/components/issues/filter";
@@ -11,6 +12,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/ui/header";
+import { useToast } from "@/hooks/use-toast";
+import { useCycleStore } from "@/stores/cycleStore";
 import { useProject } from "@/stores/projectStore";
 import { RefreshCcw } from "lucide-react";
 import { useParams } from "next/navigation";
@@ -48,18 +51,34 @@ const HeaderRight = () => {
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
 
-  const { projectId } = useParams();
+  const { projectId, workspaceSlug } = useParams();
   const { getProjectById } = useProject();
+  const { toast } = useToast();
   const currentProjectDetails = getProjectById(projectId as string);
 
-    const handleCreateCycle = (data: {
+  const { createCycle } = useCycleStore();
+    const handleCreateCycle = async (data: {
       title: string;
-      description: string;
-      startDate: Date;
-      endDate: Date;
+      description?: string;
+      startDate?: Date;
+      endDate?: Date;
     }) => {
       // Here you would typically send this data to your backend or state management system
-      console.log("New cycle created:", data);
+      try {
+        await createCycle(workspaceSlug as string, projectId as string, data)
+        toast({
+          title: "Success",
+          description: "success create a new cycle",
+          variant: "default",
+        });
+      } catch (error: any) {
+        
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
       // You might want to update your local state or fetch updated data here
     };
   return (

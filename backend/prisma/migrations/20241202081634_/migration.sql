@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "cycles" ALTER COLUMN "startDate" DROP NOT NULL,
+ALTER COLUMN "dueDate" DROP NOT NULL;

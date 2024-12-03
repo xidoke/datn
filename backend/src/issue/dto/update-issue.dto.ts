@@ -44,4 +44,8 @@ export class UpdateIssueDto {
   @IsDateString()
   @IsOptional()
   dueDate?: Date;
+
+  @IsDateString()
+  @IsOptional()
+  startDate?: Date;
 }

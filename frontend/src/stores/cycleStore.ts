@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import { ICycle } from '@/types/cycle';
+import { CycleService } from '@/services/cycle.service';
 
 interface CycleState {
   cycles: Record<string, ICycle>;
@@ -30,7 +32,7 @@ const simulateApiCall = <T>(data: T): Promise<T> => {
     }, 100);
   });
 };
-
+const cycleService = new CycleService();
 export const useCycleStore = create<CycleState>()(
   devtools(persist(
     immer((set, get) => ({
@@ -63,17 +65,18 @@ export const useCycleStore = create<CycleState>()(
       createCycle: async (workspaceSlug: string, projectId: string, cycleData: Partial<ICycle>) => {
         set({ isLoading: true });
         try {
-          // Simulated API call
-          const newCycle = await simulateApiCall<ICycle>({
-            id: Date.now().toString(),
-            ...cycleData,
-          } as ICycle);
+          const cycle = await cycleService.createCycle(workspaceSlug, projectId, cycleData);
           set((state) => {
-            state.cycles[newCycle.id] = newCycle;
+            state.cycles[cycle.id] = cycle;
             state.isLoading = false;
           });
-        } catch (error) {
-          set({ error: 'Failed to create cycle', isLoading: false });
+        } catch (error: any) {
+          const errorMessage = error?.message || "Fail to create new cycle. Please try again.";
+          set({
+            error: errorMessage,
+            isLoading: false,
+          });
+          throw new Error(errorMessage);
         }
       },
 

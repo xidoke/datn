@@ -1,15 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react";
 import { Droppable } from "react-beautiful-dnd";
-import { MoreHorizontal, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Column as ColumnType, Issue, State } from "@/types";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import IssueCard from "./IssueCard";
 import { CreateIssueDialog } from "@/components/issues/create-issue-dialog";
 import { Card } from "@/components/ui/card";
