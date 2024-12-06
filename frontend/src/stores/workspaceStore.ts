@@ -1,13 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { apiClient } from "@/lib/api/api-client";
 import { Workspace } from "@/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useUserStore } from "./userStore";
+import { WorkspaceService } from "@/services/workspace.service";
 
 interface WorkspaceState {
   loader: boolean;
+  error: string | undefined;
+  totalCount: number | undefined;
   workspaces: Workspace[] | undefined;
-  currentWorkspace: Workspace | undefined;
   workspacesCreatedByCurrentUser: Workspace[] | undefined;
 }
 
@@ -15,6 +18,7 @@ interface WorkspaceActions {
   getWorkspaceBySlug: (workspaceSlug: string) => Workspace | undefined;
   // getWorkspaceById: (workspaceId: string) => Workspace | undefined;
   // fetch actions
+  getPermissions: (workspaceSlug: string) => any;
   fetchWorkspaces: () => Promise<Workspace[]>;
   // // crud actions
   createWorkspace: (data: Partial<Workspace>) => Promise<Workspace>;
@@ -24,7 +28,6 @@ interface WorkspaceActions {
   // ) => Promise<Workspace>;
   updateWorkspaceLogo: (workspaceSlug: string, logoFile: File) => void;
   deleteWorkspace: (workspaceSlug: string) => Promise<void>;
-  setCurrentWorkspace: (workspaceSlug: string) => void;
   updateWorkspace: (
     workspaceSlug: string,
     data: Partial<Workspace>,
@@ -36,24 +39,27 @@ type WorkspaceStore = WorkspaceState & WorkspaceActions;
 
 const initialState: WorkspaceState = {
   loader: false,
+  totalCount: undefined,
   workspaces: undefined,
-  currentWorkspace: undefined,
+  error: undefined,
+
   workspacesCreatedByCurrentUser: undefined,
 };
 
+const workspaceService = new WorkspaceService();
 export const useWorkspaceStore = create<WorkspaceStore>()(
   persist(
     (set, get) => ({
       ...initialState,
       fetchWorkspaces: async () => {
-        set({ loader: true });
+        set({ loader: true, error: undefined });
         try {
-          const response: { workspaces: Workspace[]; totalCount: number } =
-            await apiClient.get("workspaces");
-          set({ workspaces: response.workspaces, loader: false });
-          return response.workspaces;
-        } catch (error) {
-          set({ loader: false });
+          const result = await workspaceService.fetchUserWorkspaces();
+          const { workspaces, totalCount } = result.data;
+          set({ workspaces: workspaces, loader: false, totalCount });
+          return workspaces;
+        } catch (error : any) {
+          set({ loader: false, error: error.message });
           throw error;
         }
       },
@@ -63,28 +69,23 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           (workspace) => workspace.slug === workspaceSlug,
         );
       },
-
+      getPermissions: (workspaceSlug: string) => {
+        return get().workspaces?.find(
+          (workspace) => workspace.slug === workspaceSlug,
+        )?.permissions;
+      },
       createWorkspace: async (data: Partial<Workspace>) => {
         try {
-          const workspace: Workspace = await apiClient.post("workspaces", data);
+          const res : any= await apiClient.post("workspaces", data);
+          const workspace = res.data
           set({
             workspaces: [...(get().workspaces || []), workspace],
-            currentWorkspace: workspace,
           });
           useUserStore.getState().lastWorkspaceSlug = workspace.slug;
           return workspace;
         } catch (error) {
           // TODO: Handle error
           throw error;
-        }
-      },
-      setCurrentWorkspace: (workspaceSlug: string) => {
-        const workspace = get().workspaces?.find(
-          (workspace) => workspace.slug === workspaceSlug,
-        );
-        if (workspace) {
-          set({ currentWorkspace: workspace });
-          useUserStore.getState().updateLastWorkspaceSlug(workspaceSlug);
         }
       },
       updateWorkspace: async (
@@ -99,15 +100,15 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           throw new Error("Workspace not found");
         }
         try {
-          const updatedWorkspace: Workspace = await apiClient.patch(
+          const res : any= await apiClient.patch(
             `workspaces/${workspaceSlug}`,
             data,
           );
+          const updatedWorkspace = res.data;
           set({
             workspaces: get().workspaces?.map((w) =>
               w.slug === workspaceSlug ? updatedWorkspace : w,
             ),
-            currentWorkspace: updatedWorkspace,
           });
           return updatedWorkspace;
         } catch (error) {
@@ -119,7 +120,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           const formData = new FormData();
           formData.append("logo", logoFile);
 
-          const updatedWorkspace: Workspace = await apiClient.patch(
+          const res : any= await apiClient.patch(
             `workspaces/${slug}/logo`,
             formData,
             {
@@ -129,14 +130,12 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             },
           );
 
+          const updatedWorkspace = res.data;
+
           set((state) => ({
             workspaces: state.workspaces?.map((w) =>
               w.slug === slug ? updatedWorkspace : w,
             ),
-            currentWorkspace:
-              state.currentWorkspace?.slug === slug
-                ? updatedWorkspace
-                : state.currentWorkspace,
           }));
 
           return updatedWorkspace;

@@ -1,27 +1,22 @@
+// src/stores/slices/workspaceMemberSlice.ts
+
 import { StateCreator } from "zustand";
 import { MemberStore } from "../memberStore";
-import { apiClient } from "@/lib/api/api-client";
+import { MemberService } from "@/services/member.service";
+import { MemberResponse, User, WorkspaceMember } from "@/types";
 
 export enum EWorkspaceRole {
+  OWNER = "OWNER",
   ADMIN = "ADMIN",
   MEMBER = "MEMBER",
 }
+
 export interface UserLite {
   id: string;
   email: string;
   firstName?: string;
   lastName?: string;
-  displayName?: string;
   avatarUrl?: string;
-}
-
-export interface WorkspaceMember {
-  id: string;
-  userId: string;
-  role: string;
-  workspaceSlug: string;
-  joinedAt: Date;
-  user: UserLite;
 }
 
 export type WorkspaceRole = EWorkspaceRole.ADMIN | EWorkspaceRole.MEMBER;
@@ -56,42 +51,30 @@ const initialState: WorkspaceMemberSliceState = {
   workspaceMemberInvitationIds: undefined,
 };
 
-export interface MemberResponse {
-  members: WorkspaceMember[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
-}
-
 interface WorkspaceMemberSliceActions {
-  fetchWorkspaceMembers: (workspaceSlug: string) => Promise<MemberResponse>;
+  fetchWorkspaceMembers: (workspaceSlug: string) => Promise<WorkspaceMember[]>;
   inviteMember: (workspaceSlug: string, email: string, role: string) => Promise<void>;
-  // getWorkspaceMemberDetails: (workspaceMemberId: string) => WorkspaceMember | undefined;
-  // getWorkspaceMemberInvitations: (workspaceId: string) => void;
-  // addWorkspaceMember: (workspaceId: string, member: WorkspaceMembership) => void;
-  // removeWorkspaceMember: (workspaceId: string, memberId: string) => void;
-  // updateWorkspaceMember: (workspaceId: string, memberId: string, role: TUserPermissions) => void;
-  // addWorkspaceMemberInvitation: (workspaceId: string, invitation: IWorkspaceMemberInvitation) => void;
-  // removeWorkspaceMemberInvitation: (workspaceId: string, invitationId: string) => void;
+  updateMemberRole: (workspaceSlug: string, memberId: string, role: string) => Promise<WorkspaceMember>;
+  removeMember: (workspaceSlug: string, memberId: string) => Promise<void>;
+  // leaveWorkspace: (workspaceId: string) => Promise<void>;
   resetWorkspaceMember: () => void;
 }
 
-export type WorkspaceMemberSlice = WorkspaceMemberSliceState &
-  WorkspaceMemberSliceActions;
+export type WorkspaceMemberSlice = WorkspaceMemberSliceState & WorkspaceMemberSliceActions;
+
+const memberService = new MemberService();
 
 export const workspaceMemberSlice: StateCreator<
   MemberStore,
   [],
   [],
   WorkspaceMemberSlice
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 > = (set, get) => ({
   ...initialState,
   fetchWorkspaceMembers: async (workspaceSlug: string) => {
     try {
-      const response: MemberResponse = await apiClient.get(
-        `/workspaces/${workspaceSlug}/members`,
-      );
-
+      const response = await memberService.fetchWorkspaceMembers(workspaceSlug);
       const { members: workspaceMembers } = response;
       set((state) => {
         const newWorkspaceMemberMap = { ...state.workspaceMemberMap };
@@ -107,29 +90,76 @@ export const workspaceMemberSlice: StateCreator<
           workspaceMemberMap: newWorkspaceMemberMap,
           workspaceMemberIds: workspaceMembers.map((member) => member.id),
         };
-      });
+      })
 
-      return response;
+      return response.members;
     } catch (error) {
       console.error("Error fetching workspace members:", error);
       throw error;
     }
   },
-  inviteMember: async (workspaceSlug: string, email: string, role: string) => {
+  inviteMember: async (workspaceSlug: string, email: string, role: string)  => {
     try {
-      await apiClient.post(`/workspaces/${workspaceSlug}/invitations`, {
-        email,
-        role,
-      });
+      const workspaceMember = await memberService.inviteMember(workspaceSlug, email, role);
+      set( (state) => {
+        const newWorkspaceMemberMap = { ...state.workspaceMemberMap };
+        if (newWorkspaceMemberMap[workspaceSlug]) {
+          newWorkspaceMemberMap[workspaceSlug][workspaceMember.id] = workspaceMember;
+        } else {
+          newWorkspaceMemberMap[workspaceSlug] = { [workspaceMember.id]: workspaceMember };
+        }
+        return {
+          workspaceMemberMap: newWorkspaceMemberMap,
+          workspaceMemberIds: [...state.workspaceMemberIds, workspaceMember.id],
+        };
+      }
+
+      );
+      
+        
     } catch (error) {
       console.error("Error inviting member:", error);
       throw error;
     }
   },
-  // TODO implement getWorkspaceMemberDetails
+  updateMemberRole: async (workspaceSlug: string, memberId: string, role: string) => {
+    try {
+      const response : any= await memberService.updateMemberRole(workspaceSlug, memberId, role);
+      set((state) => {
+        const newWorkspaceMemberMap = { ...state.workspaceMemberMap };
+        if (newWorkspaceMemberMap[workspaceSlug] && newWorkspaceMemberMap[workspaceSlug][memberId]) {
+          newWorkspaceMemberMap[workspaceSlug][memberId] = {
+            ...newWorkspaceMemberMap[workspaceSlug][memberId],
+            role,
+          };
+        }
+        return { workspaceMemberMap: newWorkspaceMemberMap };
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error updating member role:", error);
+      throw error;
+    }
+  },
+  removeMember: async (workspaceSlug: string, memberId: string) => {
+    try {
+      await memberService.removeMember(workspaceSlug, memberId);
+      set((state) => {
+        const newWorkspaceMemberMap = { ...state.workspaceMemberMap };
+        if (newWorkspaceMemberMap[workspaceSlug]) {
+          delete newWorkspaceMemberMap[workspaceSlug][memberId];
+        }
+        return {
+          workspaceMemberMap: newWorkspaceMemberMap,
+          workspaceMemberIds: state.workspaceMemberIds.filter((id) => id !== memberId),
+        };
+      });
+    } catch (error) {
+      console.error("Error removing member:", error);
+      throw error;
+    }
+  },
   resetWorkspaceMember: () => {
     set(initialState);
   },
-  
-
 });

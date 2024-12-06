@@ -1,8 +1,9 @@
 // useLogout.ts
-
 import { useAuthStore } from "@/stores/authStore";
-import { useIssueStore } from "@/stores/issue/issueStore";
+import useIssueStore from "@/stores/issueStore";
 import { useMemberStore } from "@/stores/member/memberStore";
+import { useProjectLabelStore } from "@/stores/projectLabelStore";
+import { useProjectStateStore } from "@/stores/projectStateStore";
 import { useProjectStore } from "@/stores/projectStore";
 import { useUserStore } from "@/stores/userStore";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
@@ -14,7 +15,11 @@ export const useLogout = () => {
   const resetWorkspace = useWorkspaceStore((state) => state.reset);
   const resetMember = useMemberStore((state) => state.resetAll);
   const resetProject = useProjectStore((state) => state.reset);
-  // const resetIssue = useIssueStore((state) => state.resetAll);
+  const resetLabel = useProjectLabelStore((state) => state.reset);
+  const resetState = useProjectStateStore((state) => state.reset);
+
+
+  const resetIssue = useIssueStore((state) => state.reset);
   // Get reset functions from other stores
 
   const handleLogout = async () => {
@@ -24,7 +29,9 @@ export const useLogout = () => {
     resetWorkspace();
     resetMember();
     resetProject();
-    // resetIssue();
+    resetLabel();
+    resetState();
+    resetIssue();
 
 
     // clear cache

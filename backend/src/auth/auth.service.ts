@@ -3,9 +3,8 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CognitoService } from "src/auth/cognito.service";
-import { LoginDto } from "src/user/dto/login.dto";
-import { CreateUserDto } from "src/user/dto/create-user.dto";
-import { Role } from "./enums/role.enum";
+import { LoginDto } from "src/auth/dto/login.dto";
+import { CreateUserDto } from "src/auth/dto/create-user.dto";
 
 @Injectable()
 export class AuthService {
@@ -16,19 +15,21 @@ export class AuthService {
 
   // DONE
   async create(createUserDto: CreateUserDto) {
-    const cognitoUser = await this.cognitoService.createUser(
-      createUserDto.email,
-      createUserDto.password,
-    );
+    return this.prisma.$transaction(async (prisma) => {
+      const cognitoUser = await this.cognitoService.createUser(
+        createUserDto.email,
+        createUserDto.password,
+      );
 
-    return this.prisma.user.create({
-      data: {
-        email: createUserDto.email,
-        cognitoId: cognitoUser.User.Username,
-        role: Role.USER, // Default role,
-        firstName: createUserDto.firstName,
-        lastName: createUserDto.lastName,
-      },
+      return await prisma.user.create({
+        data: {
+          email: createUserDto.email,
+          cognitoId: cognitoUser.User.Username,
+          role: "USER",
+          firstName: createUserDto.firstName,
+          lastName: createUserDto.lastName,
+        },
+      });
     });
   }
 

@@ -25,7 +25,7 @@ export const ProjectsBaseHeader = () => {
 
   return (
     <>
-      <header className="flex flex-row justify-between p-2">
+      <header className="flex flex-row justify-between p-2 bg-background">
         <div className="flex items-center">
           <Breadcrumb>
             <BreadcrumbItem>

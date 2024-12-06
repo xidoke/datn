@@ -1,10 +1,11 @@
-import { Project } from "@/types";
+import { Project, ApiResponse } from "@/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { apiClient } from "@/lib/api/api-client";
+import { ProjectService } from "@/services/project.service";
 
 interface ProjectState {
-  loader: boolean;
+  isLoading: boolean;
+  error: string | undefined;
   projects: Project[];
   currentProjectDetails: Project | undefined;
 }
@@ -12,19 +13,9 @@ interface ProjectState {
 interface ProjectActions {
   getProjectById: (projectId: string | undefined | null) => Project | undefined;
   fetchProjects: (workspaceSlug: string) => Promise<Project[]>;
-  fetchProjectDetails: (
-    workspaceSlug: string,
-    projectId: string,
-  ) => Promise<Project>;
-  createProject: (
-    workspaceSlug: string,
-    data: Partial<Project>,
-  ) => Promise<Project>;
-  updateProject: (
-    workspaceSlug: string,
-    projectId: string,
-    data: Partial<Project>,
-  ) => Promise<Project>;
+  fetchProjectDetails: (workspaceSlug: string, projectId: string) => Promise<Project>;
+  createProject: (workspaceSlug: string, data: Partial<Project>) => Promise<Project>;
+  updateProject: (workspaceSlug: string, projectId: string, data: Partial<Project>) => Promise<Project>;
   deleteProject: (workspaceSlug: string, projectId: string) => Promise<void>;
   reset: () => void;
 }
@@ -32,10 +23,13 @@ interface ProjectActions {
 export type ProjectStore = ProjectState & ProjectActions;
 
 const initialState: ProjectState = {
-  loader: false,
+  isLoading: false,
+  error: undefined,
   projects: [],
   currentProjectDetails: undefined,
 };
+
+const projectService = new ProjectService();
 
 export const useProjectStore = create<ProjectStore>()(
   persist(
@@ -48,100 +42,95 @@ export const useProjectStore = create<ProjectStore>()(
       },
 
       fetchProjects: async (workspaceSlug) => {
-        set({ loader: true });
+        set({ isLoading: true, error: undefined });
         try {
-          const response = await apiClient.get<Project[]>(
-            `/workspaces/${workspaceSlug}/projects`,
-          );
-          set({ projects: response, loader: false });
-          return response;
+          const result = await projectService.fetchProjects(workspaceSlug);
+          const projects = result.data;
+          set({ projects, isLoading: false });
+          return projects;
         } catch (error) {
-          set({ loader: false });
+          const errorMessage = error instanceof Error ? error.message : "Failed to fetch projects";
+          set({ error: errorMessage, isLoading: false });
           throw error;
         }
       },
 
       fetchProjectDetails: async (workspaceSlug, projectId) => {
-        set({ loader: true });
+        set({ isLoading: true, error: undefined });
         try {
-          const response = await apiClient.get<Project>(
-            `/workspaces/${workspaceSlug}/projects/${projectId}`,
-          );
-          set({ currentProjectDetails: response, loader: false });
-          return response;
+          const result = await projectService.fetchProjectDetails(workspaceSlug, projectId);
+          const project = result.data;
+          set({ currentProjectDetails: project, isLoading: false });
+          return project;
         } catch (error) {
-          set({ loader: false });
+          const errorMessage = error instanceof Error ? error.message : "Failed to fetch project details";
+          set({ error: errorMessage, isLoading: false });
           throw error;
         }
       },
 
       createProject: async (workspaceSlug, data) => {
-        set({ loader: true });
+        set({ isLoading: true, error: undefined });
         try {
-          const response = await apiClient.post<Project>(
-            `/workspaces/${workspaceSlug}/projects`,
-            data,
-          );
+          const result = await projectService.createProject(workspaceSlug, data);
+          const newProject = result.data;
           set((state) => ({
-            projects: [...state.projects, response],
-            loader: false,
+            projects: [...state.projects, newProject],
+            isLoading: false,
           }));
-          return response;
+          return newProject;
         } catch (error) {
-          set({ loader: false });
+          const errorMessage = error instanceof Error ? error.message : "Failed to create project";
+          set({ error: errorMessage, isLoading: false });
           throw error;
         }
       },
 
       updateProject: async (workspaceSlug, projectId, data) => {
-        set({ loader: true });
+        set({ isLoading: true, error: undefined });
         try {
-          const response = await apiClient.patch<Project>(
-            `/workspaces/${workspaceSlug}/projects/${projectId}`,
-            data,
-          );
+          const result = await projectService.updateProject(workspaceSlug, projectId, data);
+          const updatedProject = result.data;
           set((state) => ({
             projects: state.projects.map((project) =>
-              project.id === projectId ? response : project,
+              project.id === projectId ? updatedProject : project
             ),
-            currentProjectDetails: response,
-            loader: false,
+            currentProjectDetails: updatedProject,
+            isLoading: false,
           }));
-          return response;
+          return updatedProject;
         } catch (error) {
-          set({ loader: false });
+          const errorMessage = error instanceof Error ? error.message : "Failed to update project";
+          set({ error: errorMessage, isLoading: false });
           throw error;
         }
       },
 
       deleteProject: async (workspaceSlug, projectId) => {
-        set({ loader: true });
+        set({ isLoading: true, error: undefined });
         try {
-          await apiClient.delete(
-            `/workspaces/${workspaceSlug}/projects/${projectId}`,
-          );
+          await projectService.deleteProject(workspaceSlug, projectId);
           set((state) => ({
-            projects: state.projects.filter(
-              (project) => project.id !== projectId,
-            ),
+            projects: state.projects.filter((project) => project.id !== projectId),
             currentProjectDetails:
               state.currentProjectDetails?.id === projectId
                 ? undefined
                 : state.currentProjectDetails,
-            loader: false,
+            isLoading: false,
           }));
         } catch (error) {
-          set({ loader: false });
+          const errorMessage = error instanceof Error ? error.message : "Failed to delete project";
+          set({ error: errorMessage, isLoading: false });
           throw error;
         }
       },
+
       reset: () => set(initialState),
     }),
     {
       name: "project-storage",
-    },
-  ),
+    }
+  )
 );
 
-
-export const useProject = () => useProjectStore((state) => state); 
+export const useProject = () => useProjectStore();

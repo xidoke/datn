@@ -13,7 +13,6 @@ import {
   UploadedFile,
   ParseFilePipe,
   MaxFileSizeValidator,
-  SetMetadata,
 } from "@nestjs/common";
 import { WorkspaceService } from "./workspace.service";
 import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
@@ -24,6 +23,7 @@ import { CreateWorkspaceDto } from "./dto/create-workspace.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
 import { WorkspacePermission } from "src/permission/permission.type";
+import { Permissions } from "src/permission/permission.decorator";
 
 @UseGuards(CognitoAuthGuard, WorkspacePermissionGuard)
 @Controller("workspaces")
@@ -77,7 +77,7 @@ export class WorkspaceController {
 
   // TODO: Hiện tại chỉ cho phép sửa name
   @Patch(":slug")
-  @SetMetadata("workspace_permission", WorkspacePermission.UPDATE_WORKSPACE)
+  @Permissions(WorkspacePermission.UPDATE_WORKSPACE)
   async updateWorkspace(
     @Param("slug") slug: string,
     @Req() req: RequestWithUser,
@@ -91,7 +91,7 @@ export class WorkspaceController {
   }
 
   @Delete(":slug")
-  @SetMetadata("workspace_permission", WorkspacePermission.DELETE_WORKSPACE)
+  @Permissions(WorkspacePermission.DELETE_WORKSPACE)
   async deleteWorkspace(
     @Param("slug") slug: string,
     @Req() req: RequestWithUser,
@@ -100,7 +100,7 @@ export class WorkspaceController {
   }
 
   @Patch(":slug/logo")
-  @SetMetadata("workspace_permission", WorkspacePermission.UPDATE_WORKSPACE)
+  @Permissions(WorkspacePermission.UPDATE_WORKSPACE)
   @UseInterceptors(FileInterceptor("logo"))
   async updateWorkspaceLogo(
     @Param("slug") slug: string,
@@ -114,5 +114,13 @@ export class WorkspaceController {
     logo: Express.Multer.File,
   ) {
     return this.workspaceService.updateWorkspaceLogo(slug, logo);
+  }
+
+  @Get(":slug/dashboard")
+  async getWorkspaceDashboard(
+    @Param("slug") slug: string,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.workspaceService.getWorkspaceDashboard(slug, req.user.userId);
   }
 }

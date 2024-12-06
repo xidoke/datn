@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/stores/authStore";
 import {
   Form,
   FormControl,
@@ -24,6 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { PasswordInput } from "../ui/password-input";
+import { toast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -39,7 +40,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
-  const { login, isLoading, error } = useAuth();
+  const { login, isLoading, error } = useAuthStore();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -47,15 +48,18 @@ export default function LoginForm() {
       email: "",
       password: "",
     },
-    
   });
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      await login(values.email, values.password);
-    } catch (err) {
-      // Error is handled by the useAuth hook
-      console.log(err);
+      await login({ email: values.email, password: values.password });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err : any) {
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -70,10 +74,7 @@ export default function LoginForm() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="grid gap-4"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
               <FormField
                 control={form.control}
                 name="email"

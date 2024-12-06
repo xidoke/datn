@@ -8,6 +8,7 @@ import { Reflector } from "@nestjs/core";
 import { PrismaService } from "src/prisma/prisma.service";
 import { PermissionService } from "./permission.service";
 import { WorkspacePermission } from "./permission.type";
+import { PERMISSIONS_KEY } from "./permission.decorator";
 
 @Injectable()
 export class WorkspacePermissionGuard implements CanActivate {
@@ -18,12 +19,12 @@ export class WorkspacePermissionGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPermission = this.reflector.get<WorkspacePermission>(
-      "workspace_permission",
+    const requiredPermissions = this.reflector.get<WorkspacePermission[]>(
+      PERMISSIONS_KEY,
       context.getHandler(),
     );
-    if (!requiredPermission) {
-      return true; // No permission required
+    if (!requiredPermissions || requiredPermissions.length === 0) {
+      return true; // No permissions required
     }
 
     const request = context.switchToHttp().getRequest();
@@ -49,9 +50,12 @@ export class WorkspacePermissionGuard implements CanActivate {
       throw new ForbiddenException("You are not a member of this workspace");
     }
 
-    return this.permissionService.hasPermission(
-      workspaceMember.role,
-      requiredPermission,
+    const isPass = requiredPermissions.every((permission) =>
+      this.permissionService.hasPermission(workspaceMember.role, permission),
     );
+    console.log("workspace member role:", workspaceMember.role);
+    console.log("Checking permission:", isPass, requiredPermissions);
+
+    return isPass;
   }
 }

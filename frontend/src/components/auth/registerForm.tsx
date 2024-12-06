@@ -21,9 +21,11 @@ import {
   FormItem,
   FormMessage,
 } from "../ui/form";
-import { useAuth } from "@/hooks/useAuth";
 import { Spinner } from "../ui/spinner";
 import { PasswordInput } from "../ui/password-input";
+import { toast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/stores/authStore";
+import { useAppRouter } from "@/hooks/use-app-router";
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -41,8 +43,9 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
-  const { register, isLoading, error } = useAuth();
+  const { register, isLoading, error } = useAuthStore();
 
+  const router = useAppRouter();
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -55,15 +58,20 @@ export default function RegisterForm() {
 
   const onSubmit = async (values: RegisterFormValues) => {
     try {
-      await register(
-        values.email,
-        values.password,
-        values.firstName,
-        values.lastName,
-      );
-    } catch (err) {
-      console.log(err);
-      // Error is handled by the useAuth hook
+      await register({
+        email: values.email,
+        password: values.password,
+        firstName: values.firstName,
+        lastName: values.lastName,
+      });
+      router.push("/");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
     }
   };
 

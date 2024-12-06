@@ -1,12 +1,10 @@
 "use client";
-
-import { FC, ReactNode, use, useEffect } from "react";
-import { useSearchParams, usePathname } from "next/navigation";
+import { FC, ReactNode } from "react";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import useSWR from "swr";
 import { Spinner } from "@/components/ui/spinner";
-import { useUser } from "@/stores/userStore";
+import { useUserStore } from "@/stores/userStore";
 import { useWorkspace } from "@/stores/workspaceStore";
-import { useAppRouter } from "@/hooks/use-app-router";
 import { PageType } from "@/helpers/authentication.helper";
 
 type TAuthenticationWrapper = {
@@ -24,7 +22,7 @@ export const AuthenticationWrapper: FC<TAuthenticationWrapper> = ({
   pageType = PageType.AUTHENTICATED,
 }) => {
   const pathname = usePathname();
-  const router = useAppRouter();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next_path");
 
@@ -33,11 +31,15 @@ export const AuthenticationWrapper: FC<TAuthenticationWrapper> = ({
     lastWorkspaceSlug,
     isLoading: isUserLoading,
     data: user,
-  } = useUser();
+  } = useUserStore();
+  // const {
+  //   isAuthenticated ,
+  // } = useAuthStore();
   const { workspaces, loader: workspaceLoading } = useWorkspace();
 
   const isAuthenticated = user?.id;
   const { isLoading: isUserSWRLoading } = useSWR(
+    // () => isAuthenticated? "USER_INFORMATION" : null,
     "USER_INFORMATION",
     async () => await fetchCurrentUser(),
     {

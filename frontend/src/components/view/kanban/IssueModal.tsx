@@ -1,0 +1,250 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
+  X,
+  Plus,
+  Link2,
+  Paperclip,
+  CalendarCheck2,
+  CalendarClock,
+} from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Issue, TIssuePriorities } from "@/types";
+import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
+import useIssueStore, { IssueUpdateDto } from "@/stores/issueStore";
+import { useParams } from "next/navigation";
+import { StateDropdown } from "@/components/dropdown/state";
+import { PriorityDropdown } from "@/components/dropdown/priority";
+import { DatePicker } from "@/components/ui/date-picker";
+import { LabelDropdown } from "@/components/dropdown/label";
+import { AssigneeDropdown } from "@/components/dropdown/assignees";
+
+interface IssueModalProps {
+  issue: Issue;
+  onClose: () => void;
+}
+
+export default function IssueModal({ issue, onClose }: IssueModalProps) {
+  const [localIssue, setLocalIssue] = useState(issue);
+  const [description, setDescription] = useState(issue.description || "");
+  const [isEditing, setIsEditing] = useState(false);
+  const { updateIssue } = useIssueStore();
+  const { workspaceSlug, projectId } = useParams();
+
+  useEffect(() => {
+    setLocalIssue(issue);
+    setDescription(issue.description || "");
+  }, [issue]);
+
+  const handleUpdateIssue = async (updateData: Partial<IssueUpdateDto>) => {
+    await updateIssue(
+      workspaceSlug as string,
+      projectId as string,
+      localIssue.id,
+      updateData,
+    );
+    setLocalIssue({ ...localIssue, ...updateData });
+  };
+
+  return (
+    <Sheet open={true} onOpenChange={onClose}>
+      <SheetContent className="w-full sm:max-w-none md:w-[50%]">
+        <div className="flex h-full flex-col">
+          <SheetHeader className="border-b px-6 py-4">
+            <div className="flex items-center justify-between">
+              <SheetTitle className="text-base font-medium">
+                {localIssue.fullIdentifier}: {localIssue.title}
+              </SheetTitle>
+            </div>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-auto">
+            <div className="space-y-6 p-6">
+              {/* Description */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Description
+                </h3>
+                {isEditing ? (
+                  <div className="space-y-2">
+                    <AutoResizeTextarea
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Add a more detailed description..."
+                      className="w-full"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setDescription(localIssue.description || "");
+                          setIsEditing(false);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={async () => {
+                          await handleUpdateIssue({ description });
+                          setIsEditing(false);
+                        }}
+                      >
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className="min-h-[100px] cursor-pointer whitespace-pre-wrap text-sm"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    {description || "Click to add description"}
+                  </div>
+                )}
+              </div>
+
+
+              {/* Properties */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Properties
+                </h3>
+
+                <div className="space-y-4">
+                  {/* State */}
+                  <div className="flex items-center gap-4">
+                    <span className="w-24 text-sm text-muted-foreground">
+                      State
+                    </span>
+                    <StateDropdown
+                      size="sm"
+                      projectId={projectId as string}
+                      value={localIssue.stateId}
+                      onChange={async (value) => {
+                        await handleUpdateIssue({ stateId: value });
+                      }}
+                    />
+                  </div>
+
+                  {/* Assignees */}
+                  <div className="flex items-center gap-4">
+                    <span className="w-24 text-sm text-muted-foreground">
+                      Assignees
+                    </span>
+                    <AssigneeDropdown
+                      size="icon"
+                      projectId={projectId as string}
+                      values={localIssue.assignees.map(
+                        (assignee) => assignee.user?.id,
+                      )}
+                      onChange={async (values) => {
+                        const updatedAssignees = values.map((id) => ({
+                          user: { id },
+                        }));
+                        await updateIssue(
+                          workspaceSlug as string,
+                          projectId as string,
+                          issue.id,
+                          { assigneeIds: values },
+                        );
+                        setLocalIssue((prev) => ({
+                          ...prev,
+                          assignees: updatedAssignees as any, //TODO: Fix this
+                        }));
+                      }}
+                    />
+                  </div>
+
+                  {/* Priority */}
+                  <div className="flex items-center gap-4">
+                    <span className="w-24 text-sm text-muted-foreground">
+                      Priority
+                    </span>
+                    <PriorityDropdown
+                      size="sm"
+                      onChange={async (newPriority) => {
+                        await handleUpdateIssue({ priority: +newPriority });
+                      }}
+                      value={localIssue.priority.toString() as TIssuePriorities}
+                    />
+                  </div>
+
+                  {/* Dates */}
+                  <div className="flex items-center gap-4">
+                    <span className="w-24 text-sm text-muted-foreground">
+                      Start date
+                    </span>
+                    <DatePicker
+                      date={localIssue.startDate}
+                      Icon={CalendarCheck2}
+                      onDateChange={(date) => {
+                        handleUpdateIssue({ startDate: date });
+                      }}
+                      maxDate={localIssue.dueDate}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <span className="w-24 text-sm text-muted-foreground">
+                      Due date
+                    </span>
+                    <DatePicker
+                      date={localIssue.dueDate}
+                      Icon={CalendarClock}
+                      onDateChange={(date) => {
+                        handleUpdateIssue({ dueDate: date });
+                      }}
+                      minDate={localIssue.startDate}
+                    />
+                  </div>
+
+                  {/* Labels */}
+                  <div className="flex items-center gap-4">
+                    <span className="w-24 text-sm text-muted-foreground">
+                      Labels
+                    </span>
+                    <LabelDropdown
+                      projectId={projectId as string}
+                      placeHolder="Add labels"
+                      onChange={async (values) => {
+                        await handleUpdateIssue({ labelIds: values });
+
+                        setLocalIssue((prev) => ({
+                          ...prev,
+                          labels: values.map((id) => ({
+                            id,
+                            name: "",
+                            color: "", //TODO: Fix this
+                          })),
+                        }));
+                      }}
+                      values={localIssue.labels.map((label) => label.id)}
+                      maxDisplayedLabels={2}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Activity */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Activity
+                </h3>
+                {/* Activity content */}
+              </div>
+            </div>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}

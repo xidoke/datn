@@ -1,84 +1,80 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { apiClient } from "@/lib/api/api-client";
-import { use } from "react";
 import { useUserStore } from "./userStore";
+import { LoginDto, RegisterDto, User } from "@/types";
+import { AuthService } from "@/services/auth.service";
+import { use } from "react";
 
 interface AuthState {
   isLoading: boolean;
   error: string | undefined;
   isAuthenticated: boolean;
+  user: User | undefined;
 }
 interface AuthActions {
-  login: (email: string, password: string) => Promise<void>;
+  login: (loginDto: LoginDto) => Promise<void>;
   register: (
-    email: string,
-    password: string,
-    firstName: string,
-    lastName: string,
+    registerDto: RegisterDto
   ) => Promise<void>;
   logout: () => void;
   reset: () => void;
 }
 
+const authService = new AuthService();
 export interface AuthStore extends AuthState, AuthActions {}
 
 const initialState = {
   isLoading: false,
   error: undefined,
   isAuthenticated: false,
+  user: undefined,
 };
 export const useAuthStore = create<AuthState & AuthActions>()(
   persist(
     (set) => ({
       ...initialState,
-      login: async (email: string, password: string) => {
+      login: async (loginDto: LoginDto) => {
         set({ isLoading: true, error: undefined });
         try {
-          await apiClient.post("/auth/login", { email, password });
+          const result = await authService.login(loginDto);
           useUserStore.getState().fetchCurrentUser();
           set({
             isLoading: false,
             isAuthenticated: true,
+            user: result.data,
+            
           });
-        } catch (error: any) {
+        } catch (error : any) {
+          const errorMessage = error.message || "Failed to login. Please try again.";
           set({
-            error:
-              error.response?.data?.message ||
-              "Failed to login. Please check your credentials.",
+            error:errorMessage,
             isLoading: false,
             isAuthenticated: false,
+            
           });
+          throw new Error(errorMessage);
         }
       },
       // Test register
-      register: async (
-        email: string,
-        password: string,
-        firstName: string,
-        lastName: string,
+      register: async ( registerDto: RegisterDto
       ) => {
         set({ isLoading: true, error: undefined });
         try {
-          await apiClient.post("/auth/register", {
-            email,
-            password,
-            firstName,
-            lastName,
-          });
-          useUserStore.getState().fetchCurrentUser();
+          const result = await authService.register(registerDto);
+           useUserStore.getState().fetchCurrentUser();
           set({
             isLoading: false,
             isAuthenticated: true,
+            user: result.data,
           });
         } catch (error: any) {
+          const errorMessage = error?.message || "Failed to register. Please try again.";
           set({
-            error:
-              error.response?.data?.message ||
-              "Registration failed. Please try again.",
+            error: errorMessage,
             isLoading: false,
           });
+          throw new Error(errorMessage);
         }
       },
       reset: () => set(initialState),
@@ -88,18 +84,16 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           set({ isAuthenticated: false, error: undefined, isLoading: true });
 
           // Notify the backend
-          await apiClient.post("/auth/logout");
+          await authService.signOut();
 
           // Ensure isLoading is set to false after the request completes
-          set({ isLoading: false });
+          set(initialState);
         } catch (error: any) {
-          console.error("Logout error:", error);
+          const errorMessage = error?.message || "Failed to logout. Please try again.";
 
           // Set error state and isLoading to false
           set({
-            error:
-              error.response?.data?.message ||
-              "Logout failed. Please try again.",
+            error: errorMessage,
             isLoading: false,
           });
         }

@@ -72,19 +72,15 @@ export default function ProfileSettings() {
     setIsUpdating(true);
     try {
       const { firstName, lastName } = values;
-      const result = await updateUser(firstName, lastName);
-      if (result.success) {
-        toast({
-          title: "Profile updated",
-          description: "Your profile has been successfully updated.",
-        });
-      } else {
-        throw new Error(result.error);
-      }
-    } catch {
+      await updateUser(firstName, lastName);
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update profile. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to update profile",
         variant: "destructive",
       });
     } finally {
@@ -105,7 +101,7 @@ export default function ProfileSettings() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to deactivate account. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to deactivate account",
         variant: "destructive",
       });
     } finally {

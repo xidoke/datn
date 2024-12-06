@@ -39,6 +39,7 @@ import { useUser } from "@/stores/userStore";
 import { useMemberStore } from "@/stores/member/memberStore";
 import { API_BASE_URL } from "@/helpers/common.helper";
 import { hasPermission } from "@/helpers/permission";
+import { useParams } from "next/navigation";
 
 export default function MembersPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,27 +47,24 @@ export default function MembersPage() {
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const { toast } = useToast();
   const {
-    currentWorkspace,
-    // updateMemberRole, // TODO: Implement this function
-    // removeMember, // TODO: Implement this function
+    getWorkspaceBySlug
     // leaveWorkspace, // TODO: Implement this function
   } = useWorkspace();
-  const updateMemberRole = (...agvs: string[]) => {};
-  const removeMember = (...agvs: string[]) => {};
+
   const leaveWorkspace = (...agvs: string[]) => {};
 
-  const { inviteMember } = useMemberStore();
+  const { workspaceSlug } = useParams();
+  const currentWorkspace = getWorkspaceBySlug(workspaceSlug as string)
+  const { inviteMember, updateMemberRole, removeMember } = useMemberStore();
   const userPermission = currentWorkspace ? currentWorkspace.permissions : [];
   const { workspaceMemberMap, workspaceMemberIds } = useMemberStore();
   const { data: user } = useUser();
   const membersRecord = workspaceMemberMap[currentWorkspace!.slug];
   const members = workspaceMemberIds.map((id) => membersRecord[id]);
   const currentUser = members.find((member) => member.user.id === user?.id);
-
-  console.dir(members);
   const filteredMembers = members.filter(
     (member) =>
-      member.user.displayName
+      (member.user.firstName + " " + member.user.lastName)
         ?.toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
       member.user.email.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -74,12 +72,14 @@ export default function MembersPage() {
 
   const handleRoleChange = async (memberId: string, newRole: string) => {
     try {
-      await updateMemberRole(currentWorkspace!.id, memberId, newRole);
+      console.log(currentWorkspace?.slug, memberId, newRole);
+      await updateMemberRole(currentWorkspace?.slug as string, memberId, newRole);
       toast({
         title: "Role updated",
         description: "Member role has been updated successfully.",
       });
-    } catch {
+    } catch (error) {
+      console.log(error);
       toast({
         title: "Error",
         description: "Failed to update member role. Please try again.",
@@ -90,7 +90,7 @@ export default function MembersPage() {
 
   const handleRemoveMember = async (memberId: string) => {
     try {
-      await removeMember(currentWorkspace!.id, memberId);
+      await removeMember(currentWorkspace!.slug, memberId);
       toast({
         title: "Member removed",
         description: "Member has been removed from the workspace.",
@@ -199,17 +199,20 @@ export default function MembersPage() {
                     <AvatarImage src={API_BASE_URL + member.user.avatarUrl} />
                     <AvatarFallback></AvatarFallback>
                   </Avatar>
-                  {member.user.displayName}
+                  {
+                    member.user.firstName + " " + member.user.lastName
+                  }
                 </div>
               </TableCell>
               <TableCell>{member.user.email}</TableCell>
               <TableCell>
                 {hasPermission(userPermission, "UPDATE_MEMBER_ROLE") &&
-                member.user.id !== currentUser?.user.id ? (
+                member.user.id !== currentUser?.user.id &&
+                member.role !== "OWNER" ? (
                   <Select
                     value={member.role}
                     onValueChange={(value) =>
-                      handleRoleChange(member.user.id, value)
+                      handleRoleChange(member.id, value.toUpperCase())
                     }
                   >
                     <SelectTrigger className="w-[100px]">
@@ -240,7 +243,7 @@ export default function MembersPage() {
                     ) : (
                       hasPermission(userPermission, "REMOVE_MEMBER") && (
                         <DropdownMenuItem
-                          onClick={() => handleRemoveMember(member.user.id)}
+                          onClick={() => handleRemoveMember(member.id)}
                         >
                           Remove member
                         </DropdownMenuItem>

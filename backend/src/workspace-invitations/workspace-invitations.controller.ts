@@ -5,7 +5,6 @@ import {
   Param,
   UseGuards,
   Body,
-  SetMetadata,
   Query,
   Delete,
 } from "@nestjs/common";
@@ -15,6 +14,7 @@ import { InviteWorkspaceDto } from "./dto/invite-workspace.dto";
 import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
 import { WorkspacePermission } from "src/permission/permission.type";
 import { PaginationQueryDto } from "src/user/dto/pagination-query.dto";
+import { Permissions } from "src/permission/permission.decorator";
 
 @Controller("workspaces/:slug/invitations")
 @UseGuards(CognitoAuthGuard, WorkspacePermissionGuard)
@@ -24,7 +24,7 @@ export class WorkspaceInvitationsController {
   ) {}
   // invitations
   @Get()
-  @SetMetadata("workspace_permission", WorkspacePermission.VIEW_INVITATIONS)
+  @Permissions(WorkspacePermission.VIEW_INVITATIONS)
   async getInvitations(
     @Param("slug") slug: string,
     @Query() paginationQueryDto: PaginationQueryDto,
@@ -36,7 +36,7 @@ export class WorkspaceInvitationsController {
   }
 
   @Post()
-  @SetMetadata("workspace_permission", WorkspacePermission.INVITE_MEMBER)
+  @Permissions(WorkspacePermission.INVITE_MEMBER)
   async createInvitation(
     @Param("slug") slug: string,
     @Body() inviteWorkspaceDto: InviteWorkspaceDto,
@@ -48,14 +48,14 @@ export class WorkspaceInvitationsController {
   }
 
   @Get(":id")
-  @SetMetadata("workspace_permission", WorkspacePermission.VIEW_INVITATIONS)
+  @Permissions(WorkspacePermission.VIEW_INVITATIONS)
   async getInvitation(@Param("id") id: string) {
     return this.workspaceInvitationService.getInvitation(id);
   }
 
   // Cancel invitation
   @Delete(":invitationId")
-  @SetMetadata("workspace_permission", WorkspacePermission.CANCEL_INVITATION)
+  @Permissions(WorkspacePermission.CANCEL_INVITATION)
   async cancelInvitation(
     @Param("slug") slug: string,
     @Param("invitationId") invitationId: string,

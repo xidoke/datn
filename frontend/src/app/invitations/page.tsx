@@ -67,11 +67,13 @@ const UserInvitationsPage = () => {
       const acceptPromises = invitationsRespond.map((invitationId) =>
         workspaceService.acceptWorkspaceInvitation(invitationId),
       );
-      const results = await Promise.all(acceptPromises);
+      // TODO: fix this
+      const results : any= await Promise.all(acceptPromises);
 
       // Update last workspace slug with the last accepted invitation
       if (results.length > 0) {
-        const lastAcceptedWorkspace = results[results.length - 1];
+        // TODO: fix this
+        const lastAcceptedWorkspace : any = results[results.length - 1];
         await updateLastWorkspaceSlug(lastAcceptedWorkspace.slug);
       }
 

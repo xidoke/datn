@@ -6,8 +6,9 @@ import {
   ChevronDown,
   MoreHorizontal,
   Folder,
-  Layout,
   Settings,
+  RefreshCcw,
+  CheckSquare2,
 } from "lucide-react";
 import { useProjectStore } from "@/stores/projectStore";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,10 @@ import {
 import { cn } from "@/lib/utils";
 import { CreateProjectDialog } from "./projects/create-project-dialog";
 
-const projectSubItems = [{ name: "Issues", icon: Layout, href: "issues" }];
+const projectSubItems = [
+  { name: "Issues", icon: CheckSquare2, href: "issues" },
+  { name: "Cycles", icon: RefreshCcw, href: "cycles" },
+];
 
 const expandedSubItems = [
   { name: "Settings", icon: Settings, href: "settings" },
@@ -45,7 +49,7 @@ const expandedSubItems = [
 
 export function NavProjects() {
   const { workspaceSlug } = useParams();
-  const { projects, loader: isLoading } = useProjectStore();
+  const { projects, isLoading } = useProjectStore();
 
   return (
     <SidebarGroup>
@@ -76,23 +80,26 @@ export function NavProjects() {
               <Collapsible key={project.id}>
                 <SidebarMenuItem className="group">
                   <div className="flex w-full items-center">
-                    <CollapsibleTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 p-0"
-                      >
-                        <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                        <span className="sr-only">Toggle project menu</span>
-                      </Button>
-                    </CollapsibleTrigger>
                     <SidebarMenuButton asChild className="flex-1">
                       <Link
                         href={`/${workspaceSlug}/projects/${project.id}/issues`}
-                        className="flex items-center gap-2 px-2"
+                        className="flex justify-between px-2"
                       >
-                        <Folder className="h-4 w-4 text-primary" />
-                        <span className="truncate">{project.name}</span>
+                        <div className="flex items-center justify-center">
+                          <Folder className="h-4 w-4" />
+                          <span className="ml-2 truncate">{project.name}</span>
+                        </div>
+
+                        <CollapsibleTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 items-end p-0 opacity-0 group-hover:opacity-100"
+                          >
+                            <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                            <span className="sr-only">Toggle project menu</span>
+                          </Button>
+                        </CollapsibleTrigger>
                       </Link>
                     </SidebarMenuButton>
                     <DropdownMenu>
@@ -147,7 +154,7 @@ export function NavProjects() {
               href={`/${workspaceSlug}/projects`}
               className={cn(
                 "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-                "text-muted-foreground hover:bg-muted hover:text-foreground",
+                "text-muted-foreground hover:bg-muted",
               )}
             >
               <MoreHorizontal className="h-4 w-4" />

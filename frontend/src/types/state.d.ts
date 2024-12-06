@@ -1,3 +1,5 @@
+export type StateGroup = "backlog" | "unstarted" | "started" | "completed" | "cancelled";
+
 export interface State {
   id: string;
   name: string;
@@ -5,7 +7,7 @@ export interface State {
   // projectId: string;p`
   isDefault?: boolean;
   description?: string;
-  group: string;
+  group: StateGroup;
   createdAt?: string;
   updatedAt?: string;
 }

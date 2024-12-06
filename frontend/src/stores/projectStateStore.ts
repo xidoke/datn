@@ -1,132 +1,122 @@
 import { State } from "@/types";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
+import { StateService } from "@/services/state.service";
 
+
+interface ProjectState {
+  states: State[];
+  isLoading: boolean;
+}
+
+// init value
+const initialState: ProjectState = {
+  states: [],
+  isLoading: false,
+};
 interface ProjectStateStore {
   states: State[];
   isLoading: boolean;
-  fetchStates: (projectId: string) => Promise<void>;
-  addState: (state: Omit<State, "id">) => Promise<void>;
-  updateState: (id: string, updates: Partial<State>) => Promise<void>;
-  deleteState: (id: string) => Promise<void>;
+  getStateById: (id: string) => State | undefined;
+  fetchStates: (workspaceSlug: string, projectId: string) => Promise<void>;
+  addState: (workspaceSlug: string, projectId: string, state: Omit<State, "id">) => Promise<void>;
+  updateState: (workspaceSlug: string, projectId: string, id: string, updates: Partial<State>) => Promise<void>;
+  deleteState: (workspaceSlug: string, projectId: string, id: string) => Promise<void>;
+  setDefaultState: (workspaceSlug: string, projectId: string, id: string) => Promise<void>;
+  reset: () => void;
 }
 
-const sampleStates: State[] = [
-  {
-    id: "1",
-    name: "Backlog",
-    color: "#9333ea",
-    group: "backlog",
-    description: "Initial state for new issues",
-    isDefault: true,
-  },
-  {
-    id: "2",
-    name: "Todo",
-    color: "#3b82f6",
-    group: "unstarted",
-    description: "Issues to be worked on",
-  },
-  {
-    id: "3",
-    name: "In Progress",
-    color: "#eab308",
-    group: "started",
-    description: "Issues currently being worked on",
-  },
-  {
-    id: "4",
-    name: "Done",
-    color: "#22c55e",
-    group: "completed",
-    description: "Completed issues",
-  },
-  {
-    id: "5",
-    name: "Cancelled",
-    color: "#ef4444",
-    group: "cancelled",
-    description: "Cancelled or abandoned issues",
-  },
-];
+const stateService = new StateService();
 
 export const useProjectStateStore = create<ProjectStateStore>()(
   devtools(
     persist(
       (set, get) => ({
-        states: [],
-        isLoading: false,
+        ...initialState,
 
-        fetchStates: async (projectId: string) => {
+        reset: () => set(initialState),
+
+        fetchStates: async (workspaceSlug: string, projectId: string) => {
           set({ isLoading: true });
           try {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-
-            const currentStates = get().states;
-            if (currentStates.length === 0) {
-              set({ states: sampleStates });
-            }
+            const states = await stateService.fetchStates(workspaceSlug, projectId);
+            set({ states });
           } catch (error) {
-            throw new Error("Failed to fetch states");
+            console.error("Failed to fetch states:", error);
+            throw error;
           } finally {
             set({ isLoading: false });
           }
         },
 
-        addState: async (state: Omit<State, "id">) => {
-          const newState = { ...state, id: Date.now().toString() };
-          set((store) => ({ states: [...store.states, newState] }));
-
+        getStateById: (id: string) => get().states.find((state) => state.id === id),
+        addState: async (workspaceSlug: string, projectId: string, state: Omit<State, "id">) => {
           try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            // If API call succeeds, the optimistic update remains
+            const newState = await stateService.addState(workspaceSlug, projectId, state);
+            set((store) => ({ states: [...store.states, newState] }));
           } catch (error) {
-            // If API call fails, revert the optimistic update
-            set((store) => ({
-              states: store.states.filter((s) => s.id !== newState.id),
-            }));
+            console.error("Failed to add state:", error);
             throw error;
           }
         },
 
-        updateState: async (id: string, updates: Partial<State>) => {
+        updateState: async (workspaceSlug: string, projectId: string, id: string, updates: Partial<State>) => {
           const previousStates = get().states;
           set((store) => ({
             states: store.states.map((state) =>
-              state.id === id ? { ...state, ...updates } : state,
+              state.id === id ? { ...state, ...updates } : state
             ),
           }));
 
-          // If setting a new default state, update other states
-          if (updates.isDefault) {
+          try {
+            const updatedState = await stateService.updateState(workspaceSlug, projectId, id, updates);
             set((store) => ({
               states: store.states.map((state) =>
-                state.id !== id ? { ...state, isDefault: false } : state,
+                state.id === id ? updatedState : state
               ),
             }));
-          }
 
-          try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            // If API call succeeds, the optimistic update remains
+            // If setting a new default state, update other states
+            if (updates.isDefault) {
+              set((store) => ({
+                states: store.states.map((state) =>
+                  state.id !== id ? { ...state, isDefault: false } : state
+                ),
+              }));
+            }
           } catch (error) {
-            // If API call fails, revert the optimistic update
+            console.error("Failed to update state:", error);
             set({ states: previousStates });
             throw error;
           }
         },
 
-        deleteState: async (id: string) => {
+        deleteState: async (workspaceSlug: string, projectId: string, id: string) => {
           const previousStates = get().states;
           set((store) => ({
             states: store.states.filter((state) => state.id !== id),
           }));
 
           try {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            // If API call succeeds, the optimistic update remains
+            await stateService.deleteState(workspaceSlug, projectId, id);
           } catch (error) {
-            // If API call fails, revert the optimistic update
+            console.error("Failed to delete state:", error);
+            set({ states: previousStates });
+            throw error;
+          }
+        },
+
+        setDefaultState: async (workspaceSlug: string, projectId: string, id: string) => {
+          const previousStates = get().states;
+          try {
+            const updatedState = await stateService.setDefaultState(workspaceSlug, projectId, id);
+            set((store) => ({
+              states: store.states.map((state) =>
+                state.id === id ? updatedState : { ...state, isDefault: false }
+              ),
+            }));
+          } catch (error) {
+            console.error("Failed to set default state:", error);
             set({ states: previousStates });
             throw error;
           }
@@ -134,7 +124,8 @@ export const useProjectStateStore = create<ProjectStateStore>()(
       }),
       {
         name: "project-state-storage",
-      },
-    ),
-  ),
+      }
+    )
+  )
 );
+

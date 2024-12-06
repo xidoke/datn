@@ -17,11 +17,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
+import { hasPermission } from "@/helpers/permission";
 
 export default function ProjectSettingsPage() {
   const params = useParams();
   const router = useRouter();
   const { projects, updateProject, deleteProject } = useProject();
+  const { getPermissions } = useWorkspaceStore();
+  const permissions = getPermissions(params.workspaceSlug as string);
   const project = projects.find((p) => p.id === params.projectId);
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -108,7 +112,7 @@ export default function ProjectSettingsPage() {
                 disabled
               />
             </div>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={ !hasPermission(permissions, "UPDATE_PROJECT")|| isLoading}>
               {isLoading ? "Saving..." : "Save changes"}
             </Button>
           </form>
@@ -125,7 +129,7 @@ export default function ProjectSettingsPage() {
             onOpenChange={setIsDeleteDialogOpen}
           >
             <DialogTrigger asChild>
-              <Button variant="destructive">Delete Project</Button>
+              <Button variant="destructive" disabled={!hasPermission(permissions, "DELETE_PROJECT")}>Delete Project</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>

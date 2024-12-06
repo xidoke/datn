@@ -13,7 +13,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { useAppRouter } from "@/hooks/use-app-router";
 import { useWorkspace } from "@/stores/workspaceStore";
-import { useLogout } from "@/hooks/useLogout";
 
 export default function CreateWorkspaceForm() {
   const router = useAppRouter();
@@ -31,14 +30,14 @@ export default function CreateWorkspaceForm() {
     setIsLoading(true);
 
     try {
-      const workspace = await createWorkspace({
+      await createWorkspace({
         name: formData.name,
         // logo: "building", // Default logo
         slug: formData.slug,
       });
-      router.push(`/${workspace.slug}`);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error : any) {
+      router.push(`/${formData.slug}`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       setError(error.response?.data?.message || "Failed to create workspace");
     } finally {
       setIsLoading(false);
@@ -46,7 +45,7 @@ export default function CreateWorkspaceForm() {
   };
 
   const handleGoBack = () => {
-// TODO: handle log out
+    // TODO: handle log out
     router.back();
   };
 
@@ -110,9 +109,7 @@ export default function CreateWorkspaceForm() {
         </Button>
       </div>
       {/* Error message */}
-      {error && (
-        <div className="text-red-500 text-sm font-medium">{error}</div>
-      )}
+      {error && <div className="text-sm font-medium text-red-500">{error}</div>}
       {/* logout */}
     </form>
   );

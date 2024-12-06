@@ -16,4 +16,6 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   lastWorkspaceSlug?: string;
+
+  
 }

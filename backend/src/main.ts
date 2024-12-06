@@ -1,9 +1,10 @@
-import { NestFactory } from "@nestjs/core";
+import { NestFactory, Reflector } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import * as cookieParser from "cookie-parser";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { join } from "path";
-import { ValidationPipe } from "@nestjs/common";
+import { BadRequestException, ValidationPipe } from "@nestjs/common";
+import { ResponseInterceptor } from "./common/response.interceptor";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -39,16 +40,27 @@ async function bootstrap() {
     ],
   });
 
+  app.useGlobalInterceptors(new ResponseInterceptor(new Reflector()));
+
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
       transform: true,
+      whitelist: true,
       forbidNonWhitelisted: true,
-      transformOptions: {
-        enableImplicitConversion: true,
+      exceptionFactory: (errors) => {
+        const formattedErrors = {};
+        errors.forEach((error) => {
+          formattedErrors[error.property] = Object.values(error.constraints);
+        });
+        return new BadRequestException({
+          status: false,
+          message: errors[0].constraints[Object.keys(errors[0].constraints)[0]],
+          errors: formattedErrors,
+        });
       },
     }),
   );
+
   app.use(cookieParser());
   await app.listen(8000);
   console.log("Server is running");

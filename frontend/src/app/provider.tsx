@@ -33,7 +33,7 @@ export const AppProvider: FC<IAppProvider> = (props) => {
             value={{
               refreshWhenHidden: false,
               revalidateIfStale: true,
-              revalidateOnFocus: true,
+              revalidateOnFocus: false,
               revalidateOnMount: true,
               errorRetryCount: 3,
             }}

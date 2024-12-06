@@ -1,5 +1,8 @@
-export type Priority = "urgent" | "high" | "medium" | "low" | "none";
+import { ICycle } from "./cycle";
+import { User } from "./user";
 
+// Define the priority types
+type TIssuePriorities = '0' | '1' | '2' | '3' | '4';
 export interface IssueLabel {
   id: string;
   name: string;
@@ -8,54 +11,61 @@ export interface IssueLabel {
 
 export interface IssueAssignee {
   id: string;
-  name: string;
-  avatar?: string;
+  avatarUrl: string;
+  email: string;
 }
 
-export interface Issue {
+
+interface Issue {
   id: string;
-  projectId: string;
   title: string;
-  description: string;
+  description?: string;
+  fullIdentifier: string;
+  sequenceNumber: number;
+  project: {
+  title: string;
+  description?: string;
+  stateId: string;
+  state: State;
+    id: string;
+    name: string;
+    token: string;
+  };
+  stateId: string;
   state: {
     id: string;
     name: string;
     color: string;
     group: string;
   };
-  priority: Priority;
+  creator: User;
+  assigneeIds: string[];
   assignees: IssueAssignee[];
-  labels: IssueLabel[];
+  labelIds: string[];
+  labels: Label[];
+  priority: number;
   startDate?: string;
   dueDate?: string;
-  estimate?: number;
-  parentId?: string;
-  moduleId?: string;
-  cycleId?: string;
   createdAt: string;
   updatedAt: string;
-  createdBy: string;
-  order: number;
+  cycleId: string;
+  cycle: ICycle;
 }
 
-export interface IssueFilters {
-  state?: string[];
-  assignees?: string[];
-  labels?: string[];
-  priority?: Priority[];
-  startDate?: [Date | null, Date | null];
-  dueDate?: [Date | null, Date | null];
-  createdBy?: string[];
+export interface IssueAssignee {
+  id: string;
+  user: User;
+  userId: string;
+  issueId: string;
 }
 
-export type IssueView = "list" | "kanban" | "calendar" | "gantt";
+  export interface Column {
+  id: string;
+  title: string;
+  issues: Issue[];
+  icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>;
+}
 
-export type GroupBy = "state" | "priority" | "assignee" | "label" | "none";
-
-export type OrderBy =
-  | "manual"
-  | "title"
-  | "priority"
-  | "startDate"
-  | "dueDate"
-  | "createdAt";
+export interface Board {
+  columns: Column[];
+}

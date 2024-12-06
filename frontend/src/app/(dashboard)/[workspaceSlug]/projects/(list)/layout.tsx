@@ -7,7 +7,9 @@ const ListProjectLayout = () => {
     <>
       <ListProjectHeader />
       <ContentWrapper>
-        <ListProjectPage />
+        <div className="h-screen w-full">
+          <ListProjectPage />
+        </div>
       </ContentWrapper>
     </>
   );

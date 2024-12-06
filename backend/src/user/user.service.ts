@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { LoginDto } from "./dto/login.dto";
+import { LoginDto } from "../auth/dto/login.dto";
 import { Role } from "src/auth/enums/role.enum";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { CognitoService } from "src/auth/cognito.service";

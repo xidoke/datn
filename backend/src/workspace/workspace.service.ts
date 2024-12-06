@@ -148,7 +148,7 @@ export class WorkspaceService {
           members: {
             create: {
               userId: userId,
-              role: "ADMIN", // The creator also gets ADMIN role in workspace_members
+              role: "OWNER", // The creator also gets ADMIN role in workspace_members
             },
           },
         },
@@ -187,7 +187,7 @@ export class WorkspaceService {
       updatedAt: workspace.updatedAt,
       memberCount: workspace._count.members,
       projectCount: workspace._count.projects,
-      permission: this.permissionService.getPermissionsForRole(memberRole),
+      permissions: this.permissionService.getPermissionsForRole(memberRole),
     };
   }
 
@@ -326,5 +326,236 @@ export class WorkspaceService {
       where: { slug },
       data: { logoUrl },
     });
+  }
+
+  async getWorkspaceDashboard(slug: string, userId: string) {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { slug },
+      include: {
+        projects: true,
+      },
+    });
+
+    if (!workspace) {
+      throw new NotFoundException("Workspace not found");
+    }
+
+    const member = await this.prisma.workspaceMember.findFirst({
+      where: { workspaceId: workspace.id, userId: userId },
+    });
+
+    if (!member) {
+      throw new ForbiddenException("You don't have access to this workspace");
+    }
+
+    // Get current date
+    const now = new Date();
+
+    // Get assigned issues count
+    const assignedCount = await this.prisma.issue.count({
+      where: {
+        projectId: {
+          in: workspace.projects.map((p) => p.id),
+        },
+        assignees: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+    });
+
+    // Get overdue issues count
+    const overdueCount = await this.prisma.issue.count({
+      where: {
+        projectId: {
+          in: workspace.projects.map((p) => p.id),
+        },
+        assignees: {
+          some: {
+            userId: userId,
+          },
+        },
+        dueDate: {
+          lt: now,
+        },
+        state: {
+          group: {
+            notIn: ["completed", "cancelled"],
+          },
+        },
+      },
+    });
+
+    // Get created issues count
+    const createdCount = await this.prisma.issue.count({
+      where: {
+        projectId: {
+          in: workspace.projects.map((p) => p.id),
+        },
+        creatorId: userId,
+      },
+    });
+
+    // Get completed issues count
+    const completedCount = await this.prisma.issue.count({
+      where: {
+        projectId: {
+          in: workspace.projects.map((p) => p.id),
+        },
+        state: {
+          group: {
+            in: ["completed"],
+          },
+        },
+        creatorId: userId,
+      },
+    });
+
+    // Get recent assigned issues
+    const recentAssignedIssues = await this.prisma.issue.findMany({
+      where: {
+        projectId: {
+          in: workspace.projects.map((p) => p.id),
+        },
+        assignees: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        priority: true,
+        dueDate: true,
+        sequenceNumber: true,
+        state: {
+          select: {
+            name: true,
+            group: true,
+          },
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            token: true,
+          },
+        },
+      },
+    });
+
+    // Get recent created issues
+    const recentCreatedIssues = await this.prisma.issue.findMany({
+      where: {
+        projectId: {
+          in: workspace.projects.map((p) => p.id),
+        },
+        creatorId: userId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        priority: true,
+        sequenceNumber: true,
+        state: {
+          select: {
+            name: true,
+            group: true,
+          },
+        },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            token: true,
+          },
+        },
+        assignees: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Get issues grouped by state
+    const issuesByState = await this.prisma.issue.groupBy({
+      by: ["stateId"],
+      where: {
+        projectId: {
+          in: workspace.projects.map((p) => p.id),
+        },
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    // Fetch state information for the grouped issues
+    const statesWithCounts = await Promise.all(
+      issuesByState
+        .filter((item) => item.stateId)
+        .map(async (item) => {
+          const state = await this.prisma.state.findUnique({
+            where: { id: item.stateId },
+            select: { name: true, group: true },
+          });
+          return {
+            stateName: state?.name,
+            stateGroup: state?.group,
+            count: item._count._all,
+          };
+        }),
+    );
+
+    // Group the states by their group
+    const issuesByStateGroup = statesWithCounts.reduce(
+      (acc, item) => {
+        if (!acc[item.stateGroup]) {
+          acc[item.stateGroup] = 0;
+        }
+        acc[item.stateGroup] += item.count;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+
+    // Convert the grouped data to an array format
+    const issuesByStateGroupArray = Object.entries(issuesByStateGroup).map(
+      ([group, count]) => ({
+        group: group,
+        count,
+      }),
+    );
+
+    return {
+      stats: {
+        assignedCount,
+        overdueCount,
+        createdCount,
+        completedCount,
+      },
+      recentAssignedIssues,
+      recentCreatedIssues,
+      issuesByStateGroup: issuesByStateGroupArray,
+    };
   }
 }
