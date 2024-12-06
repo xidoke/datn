@@ -5,20 +5,16 @@ import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { Search } from "lucide-react";
 import { AlignLeft, Clock, Circle, CheckCircle2, XCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import Column from "./Column";
 import IssueModal from "./IssueModal";
 import useIssueStore from "@/stores/issueStore";
 import { useProjectLabelStore } from "@/stores/projectLabelStore";
 import { useProjectStateStore } from "@/stores/projectStateStore";
 import { useParams } from "next/navigation";
-import { Issue } from "@/types";
+import { Issue, Label, State } from "@/types";
+import FilterDropdown from "@/components/dropdown/filter";
+import { filterStore } from "@/stores/filterStore";
+import { useMemberStore } from "@/stores/member/memberStore";
 
 const stateGroups = [
   { name: "backlog", label: "Backlog", icon: AlignLeft },
@@ -28,11 +24,57 @@ const stateGroups = [
   { name: "cancelled", label: "Cancelled", icon: XCircle },
 ];
 
-export default function KanbanBoard() {
-  const { issues, fetchIssues, updateIssue } = useIssueStore();
-  const { states, fetchStates } = useProjectStateStore();
-  const { labels, fetchLabels } = useProjectLabelStore();
+interface KanbanBoardProps {
+  issues: Issue[];
+  states: State[];
+  labels: Label[];
+}
+
+export default function KanbanBoard({
+  issues,
+  states,
+  labels,
+}: KanbanBoardProps) {
+  const { fetchIssues, updateIssue } = useIssueStore();
+  const { fetchStates } = useProjectStateStore();
+  const { fetchLabels } = useProjectLabelStore();
+  const { workspaceMemberIds, workspaceMemberMap } = useMemberStore()
+  // filter
+  const {
+    statusIds,
+    assigneeIds,
+    cycleIds,
+    labelIds,
+    setFilter,
+    resetFilter,
+  } = filterStore();
   const [selectedIssue, setSelectedIssue] = React.useState<Issue | null>(null);
+  const [search, setSearch] = React.useState("");
+
+  const issueAfterFilter = issues.filter((issue) => {
+    if (
+      statusIds.length > 0 &&
+      !statusIds.includes(issue.state?.id as string)
+    ) {
+      return false;
+    }
+
+    if (
+      labelIds.length > 0 &&
+      !issue.labels?.some((label) => labelIds.includes(label.id))
+    ) {
+      return false;
+    }
+  
+    return true;
+  });
+
+  const issueAfterSearchandFilter = issueAfterFilter.filter((issue) => {
+    if (search.length > 0 && !issue.title.includes(search)) {
+      return false;
+    }
+    return true;
+  })
 
   const { workspaceSlug, projectId } = useParams();
   useEffect(() => {
@@ -51,12 +93,12 @@ export default function KanbanBoard() {
           id: state.id,
           icon: group.icon,
           title: state.name,
-          issues: issues.filter((issue) => issue.state?.id === state.id),
+          issues: issueAfterSearchandFilter.filter((issue) => issue.state?.id === state.id),
           state, // Add the state object to pass to Column
         }));
       })
       .flat();
-  }, [states, issues]);
+  }, [states, issueAfterFilter]);
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;
@@ -95,24 +137,24 @@ export default function KanbanBoard() {
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input className="w-64 pl-8 text-sm" placeholder="Search..." />
+            <Input className="w-64 pl-8 text-sm" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)}/>
           </div>
-          <Select>
-            <SelectTrigger className="w-[180px] text-sm">
-              <SelectValue placeholder="Filter" />
-            </SelectTrigger>
-            <SelectContent>
-              {labels.map((label) => (
-                <SelectItem key={label.id} value={label.id}>
-                  {label.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <FilterDropdown
+            label="Status"
+            options={states}
+            selectedIds={statusIds}
+            onChange={(selected) => setFilter({ statusIds: selected })}
+          />
+          <FilterDropdown
+            label="Labels"
+            options={labels}
+            selectedIds={labelIds}
+            onChange={(selected) => setFilter({ labelIds: selected })}
+          />
         </div>
       </div>
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex-1 overflow-x-auto">
+        <div className="flex-1 overflow-x-auto scrollbar-thin">
           <div className="flex h-full gap-4 p-4">
             {columns.map((column) => (
               <Column
@@ -125,7 +167,7 @@ export default function KanbanBoard() {
         </div>
       </DragDropContext>
       {selectedIssue && (
-        <IssueModal issue={selectedIssue} onClose={handleCloseModal} />
+        <IssueModal issue={selectedIssue} onClose={handleCloseModal}/>
       )}
     </div>
   );

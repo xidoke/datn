@@ -76,7 +76,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       },
       createWorkspace: async (data: Partial<Workspace>) => {
         try {
-          const res = await apiClient.post("workspaces", data);
+          const res : any= await apiClient.post("workspaces", data);
           const workspace = res.data
           set({
             workspaces: [...(get().workspaces || []), workspace],
@@ -100,7 +100,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           throw new Error("Workspace not found");
         }
         try {
-          const res = await apiClient.patch(
+          const res : any= await apiClient.patch(
             `workspaces/${workspaceSlug}`,
             data,
           );
@@ -120,7 +120,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           const formData = new FormData();
           formData.append("logo", logoFile);
 
-          const res = await apiClient.patch(
+          const res : any= await apiClient.patch(
             `workspaces/${slug}/logo`,
             formData,
             {

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { Plus } from "lucide-react";
+import { CalendarCheck2, CalendarClock, Plus } from "lucide-react";
 import useIssueStore from "@/stores/issueStore";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ import { StateDropdown } from "../dropdown/state";
 import { PriorityDropdown } from "../dropdown/priority";
 import { TIssuePriorities } from "@/types";
 import { LabelDropdown } from "../dropdown/label";
+import { AssigneeDropdown } from "../dropdown/assignees";
+import { DatePicker } from "../ui/date-picker";
 
 interface CreateIssueDialogProps {
   children?: React.ReactNode;
@@ -35,6 +37,8 @@ interface FormData {
   stateId: string;
   dueDate?: string;
   labelIds?: string[];
+  assigneeIds?: string[];
+  startDate?: string;
 }
 
 export function CreateIssueDialog({
@@ -42,8 +46,9 @@ export function CreateIssueDialog({
   children,
 }: CreateIssueDialogProps) {
   const { createIssue } = useIssueStore();
-  // const { labels } = useProjectLabelStore();
   const { states } = useProjectStateStore();
+  const { cycleId } = useParams();
+
   const defaultState = states.find((state) => state.isDefault === true);
 
   const params = useParams();
@@ -58,6 +63,9 @@ export function CreateIssueDialog({
     priority: 0,
     stateId: stateId || defaultState?.id || "",
     labelIds: [],
+    assigneeIds: [],
+    startDate: undefined,
+    dueDate: undefined,
   });
 
   // Reset form data when dialog opens
@@ -69,6 +77,9 @@ export function CreateIssueDialog({
         priority: 0,
         stateId: stateId || defaultState?.id || "",
         labelIds: [],
+        assigneeIds: [],
+        startDate: undefined,
+        dueDate: undefined,
       });
     }
   }, [open, stateId, defaultState]);
@@ -79,7 +90,16 @@ export function CreateIssueDialog({
 
     setIsSubmitting(true);
     try {
-      const { title, description, priority, stateId, labelIds } = formData;
+      const {
+        title,
+        description,
+        priority,
+        stateId,
+        labelIds,
+        assigneeIds,
+        startDate,
+        dueDate,
+      } = formData;
 
       await createIssue(workspaceSlug, projectId, {
         title,
@@ -87,6 +107,10 @@ export function CreateIssueDialog({
         priority,
         stateId,
         labelIds,
+        assigneeIds,
+        startDate,
+        dueDate,
+        cycleId: cycleId as string,
       });
       setOpen(false);
       setFormData({
@@ -95,6 +119,9 @@ export function CreateIssueDialog({
         priority: 2,
         stateId: "",
         labelIds: [],
+        assigneeIds: [],
+        startDate: undefined,
+        dueDate: undefined,
       });
       // toast hook
       toast({
@@ -168,7 +195,7 @@ export function CreateIssueDialog({
           </div>
 
           <hr />
-          <div className="flex space-x-4">
+          <div className="flex flex-wrap space-x-4">
             <div>
               <StateDropdown
                 value={formData.stateId}
@@ -180,6 +207,8 @@ export function CreateIssueDialog({
             </div>
             <div>
               <PriorityDropdown
+                size="sm"
+                placeholder="Select priority"
                 value={formData.priority.toString() as TIssuePriorities}
                 onChange={(value) =>
                   setFormData((prev) => ({
@@ -191,9 +220,11 @@ export function CreateIssueDialog({
             </div>
             <div>
               <LabelDropdown
+                placeHolder="Select labels"
                 projectId={projectId}
                 showCount={false}
-                maxDisplayedLabels={3}
+                maxDisplayedLabels={2}
+                size="default"
                 values={formData.labelIds ?? []}
                 onChange={(values) =>
                   setFormData((prev) => ({ ...prev, labelIds: values }))
@@ -201,7 +232,41 @@ export function CreateIssueDialog({
               />
             </div>
 
-            {/* <div className="flex-1">
+            <div>
+              <DatePicker
+                date={formData.startDate}
+                Icon={CalendarCheck2}
+                onDateChange={(date) => {
+                  setFormData((prev) => ({ ...prev, startDate: date }));
+                }}
+                maxDate={formData.dueDate}
+                placeholder="Start date"
+              />
+            </div>
+            <div>
+              <DatePicker
+                date={formData.dueDate}
+                Icon={CalendarClock}
+                onDateChange={(date) => {
+                  setFormData((prev) => ({ ...prev, dueDate: date }));
+                }}
+                minDate={formData.startDate}
+                placeholder="Due date"
+              />
+            </div>
+
+            <div>
+              <AssigneeDropdown
+                projectId={projectId}
+                values={formData.assigneeIds ?? []}
+                onChange={(values) =>
+                  setFormData((prev) => ({ ...prev, assigneeIds: values }))
+                }
+              />
+            </div>
+          </div>
+
+          {/* <div className="flex-1">
               <Label htmlFor="priority">Priority</Label>
               <Select
                 value={formData.priority.toString()}
@@ -245,7 +310,7 @@ export function CreateIssueDialog({
                 </SelectContent>
               </Select>
             </div> */}
-          </div>
+          <div />
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button

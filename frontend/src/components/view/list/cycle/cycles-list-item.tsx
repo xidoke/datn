@@ -1,26 +1,29 @@
 "use client";
 
-import { FC, MouseEvent, useRef } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
-// icons
-import { Check, Info } from "lucide-react";
-// types
-
-// ui
-
-// components
-
-// import { CycleListItemAction } from "@/components/cycles/list";
-// helpers
+import { FC, MouseEvent, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { Check, MoreHorizontal } from "lucide-react";
 import { generateQueryParams } from "@/helpers/router.helper";
-// hooks
 import { useCycleStore } from "@/stores/cycleStore";
 import { useAppRouter } from "@/hooks/use-app-router";
-import { usePlatformOS } from "@/hooks/use-platform-os";
-// import { CycleQuickActions } from "../quick-actions";
-import { TCycleGroups } from "./cycle-list-group-header";
 import { CircularProgressIndicator } from "@/components/ui/progress";
-import { ListItem } from "../list-item";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { DateRange } from "react-day-picker";
+import { toast } from "@/hooks/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { API_BASE_URL } from "@/helpers/common.helper";
+import { DeleteCycleDialog } from "@/components/cycle/delete-cycle-dialog";
+import React from "react";
+import UpdateCycleModal from "@/components/cycle/edit-cycle.dialog";
+import useSWR from "swr";
+import { Tooltip } from "@/components/ui/tooltip-plane";
 
 type TCyclesListItem = {
   cycleId: string;
@@ -31,110 +34,174 @@ type TCyclesListItem = {
   workspaceSlug: string;
   projectId: string;
   className?: string;
+  isCompleted?: boolean;
 };
 
 export const CyclesListItem: FC<TCyclesListItem> = (props) => {
-  const { cycleId, workspaceSlug, projectId, className = "" } = props;
-  // refs
-  const parentRef = useRef(null);
-  // router
+  const { cycleId, workspaceSlug, projectId, isCompleted = false } = props;
   const router = useAppRouter();
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  // hooks
-  const { isMobile } = usePlatformOS();
-  // store hooks
-  const { getCycleById } = useCycleStore();
-
-  // derived values
+  const { getCycleById, updateCycle, fetchCycleProgress } = useCycleStore();
+  const [isOpenDeleteDialog, setIsOpenDeleteDialog] = React.useState(false);
+  const [isOpenEditDialog, setIsOpenEditDialog] = React.useState(false);
+  const handleUpdateDateRange = async (range: DateRange | undefined) => {
+    try {
+      await updateCycle(workspaceSlug, projectId, cycleId, {
+        startDate: range?.from?.toISOString() || undefined,
+        dueDate: range?.to?.toISOString() || undefined,
+      });
+      toast({
+        title: "Success",
+        description: "Cycle date range updated successfully",
+        variant: "default",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
   const cycleDetails = getCycleById(cycleId);
 
   if (!cycleDetails) return null;
 
-  // computed
-  // TODO: change this logic once backend fix the response
-  const cycleStatus = "draft";
-  // cycleDetails.status ? (cycleDetails.status.toLocaleLowerCase() as TCycleGroups) : "draft";
-  const isCompleted = false;
-  // cycleStatus === "completed";
-
-  const cycleTotalIssues = 100
-    // cycleDetails.backlog_issues +
-    // cycleDetails.unstarted_issues +
-    // cycleDetails.started_issues +
-    // cycleDetails.completed_issues +
-    // cycleDetails.cancelled_issues;
-
-  const completionPercentage = 70;
-  // (cycleDetails.completed_issues / cycleTotalIssues) * 100;
-
-  const progress = isNaN(completionPercentage) ? 0 : Math.floor(completionPercentage);
-
-  // handlers
-  const openCycleOverview = (e: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+  // Fetch cycle progress
+  const { data } = useSWR("WORKSPACE_CYCLES_PROGRESS_" + cycleId, () =>
+    fetchCycleProgress(workspaceSlug, projectId, cycleId),
+  );
+  const progress = data || 0;
+  const handleItemClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
-    e.stopPropagation();
-
     const query = generateQueryParams(searchParams, ["peekCycle"]);
-    if (searchParams.has("peekCycle") && searchParams.get("peekCycle") === cycleId) {
-      router.push(`${pathname}?${query}`);
-    } else {
-      router.push(`${pathname}?${query && `${query}&`}peekCycle=${cycleId}`);
-    }
+    router.push(
+      `/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}?${query}`,
+    );
   };
-
-  // handlers
-  const handleArchivedCycleClick = (e: MouseEvent<HTMLAnchorElement>) => {
-    openCycleOverview(e);
-  };
-
-  const handleItemClick = undefined;
-  //  cycleDetails.archived_at ? handleArchivedCycleClick : undefined;
 
   return (
-    <ListItem
-      title={cycleDetails?.name ?? ""}
-      itemLink={`/${workspaceSlug}/projects/${projectId}/cycles/${cycleDetails.id}`}
-      onItemClick={handleItemClick}
-      className={className}
-      //  phần trăm hoàn thành
-      prependTitleElement={
-        <CircularProgressIndicator size={30} percentage={progress} strokeWidth={3}>
-          {isCompleted ? (
-            progress === 100 ? (
-              <Check className="h-3 w-3 stroke-[2] text-custom-primary-100" />
-            ) : (
-              <span className="text-sm text-custom-primary-100">{`!`}</span>
-            )
-          ) : progress === 100 ? (
-            <Check className="h-3 w-3 stroke-[2] text-custom-primary-100" />
-          ) : (
-            <span className="text-[9px] text-custom-text-300">{`${progress}%`}</span>
-          )}
-        </CircularProgressIndicator>
-      }
-      // actionableItems={
-      //   <CycleListItemAction
-      //     workspaceSlug={workspaceSlug}
-      //     projectId={projectId}
-      //     cycleId={cycleId}
-      //     cycleDetails={cycleDetails}
-      //     parentRef={parentRef}
-      //   />
-      // }
-      // quickActionElement={
-      //   <div className="block md:hidden">
-      //     {/* <CycleQuickActions
-      //       parentRef={parentRef}
-      //       cycleId={cycleId}
-      //       projectId={projectId}
-      //       workspaceSlug={workspaceSlug}
-      //     /> */}
-      //   </div>
-      // }
-      isMobile={isMobile}
-      parentRef={parentRef}
-      isSidebarOpen={searchParams.has("peekCycle")}
-    />
+    <>
+      <div
+        onClick={handleItemClick}
+        className="group flex cursor-pointer items-center gap-4 border-b border-sidebar-border bg-background px-4 py-3 transition-colors hover:bg-primary/5"
+      >
+        <div className="flex items-center gap-4 truncate">
+          <span className="flex flex-shrink-0 items-center">
+            <CircularProgressIndicator
+              size={30}
+              percentage={progress}
+              strokeWidth={3}
+            >
+              {isCompleted ? (
+                progress === 100 ? (
+                  <Check className="h-3 w-3 stroke-[2] text-primary" />
+                ) : (
+                  <span className="text-sm text-destructive">{`!`}</span>
+                )
+              ) : progress === 100 ? (
+                <Check className="h-3 w-3 stroke-[2] text-primary" />
+              ) : (
+                <span className="text-[9px] text-destructive">{`${progress}%`}</span>
+              )}
+            </CircularProgressIndicator>
+          </span>
+          <Tooltip tooltipContent={cycleDetails.title} position="top">
+            <span className="truncate text-sm">{cycleDetails.title}</span>
+          </Tooltip>
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <Tooltip tooltipContent={cycleDetails.description} position="top">
+            <h3 className="truncate text-sm">{cycleDetails.description}</h3>
+          </Tooltip>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div
+            className="flex items-center gap-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+            }}
+          >
+            <DateRangePicker
+              from={
+                cycleDetails.startDate
+                  ? new Date(cycleDetails.startDate)
+                  : undefined
+              }
+              to={
+                cycleDetails.dueDate
+                  ? new Date(cycleDetails.dueDate)
+                  : undefined
+              }
+              onSelect={handleUpdateDateRange}
+              className="w-full"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+            {/* avatar of creator */}
+
+            <Avatar className="h-6 w-6">
+              <AvatarImage
+                src={API_BASE_URL + cycleDetails.creator?.avatarUrl}
+                alt={cycleDetails.creator?.email}
+                title={"creator: " + cycleDetails.creator?.email}
+              />
+              <AvatarFallback>
+                {cycleDetails.creator?.email?.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+              >
+                <DropdownMenuItem
+                  onClick={() => {
+                    setIsOpenEditDialog(true);
+                  }}
+                >
+                  Edit cycle
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setIsOpenDeleteDialog(true);
+                  }}
+                >
+                  Delete cycle
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
+      <DeleteCycleDialog
+        cycle={cycleDetails}
+        workspaceSlug={workspaceSlug as string}
+        projectId={projectId as string}
+        isOpen={isOpenDeleteDialog}
+        handleClose={() => setIsOpenDeleteDialog(false)}
+      />
+      <UpdateCycleModal
+        cycle={cycleDetails}
+        isOpen={isOpenEditDialog}
+        onClose={() => setIsOpenEditDialog(false)}
+        onSubmit={(data) => {
+          updateCycle(workspaceSlug, projectId, cycleId, data);
+          setIsOpenEditDialog(false);
+        }}
+      />
+    </>
   );
 };

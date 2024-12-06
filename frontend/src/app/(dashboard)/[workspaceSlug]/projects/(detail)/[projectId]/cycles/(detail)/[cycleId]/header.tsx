@@ -17,8 +17,10 @@ import {
 
 // hooks
 import { useAppRouter } from "@/hooks/use-app-router";
-import { useProjectStore } from "@/stores/projectStore";
+import { useProject, useProjectStore } from "@/stores/projectStore";
 import { useCycleStore } from "@/stores/cycleStore";
+import HeaderFilters from "@/components/issues/filter";
+import { CreateIssueDialog } from "@/components/issues/create-issue-dialog";
 
 
 const HeaderLeft = () => {
@@ -52,7 +54,7 @@ const HeaderLeft = () => {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>{currentCycleDetails?.name}</BreadcrumbPage>
+            <BreadcrumbPage>{currentCycleDetails?.title}</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -61,16 +63,18 @@ const HeaderLeft = () => {
 }
 
 const HeaderRight = () => {
-    return (
-         <Button
-        onClick={() => {
-          // Add logic to edit cycle here
-          console.log("Edit cycle");
-        }}
-      >
-        Edit Cycle
-      </Button>
-    )
+      const { projectId } = useParams();
+      const { getProjectById } = useProject();
+      const currentProjectDetails = getProjectById(projectId as string);
+      return (
+        <div className="flex gap-2">
+          <HeaderFilters currentProjectDetails={currentProjectDetails} />
+
+          <CreateIssueDialog>
+            <Button size={"sm"}>Add Issue</Button>
+          </CreateIssueDialog>
+        </div>
+      );
 }
 export const CycleLayoutHeader: FC = () => {
 

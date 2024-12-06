@@ -13,6 +13,8 @@ import { AuthService } from "../auth.service";
 import { TokenService } from "../token.service";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Cache } from "cache-manager";
+import { SimpleJwksCache } from "aws-jwt-verify/jwk";
+import { SimpleJsonFetcher } from "aws-jwt-verify/https";
 
 @Injectable()
 export class CognitoAuthGuard implements CanActivate {
@@ -25,12 +27,22 @@ export class CognitoAuthGuard implements CanActivate {
     private tokenService: TokenService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
-    this.jwtVerifier = CognitoJwtVerifier.create({
-      userPoolId: process.env.COGNITO_USER_POOL_ID,
-      tokenUse: "access",
-      clientId: process.env.COGNITO_CLIENT_ID,
-      httpTimeOut: 5000,
-    });
+    this.jwtVerifier = CognitoJwtVerifier.create(
+      {
+        userPoolId: process.env.COGNITO_USER_POOL_ID,
+        tokenUse: "access",
+        clientId: process.env.COGNITO_CLIENT_ID,
+      },
+      {
+        jwksCache: new SimpleJwksCache({
+          fetcher: new SimpleJsonFetcher({
+            defaultRequestOptions: {
+              responseTimeout: 5000,
+            },
+          }),
+        }),
+      },
+    );
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -47,8 +59,7 @@ export class CognitoAuthGuard implements CanActivate {
           throw new UnauthorizedException("Failed to refresh token");
         }
       } catch (error) {
-        console.error("Token refresh failed:", error);
-        throw new UnauthorizedException("Authentication failed");
+        throw error;
       }
     }
 
@@ -153,9 +164,10 @@ export class CognitoAuthGuard implements CanActivate {
       const user = await this.validateToken(newTokens.AccessToken);
       request["user"] = user;
       return true;
-    } catch (refreshError) {
-      console.error("Token refresh error:", refreshError);
-      this.clearTokenCookies(response);
+    } catch {
+      //  (refreshError)
+      // console.error("Token refresh error:", refreshError);
+      // this.clearTokenCookies(response);
       throw new UnauthorizedException("Failed to refresh token");
     } finally {
       this.refreshTokenPromise = null;

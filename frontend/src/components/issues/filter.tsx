@@ -2,13 +2,14 @@ import { Project } from "@/types";
 import { LayoutSelection } from "./issue-layouts/filter/layout-selection";
 import { IssueLayoutTypes } from "@/helpers/constants/issue";
 import { useState } from "react";
+import { useViewStore } from "@/stores/viewStore";
 
 type Props = {
   currentProjectDetails: Project | undefined;
 };
 
 const HeaderFilters = ({ currentProjectDetails }: Props) => {
-  const [activeLayout] = useState(IssueLayoutTypes.LIST);
+  const { viewType, setViewType } = useViewStore();
   return (
     <>
       <LayoutSelection
@@ -19,8 +20,8 @@ const HeaderFilters = ({ currentProjectDetails }: Props) => {
           IssueLayoutTypes.SPREADSHEET,
           IssueLayoutTypes.GANTT,
         ]}
-        onChange={(layout) => console.log(layout)}
-        selectedLayout={activeLayout}
+        onChange={(layout) => setViewType(layout)}
+        selectedLayout={viewType}
       />
     </>
   );

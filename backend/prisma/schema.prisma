@@ -19,33 +19,33 @@ datasource db {
 }
 
 model FileAsset {
-  id              String    @id @default(uuid())
-  asset           String    
-  size            Int       
-  attributes      Json      
-  entityType      String    
-  isUploaded      Boolean   @default(false)
-  isDeleted       Boolean   @default(false)
-  storageMetadata Json?     
+  id              String  @id @default(uuid())
+  asset           String
+  size            Int
+  attributes      Json
+  entityType      String
+  isUploaded      Boolean @default(false)
+  isDeleted       Boolean @default(false)
+  storageMetadata Json?
 
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
-  workspaceId     String
-  workspace       Workspace @relation(fields: [workspaceId], references: [id])
-  
-  createdById     String
-  createdBy       User      @relation("CreatedAssets", fields: [createdById], references: [id])
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
 
-  userId          String?
-  user            User?     @relation("UserAssets", fields: [userId], references: [id], onDelete: SetNull)
+  createdById String
+  createdBy   User   @relation("CreatedAssets", fields: [createdById], references: [id])
 
-  projectId       String?
-  project         Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId String?
+  user   User?   @relation("UserAssets", fields: [userId], references: [id], onDelete: SetNull)
 
-  issueId         String?
-  issue           Issue?    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  issueId String?
+  issue   Issue?  @relation(fields: [issueId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([createdById])
@@ -56,69 +56,74 @@ model FileAsset {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  cognitoId     String    @unique
-  role          String    @default("USER")
-  firstName     String?
-  lastName      String?
-  avatarUrl     String?
-  isActive      Boolean   @default(true)
-  ownedWorkspaces Workspace[]
-  workspaces      WorkspaceMember[]
-  createdAssets   FileAsset[] @relation("CreatedAssets")
-  userAssets      FileAsset[] @relation("UserAssets")
-  createdIssues   Issue[]         @relation("CreatedIssues")
-  assignedIssues  IssueAssignee[]
-  comments        IssueComment[]
+  id                String            @id @default(uuid())
+  email             String            @unique
+  cognitoId         String            @unique
+  role              String            @default("USER")
+  firstName         String?
+  lastName          String?
+  avatarUrl         String?
+  isActive          Boolean           @default(true)
+  ownedWorkspaces   Workspace[]
+  workspaces        WorkspaceMember[]
+  createdAssets     FileAsset[]       @relation("CreatedAssets")
+  userAssets        FileAsset[]       @relation("UserAssets")
+  createdIssues     Issue[]           @relation("CreatedIssues")
+  assignedIssues    IssueAssignee[]
+  comments          IssueComment[]
   lastWorkspaceSlug String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  Cycle             Cycle[]
+
   @@map("users")
 }
 
 model Workspace {
-  id            String    @id @default(uuid())
-  slug          String    @unique
-  name          String
-  owner         User     @relation(fields: [ownerId], references: [id])
-  ownerId       String   
-  logoUrl      String?
-  FileAssets    FileAsset[]
-  projects      Project[]
-  invitations   WorkspaceInvitation[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  members       WorkspaceMember[]
+  id          String                @id @default(uuid())
+  slug        String                @unique
+  name        String
+  owner       User                  @relation(fields: [ownerId], references: [id])
+  ownerId     String
+  logoUrl     String?
+  FileAssets  FileAsset[]
+  projects    Project[]
+  invitations WorkspaceInvitation[]
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  members     WorkspaceMember[]
+
   @@map("workspaces")
 }
 
 model WorkspaceInvitation {
-  id          String    @id @default(uuid())
+  id          String        @id @default(uuid())
   email       String
-  role        WorkspaceRole   @default(MEMBER) // You might want to use an enum here
-  status      String    // e.g., "PENDING", "ACCEPTED", "REJECTED"
+  role        WorkspaceRole @default(MEMBER) // You might want to use an enum here
+  status      String // e.g., "PENDING", "ACCEPTED", "REJECTED"
   workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   @@unique([email, workspaceId])
 }
+
 enum WorkspaceRole {
   OWNER
   ADMIN
   MEMBER
 }
+
 model WorkspaceMember {
-  id            String        @id @default(uuid())
-  role          WorkspaceRole @default(MEMBER)
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String
-  workspace     Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId   String
-  joinedAt      DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id          String        @id @default(uuid())
+  role        WorkspaceRole @default(MEMBER)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
+  joinedAt    DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   @@unique([userId, workspaceId])
   @@index([workspaceId])
@@ -127,64 +132,66 @@ model WorkspaceMember {
 }
 
 model Cycle {
-  id            String    @id @default(uuid())
-  title          String
-  description   String?
-  startDate     DateTime?
-  dueDate       DateTime?
-  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId     String
-  issues        Issue[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  startDate   DateTime?
+  dueDate     DateTime?
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  issues      Issue[]
+  creator     User      @relation(fields: [creatorId], references: [id])
+  creatorId   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([projectId])
   @@map("cycles")
 }
 
 model Project {
-  id            String          @id @default(uuid())
-  name          String
-  description   String?
-  token         String    @db.VarChar(5)
-  workspace     Workspace       @relation(fields: [workspaceId], references: [id])
-  workspaceId   String
-  issues        Issue[]
-  states        State[]  
-  labels        Label[] 
-  FileAssets FileAsset[]
+  id              String      @id @default(uuid())
+  name            String
+  description     String?
+  token           String      @db.VarChar(5)
+  workspace       Workspace   @relation(fields: [workspaceId], references: [id])
+  workspaceId     String
+  issues          Issue[]
+  states          State[]
+  labels          Label[]
+  FileAssets      FileAsset[]
   cycles          Cycle[]
-  lastIssueNumber Int     @default(0)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  lastIssueNumber Int         @default(0)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   @@unique([workspaceId, token])
   @@map("projects")
 }
 
 model Issue {
-  id            String          @id @default(uuid())
+  id             String          @id @default(uuid())
   sequenceNumber Int
-  title         String
-  description   String?
-  state         State?          @relation(fields: [stateId], references: [id])
-  stateId       String? // tạm thời để optional
-  project       Project        @relation(fields: [projectId], references: [id], onDelete: Cascade) 
-  projectId     String
-  cycle         Cycle?    @relation(fields: [cycleId], references: [id])
-  cycleId       String?
-  creator       User           @relation("CreatedIssues", fields: [creatorId], references: [id])
-  creatorId     String
-  assignees     IssueAssignee[]
-  labels        Label[]
-  comments      IssueComment[]
-  FileAssets    FileAsset[]
-  priority      Int             @default(0) // 0: None, 1: Low, 2: Medium, 3: High, 4: Urgent
-  startDate     DateTime?
-  dueDate       DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  
+  title          String
+  description    String?
+  state          State?          @relation(fields: [stateId], references: [id])
+  stateId        String
+  project        Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId      String
+  cycle          Cycle?          @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+  cycleId        String?
+  creator        User            @relation("CreatedIssues", fields: [creatorId], references: [id])
+  creatorId      String
+  assignees      IssueAssignee[]
+  labels         Label[]
+  comments       IssueComment[]
+  FileAssets     FileAsset[]
+  priority       Int             @default(0) // 0: None, 1: Low, 2: Medium, 3: High, 4: Urgent
+  startDate      DateTime?
+  dueDate        DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
   @@unique([projectId, sequenceNumber])
   @@index([projectId])
   @@index([stateId])
@@ -198,12 +205,13 @@ model Issue {
 model IssueComment {
   id        String   @id @default(uuid())
   content   String
-  issue     Issue    @relation(fields: [issueId], references: [id])
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
   issueId   String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@map("issue_comments")
 }
 
@@ -215,18 +223,19 @@ model IssueAssignee {
   userId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@map("issue_assignees")
 }
 
 model Label {
-  id          String   @id @default(uuid())
-  name        String
-  color       String
-  projectId   String
-  project     Project  @relation(fields: [projectId], references: [id] , onDelete: Cascade)
-  issues      Issue[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  name      String
+  color     String
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues    Issue[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([name, projectId])
   @@index([projectId])

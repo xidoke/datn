@@ -67,9 +67,9 @@ export default function Column({ column, onIssueClick }: ColumnProps) {
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className="flex-1 space-y-2 overflow-y-auto px-2"
+            className="flex-1 space-y-2 overflow-y-auto px-1 scrollbar-none scrollbar-thumb-primary-500 scrollbar-track-primary-200"
           >
-            {column.issues.map((issue, index) => (
+            {column.issues.sort((issueA, issueB) => issueA.sequenceNumber - issueB.sequenceNumber).map((issue, index) => (
               <IssueCard
                 key={issue.id}
                 issue={issue}

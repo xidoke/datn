@@ -122,7 +122,7 @@ const AvatarGroup = React.forwardRef<HTMLDivElement, AvatarGroupProps>(
         <div
           ref={ref}
           className={cn(
-            "relative flex items-center justify-end -space-x-4",
+            "flex items-center justify-end -space-x-2",
             className,
           )}
           {...props}
@@ -145,7 +145,8 @@ const AvatarGroupList = ({ children }: { children?: React.ReactNode }) => {
   );
 };
 
-export type AvatarOverflowIndicatorProps = React.HTMLAttributes<HTMLSpanElement>
+export type AvatarOverflowIndicatorProps =
+  React.HTMLAttributes<HTMLSpanElement>;
 
 const AvatarOverflowIndicator = React.forwardRef<
   HTMLSpanElement,

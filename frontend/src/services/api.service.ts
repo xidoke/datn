@@ -25,6 +25,11 @@ export abstract class APIService {
       (response) => response,
       (error) => {
         if (error.response && error.response.status === 401) {
+          if (error.response.data.message === 'No refresh token available') {
+            console.log("hit here")
+            localStorage.clear();
+          }
+
           const currentPath = window.location.pathname;
           window.location.replace(`/${currentPath ? `?next_path=${currentPath}` : ``}`);
         }

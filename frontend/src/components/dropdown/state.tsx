@@ -25,6 +25,7 @@ export interface StateDropdownProps extends TDropdownProps {
   projectId: string | undefined;
   showDefaultState?: boolean;
   value?: string;
+  size?: "icon" | "sm" | "md" | "lg";
 }
 
 const StateDropdown = (props: StateDropdownProps) => {
@@ -37,6 +38,7 @@ const StateDropdown = (props: StateDropdownProps) => {
     showDefaultState = false,
     value,
     className,
+    size = "sm",
   } = props;
 
   //   const [query, setQuery] = useState("");
@@ -56,7 +58,6 @@ const StateDropdown = (props: StateDropdownProps) => {
       : undefined;
 
   const selectedState = stateValue ? getStateById(stateValue) : undefined;
-  console.log(selectedState);
   const onOpen = async () => {
     if (!states && workspaceSlug && projectId) {
       setStateLoader(true);
@@ -96,13 +97,49 @@ const StateDropdown = (props: StateDropdownProps) => {
     setIsOpen(false);
   };
 
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        {button ? (
-          button
-        ) : (
-          <Button variant="outline" size={"sm"} className={className ?? "p-1"}>
+  const renderButton = () => {
+    switch (size) {
+      case "icon":
+        return (
+          <Button
+            variant="outline"
+            size="icon"
+            className={cn(
+              "h-5 w-5 p-1",
+              {
+                "border-red-600 bg-red-600/10":
+                  selectedState?.id === "4",
+              },
+              className,
+            )}
+          >
+            <div className="flex items-center">
+              <StateGroupIcon
+                stateGroup={selectedState?.group || "backlog"} // TODO: fix this
+                color={selectedState?.color}
+                className="h-3 w-3"
+              />
+            </div>
+            {dropdownArrow && (
+              <ChevronsUpDown
+                className={cn(
+                  "ml-2 h-4 w-4 shrink-0 opacity-50",
+                  dropdownArrowClassName,
+                )}
+              />
+            )}
+          </Button>
+        );
+      case "sm":
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(
+              "p-1",
+              className,
+            )}
+          >
             {selectedState ? (
               <div className="flex items-center gap-1">
                 <StateGroupIcon
@@ -124,6 +161,18 @@ const StateDropdown = (props: StateDropdownProps) => {
               />
             )}
           </Button>
+        );
+        // TODO: add more sizes
+      default: return null;
+    }
+  }
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        {button ? (
+          button
+        ) : (
+          renderButton()
         )}
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">

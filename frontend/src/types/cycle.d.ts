@@ -2,8 +2,22 @@ export interface ICycle {
   id: string;
   title: string;
   description?: string;
-  startDate: Date | undefined; // ISO date string
-  dueDate: Date | undefined; // ISO date string
+  startDate: string; // ISO date string
+  dueDate: string; // ISO date string
+  creatorId: string; // User ID
+  creator: {
+    id: string; // User ID
+    firstName: string; // User name
+    lastName: string; // User name
+    email: string;
+    avatarUrl?: string;
+  };
+   //progress
+  progress: {
+    totalIssues : number,
+      incompleteIssues : number,
+      progress : number,
+  }; // 0-100
 //   status: 'draft' | 'upcoming' | 'active' | 'completed';
 //   projectId: string;
 //   createdAt: string; // ISO date string

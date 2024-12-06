@@ -48,4 +48,9 @@ export class UpdateIssueDto {
   @IsDateString()
   @IsOptional()
   startDate?: Date;
+
+  @IsUUID()
+  @IsOptional()
+  cycleId?: string;
+  
 }

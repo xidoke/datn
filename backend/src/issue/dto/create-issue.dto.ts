@@ -48,4 +48,9 @@ export class CreateIssueDto {
   @IsDateString()
   @IsOptional()
   startDate?: Date;
+
+  
+  @IsOptional()
+  @IsUUID()
+  cycleId?: string;
 }

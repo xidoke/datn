@@ -10,7 +10,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Issue } from "@/types";
-import { Button } from "../ui/button";
 import useIssueStore from "@/stores/issueStore";
 
 interface DeleteDialogProps {

@@ -7,12 +7,15 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from "@nestjs/common";
 import { CycleService } from "./cycle.service";
 import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
 import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
 import { areDatesValid, CreateCycleDto } from "./dto/create-cycle.dto";
+import { RequestWithUser } from "src/user/interfaces/request.interface";
+import { UpdateCycleDto } from "./dto/update-cycle.dto";
 
 @Controller("workspaces/:workspaceSlug/projects/:projectId/cycles")
 @UseGuards(CognitoAuthGuard, WorkspacePermissionGuard)
@@ -32,6 +35,7 @@ export class CycleController {
     @Param("workspaceSlug") workspaceSlug: string,
     @Param("projectId") projectId: string,
     @Body() createCycleDto: CreateCycleDto,
+    @Req() req: RequestWithUser,
   ) {
     if (!areDatesValid(createCycleDto.startDate, createCycleDto.dueDate)) {
       throw new BadRequestException(
@@ -42,6 +46,7 @@ export class CycleController {
       workspaceSlug,
       projectId,
       createCycleDto,
+      req.user.userId,
     );
   }
 
@@ -50,7 +55,7 @@ export class CycleController {
     @Param("workspaceSlug") workspaceSlug: string,
     @Param("projectId") projectId: string,
     @Param("cycleId") cycleId: string,
-    @Body() updateData: any,
+    @Body() updateData: UpdateCycleDto,
   ) {
     return this.cycleService.updateCycle(
       workspaceSlug,
@@ -67,6 +72,15 @@ export class CycleController {
     @Param("cycleId") cycleId: string,
   ) {
     return this.cycleService.deleteCycle(workspaceSlug, projectId, cycleId);
+  }
+
+  @Get("/:cycleId/progress")
+  async getCycleProgress(
+    @Param("workspaceSlug") workspaceSlug: string,
+    @Param("projectId") projectId: string,
+    @Param("cycleId") cycleId: string,
+  ) {
+    return this.cycleService.getCycleProgress(workspaceSlug, projectId, cycleId);
   }
 
   @Post("/date-check")

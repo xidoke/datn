@@ -15,15 +15,16 @@ import {
 import { Tooltip } from "./tooltip-plane";
 
 interface DatePickerProps {
-  date: Date | undefined;
-  onDateChange: (date: Date | undefined) => void;
-  minDate?: Date;
-  maxDate?: Date;
+  date: string | undefined;
+  onDateChange: (date: string| undefined) => void;
+  minDate?: string;
+  maxDate?: string;
   placeholder?: string;
   Icon?: React.ForwardRefExoticComponent<
     Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
   >;
   tooltipHeading?: string;
+  size?: "verySmall" | "sm" | "default" | "lg";
 }
 
 export function DatePicker({
@@ -34,6 +35,7 @@ export function DatePicker({
   placeholder = "",
   Icon = CalendarIcon,
   tooltipHeading = "Date Picker",
+  size = "default"
 }: DatePickerProps) {
   return (
     <Popover>
@@ -46,13 +48,13 @@ export function DatePicker({
         <PopoverTrigger asChild>
           <Button
             variant={"outline"}
-            size={"sm"}
+            size={size}
             className={cn(
-              "w-fit justify-start text-left font-normal mr-2",
+              "w-fit justify-start text-left font-normal",
               !date && "text-muted-foreground",
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-3 w-3 mr-1" />
             {date ? format(date, "PP") : <span>{placeholder}</span>}
           </Button>
         </PopoverTrigger>
@@ -61,11 +63,11 @@ export function DatePicker({
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
-          selected={date}
-          onSelect={onDateChange}
+          selected={date ? new Date(date) : undefined}
+          onSelect={(day) => onDateChange(day ? day.toISOString() : undefined)}
           initialFocus
           disabled={(day) =>
-            (minDate && day < minDate) || (maxDate && day > maxDate) || false
+            (minDate && day < new Date(minDate)) || (maxDate && day > new Date(maxDate)) || false
           }
         />
       </PopoverContent>

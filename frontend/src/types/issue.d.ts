@@ -1,3 +1,4 @@
+import { ICycle } from "./cycle";
 import { User } from "./user";
 
 // Define the priority types
@@ -10,8 +11,8 @@ export interface IssueLabel {
 
 export interface IssueAssignee {
   id: string;
-  name: string;
-  avatar?: string;
+  avatarUrl: string;
+  email: string;
 }
 
 
@@ -38,14 +39,17 @@ interface Issue {
     group: string;
   };
   creator: User;
+  assigneeIds: string[];
   assignees: IssueAssignee[];
   labelIds: string[];
   labels: Label[];
   priority: number;
-  startDate?: Date;
-  dueDate?: Date;
+  startDate?: string;
+  dueDate?: string;
   createdAt: string;
   updatedAt: string;
+  cycleId: string;
+  cycle: ICycle;
 }
 
 export interface IssueAssignee {
@@ -54,27 +58,6 @@ export interface IssueAssignee {
   userId: string;
   issueId: string;
 }
-export interface IssueFilters {
-  state?: string[];
-  assignees?: string[];
-  labels?: string[];
-  priority?: Priority[];
-  startDate?: [Date | null, Date | null];
-  dueDate?: [Date | null, Date | null];
-  createdBy?: string[];
-}
-
-export type IssueView = "list" | "kanban" | "calendar" | "gantt";
-
-export type GroupBy = "state" | "priority" | "assignee" | "label" | "none";
-
-export type OrderBy =
-  | "manual"
-  | "title"
-  | "priority"
-  | "startDate"
-  | "dueDate"
-  | "createdAt";
 
   export interface Column {
   id: string;

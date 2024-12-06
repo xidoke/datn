@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import CreateCycleModal from "@/components/cycle/modal";
-import HeaderFilters from "@/components/issues/filter";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -60,8 +59,8 @@ const HeaderRight = () => {
     const handleCreateCycle = async (data: {
       title: string;
       description?: string;
-      startDate?: Date;
-      endDate?: Date;
+      startDate?: string;
+      endDate?: string;
     }) => {
       // Here you would typically send this data to your backend or state management system
       try {
@@ -83,7 +82,7 @@ const HeaderRight = () => {
     };
   return (
     <div className="flex gap-2">
-      <HeaderFilters currentProjectDetails={currentProjectDetails} />
+      {/* <HeaderFilters currentProjectDetails={currentProjectDetails} /> */}
       <Button size={"sm"} onClick={handleOpenModal}>
         Add Cycle
       </Button>

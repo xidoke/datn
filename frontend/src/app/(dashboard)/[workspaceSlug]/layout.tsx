@@ -14,8 +14,8 @@ const WorkspaceLayout = ({
     <AuthenticationWrapper>
       <WorkspaceWrapper>
         <SidebarProvider>
-          <AppSidebar />
-          <main className="relative flex h-full w-full flex-col overflow-hidden">
+          <AppSidebar  />
+          <main className="relative flex h-full w-full  flex-col overflow-hidden bg-backdrop">
             {children}
           </main>
         </SidebarProvider>

@@ -30,7 +30,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useProjectStateStore } from "@/stores/projectStateStore";
 import { useParams } from "next/navigation";
-import { State } from "@/types";
+import { State, StateGroup } from "@/types";
 
 const stateGroups = [
   { name: "backlog", label: "Backlog", icon: AlignLeft },
@@ -114,7 +114,7 @@ export default function StateSettingsPage() {
           await addState(workspaceSlug, projectId, {
             name: editingName,
             color: editingColor,
-            group: addingToGroup,
+            group: addingToGroup as StateGroup,
             description: editingDescription,
           });
           setAddingToGroup(null);

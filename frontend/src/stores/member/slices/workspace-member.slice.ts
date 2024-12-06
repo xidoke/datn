@@ -53,7 +53,7 @@ const initialState: WorkspaceMemberSliceState = {
 
 interface WorkspaceMemberSliceActions {
   fetchWorkspaceMembers: (workspaceSlug: string) => Promise<WorkspaceMember[]>;
-  inviteMember: (workspaceSlug: string, email: string, role: string) => Promise<WorkspaceMember>;
+  inviteMember: (workspaceSlug: string, email: string, role: string) => Promise<void>;
   updateMemberRole: (workspaceSlug: string, memberId: string, role: string) => Promise<WorkspaceMember>;
   removeMember: (workspaceSlug: string, memberId: string) => Promise<void>;
   // leaveWorkspace: (workspaceId: string) => Promise<void>;
@@ -124,7 +124,7 @@ export const workspaceMemberSlice: StateCreator<
   },
   updateMemberRole: async (workspaceSlug: string, memberId: string, role: string) => {
     try {
-      const response = await memberService.updateMemberRole(workspaceSlug, memberId, role);
+      const response : any= await memberService.updateMemberRole(workspaceSlug, memberId, role);
       set((state) => {
         const newWorkspaceMemberMap = { ...state.workspaceMemberMap };
         if (newWorkspaceMemberMap[workspaceSlug] && newWorkspaceMemberMap[workspaceSlug][memberId]) {

@@ -28,6 +28,8 @@ export interface LabelDropdownProps extends TDropdownProps {
   values: string[];
   showCount?: boolean;
   maxDisplayedLabels?: number;
+  size?: "icon" | "sm" | "default" | "lg";
+  placeHolder?: string;
 }
 
 const LabelDropdown = (props: LabelDropdownProps) => {
@@ -38,9 +40,10 @@ const LabelDropdown = (props: LabelDropdownProps) => {
     onChange,
     projectId,
     values,
-    className,
     showCount = false,
     maxDisplayedLabels = Infinity,
+    size = "sm",
+    placeHolder = "Select labels",
   } = props;
 
   const [isOpen, setIsOpen] = useState(false);
@@ -76,10 +79,10 @@ const LabelDropdown = (props: LabelDropdownProps) => {
   const renderLabelContent = () => {
     if (selectedLabels.length === 0) {
       return (
-        <div className="flex items-center gap-1">
+        <>
           <Tag className="h-3 w-3" />
-          <span>Select labels</span>
-        </div>
+          {placeHolder?? null}
+        </>
       );
     }
 
@@ -89,24 +92,25 @@ const LabelDropdown = (props: LabelDropdownProps) => {
     ) {
       return (
         <div className="flex items-center gap-1">
-          <div
-            className="mr-1 h-2 w-2 rounded-full bg-primary"
-          />
+          <div className="mr-1 h-2 w-2 rounded-full bg-primary" />
           <span>{selectedLabels.length} labels</span>
         </div>
       );
     }
 
     return (
-      <div className="flex flex-wrap items-center gap-1">
+      <div
+        className="flex flex-wrap items-center gap-1"
+        
+      >
         {selectedLabels.map((label) => (
           <Badge
             key={label?.id}
-            className="h-5 rounded-sm text-[11px] font-medium"
             style={{
               backgroundColor: `${label?.color}20`,
               color: label?.color,
             }}
+            className={`h-6 rounded-sm text-[11px] font-medium hover:bg-primary`}
             variant="secondary"
           >
             {label?.name}
@@ -116,23 +120,27 @@ const LabelDropdown = (props: LabelDropdownProps) => {
     );
   };
 
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        {button ? (
-          button
-        ) : (
+  const renderButton = () => {
+    switch (size) {
+      case "icon":
+        return (
           <Button
             variant="outline"
-            size="sm"
+            size="icon"
             className={cn(
-              "h-auto min-h-[28px] p-1",
+              "h-5 w-5 min-w-fit",
+              // hide button ,just show badge when label is selected
               {
-                "border-0": selectedLabels.length > 0 && selectedLabels.length <= maxDisplayedLabels,
+                "w-fit h-fit border-none hover:bg-transparent": selectedLabels.length > 0,
               },
-              className,
             )}
           >
+            {renderLabelContent()}
+          </Button>
+        );
+      case "sm":
+        return (
+          <Button variant="outline" size="sm" className="p-1">
             {renderLabelContent()}
             {dropdownArrow && (
               <ChevronsUpDown
@@ -143,7 +151,55 @@ const LabelDropdown = (props: LabelDropdownProps) => {
               />
             )}
           </Button>
-        )}
+        );
+      case "default":
+        return (
+          <Button variant="outline" size="default" className="p-2">
+            {renderLabelContent()}
+            {dropdownArrow && (
+              <ChevronsUpDown
+                className={cn(
+                  "ml-2 h-4 w-4 shrink-0 opacity-50",
+                  dropdownArrowClassName,
+                )}
+              />
+            )}
+          </Button>
+        );
+      case "lg":
+        return (
+          <Button variant="outline" size="lg" className="p-3">
+            {renderLabelContent()}
+            {dropdownArrow && (
+              <ChevronsUpDown
+                className={cn(
+                  "ml-2 h-4 w-4 shrink-0 opacity-50",
+                  dropdownArrowClassName,
+                )}
+              />
+            )}
+          </Button>
+        );
+      default:
+        return (
+          <Button variant="outline" size="sm" className="p-1">
+            {renderLabelContent()}
+            {dropdownArrow && (
+              <ChevronsUpDown
+                className={cn(
+                  "ml-2 h-4 w-4 shrink-0 opacity-50",
+                  dropdownArrowClassName,
+                )}
+              />
+            )}
+          </Button>
+        );
+    }
+  };
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        {button ? button : renderButton()}
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         {labelLoader ? (

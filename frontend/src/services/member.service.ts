@@ -27,7 +27,7 @@ export class MemberService extends APIService {
     }
   }
 
-  async updateMemberRole(workspaceSlug: string, memberId: string, role: string): Promise<ApiResponse<WorkspaceMember>> {
+  async updateMemberRole(workspaceSlug: string, memberId: string, role: string): Promise<WorkspaceMember> {
     try {
       const response = await this.patch<WorkspaceMember>(`/workspaces/${workspaceSlug}/members/${memberId}`, { role });
       return response.data.data;
@@ -36,7 +36,7 @@ export class MemberService extends APIService {
     }
   }
 
-  async removeMember(workspaceSlug: string, memberId: string): Promise<ApiResponse<void>> {
+  async removeMember(workspaceSlug: string, memberId: string) {
     try {
       const response = await this.delete<void>(`/workspaces/${workspaceSlug}/members/${memberId}`);
       return response.data.data;

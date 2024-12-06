@@ -32,6 +32,7 @@ export interface PriorityDropdownProps extends TDropdownProps {
   highlightUrgent?: boolean;
   onChange: (val: TIssuePriorities) => void;
   value: TIssuePriorities | undefined | null;
+  size?: "icon" | "sm" | "md" | "lg";
 }
 
 const PriorityIcon = ({ priority }: { priority: TIssuePriorities }) => {
@@ -58,6 +59,7 @@ const PriorityDropdown = (props: PriorityDropdownProps) => {
     onChange,
     value,
     className,
+    size = "sm",
   } = props;
 
   const [isOpen, setIsOpen] = useState(false);
@@ -77,42 +79,83 @@ const PriorityDropdown = (props: PriorityDropdownProps) => {
     0: "bg-gray-100 text-gray-500 border-gray-300 hover:bg-gray-200 hover:text-gray-600",
   };
 
+  const renderButton = () => {
+    switch (size) {
+      case "icon": return (
+        <Button
+          variant="outline"
+          size="icon"
+          className={cn(
+            "h-5 w-5 p-1",
+            priorityClasses[value ?? "0"],
+            {
+              "border-red-600 bg-red-600/10":
+                value === "4" && highlightUrgent,
+            },
+            className,
+          )}
+        >
+          <div className="flex items-center">
+            <PriorityIcon priority={value ?? "0"} />
+          </div>
+          {dropdownArrow && (
+            <ChevronsUpDown
+              className={cn(
+                "ml-2 h-4 w-4 shrink-0 opacity-50",
+                dropdownArrowClassName,
+              )}
+            />
+          )}
+        </Button>
+      );
+      break;
+      case "sm": return (
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(
+            "p-1",
+            priorityClasses[value ?? "0"],
+            {
+              "border-red-600 bg-red-600/10":
+                value === "4" && highlightUrgent,
+            },
+            className,
+          )}
+        >
+          <div className="flex items-center gap-1">
+            <PriorityIcon priority={value ?? "0"} />
+            {selectedPriority?.key === "0" ? "None" : (
+              <span className="flex-grow truncate">
+                {selectedPriority?.title ?? "select priority"}
+              </span>
+            )}
+          </div>
+          {dropdownArrow && (
+            <ChevronsUpDown
+              className={cn(
+                "ml-2 h-4 w-4 shrink-0 opacity-50",
+                dropdownArrowClassName,
+              )}
+            />
+          )}
+        </Button>
+      );
+      break;
+      // TODO : Add more cases
+      default: return null;
+
+  }
+  }
+  
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         {button ? (
           button
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "p-1",
-              priorityClasses[value ?? "0"],
-              {
-                "border-red-600 bg-red-600/10":
-                  value === "4" && highlightUrgent,
-              },
-              className,
-            )}
-          >
-            <div className="flex items-center gap-1">
-              <PriorityIcon priority={value ?? "0"} />
-              {selectedPriority?.key === "0" ? null : (
-                <span className="flex-grow truncate">
-                  {selectedPriority?.title ?? "select priority"}
-                </span>
-              )}
-            </div>
-            {dropdownArrow && (
-              <ChevronsUpDown
-                className={cn(
-                  "ml-2 h-4 w-4 shrink-0 opacity-50",
-                  dropdownArrowClassName,
-                )}
-              />
-            )}
-          </Button>
+          renderButton()
         )}
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">

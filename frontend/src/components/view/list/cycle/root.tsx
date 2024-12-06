@@ -40,12 +40,12 @@ export const CyclesList: FC<ICyclesList> = (props) => {
         {upcomingCycleIds && (
           <Disclosure
             as="div"
-            className="flex flex-shrink-0 flex-col"
+            className="flex flex-shrink-0 flex-col bg-backdrop"
             defaultOpen
           >
             {({ open }) => (
               <>
-                <DisclosureButton className="border-custom-border-200 bg-custom-background-90 sticky top-0 z-[2] w-full flex-shrink-0 cursor-pointer border-b">
+                <DisclosureButton className=" sticky top-0 z-[2] w-full flex-shrink-0 cursor-pointer border-b">
                   <CycleListGroupHeader
                     title="Upcoming cycle"
                     type="upcoming"
@@ -65,10 +65,10 @@ export const CyclesList: FC<ICyclesList> = (props) => {
             )}
           </Disclosure>
         )}
-        <Disclosure as="div" className="flex flex-shrink-0 flex-col pb-7">
+        <Disclosure as="div" className="flex flex-shrink-0 flex-col bg-backdrop">
           {({ open }) => (
             <>
-              <DisclosureButton className="border-custom-border-200 bg-custom-background-90 sticky top-0 z-[2] w-full flex-shrink-0 cursor-pointer border-b">
+              <DisclosureButton className="sticky top-0 z-[2] w-full flex-shrink-0 cursor-pointer border-b">
                 <CycleListGroupHeader
                   title="Completed cycle"
                   type="completed"
@@ -82,6 +82,7 @@ export const CyclesList: FC<ICyclesList> = (props) => {
                   cycleIds={completedCycleIds}
                   projectId={projectId}
                   workspaceSlug={workspaceSlug}
+                  isCompleted
                 />
               </DisclosurePanel>
             </>

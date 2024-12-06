@@ -23,8 +23,8 @@ interface CreateCycleModalProps {
   onSubmit: (data: {
     title: string;
     description: string;
-    startDate?: Date;
-    dueDate?: Date;
+    startDate?: string;
+    dueDate?: string;
   }) => void;
 }
 
@@ -46,8 +46,8 @@ export default function CreateCycleModal({
       onSubmit({
         title,
         description,
-        startDate: dateRange?.from,
-        dueDate: dateRange?.to,
+        startDate: dateRange?.from ?  dateRange?.from.toISOString() : undefined,
+        dueDate: dateRange?.to ? dateRange?.to.toISOString() : undefined,
       });
       onClose();
     }

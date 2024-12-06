@@ -15,6 +15,7 @@ import { WorkspaceMemberModule } from "./workspace-member/workspace-member.modul
 import { PermissionModule } from "./permission/permission.module";
 import { LabelModule } from "./label/label.module";
 import { CycleModule } from "./cycle/cycle.module";
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { CycleModule } from "./cycle/cycle.module";
     WorkspaceMemberModule,
     LabelModule,
     CycleModule,
+    CommentModule,
   ],
 })
 export class AppModule implements NestModule {

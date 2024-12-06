@@ -15,9 +15,9 @@ export class WorkspaceService extends APIService {
       });
   }
 
-  async userWorkspaceInvitations(): Promise<ApiResponse<InvitationsResponse>> {
+  async userWorkspaceInvitations(): Promise<InvitationsResponse> {
     return this.get<InvitationsResponse>("/users/me/invitations?status=PENDING")
-      .then((response) => response?.data)
+      .then((response) => response?.data.data)
       .catch((error) => {
         throw error?.response?.data;
       });
@@ -25,7 +25,7 @@ export class WorkspaceService extends APIService {
 
   async acceptWorkspaceInvitation(invitationId: string) {
     return this.post(`/users/me/invitations/${invitationId}/accept/`)
-      .then((response) => response?.data)
+      .then((response) => response?.data.data)
       .catch((error) => {
         throw error?.response?.data;
       });

@@ -23,7 +23,7 @@ export function NavMain({
   const params = useParams();
   const pathname = usePathname();
   return (
-    <SidebarMenu>
+    <SidebarMenu className="text-placeholder">
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton

@@ -1,10 +1,7 @@
 "use client";
-import { Home, Inbox, Projector, Settings2, Sparkles } from "lucide-react";
-
-// import { NavFavorites } from "@/components/nav-favorites";
+import { Home, Projector, Settings2, StickyNote } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
-// import { NavProjects } from "@/components/nav-projects";
 import { WorkspaceSwitcher } from "@/components/workspaces/workspace-switcher";
 import {
   Sidebar,
@@ -17,7 +14,6 @@ import UserSidebar from "../user-sidebar-footer";
 import { NavProjects } from "../nav-projects";
 import { ModeToggle } from "../mode-toggle";
 
-// This is sample data.
 const data = {
   navMain: [
     {
@@ -29,7 +25,7 @@ const data = {
     {
       title: "Projects",
       url: "projects",
-      icon: Projector,
+      icon: StickyNote,
       // isActive: true,
     },
   ],
@@ -49,31 +45,11 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const navSecondary = [
-    // {
-    //   title: "Calendar",
-    //   url: `#`,
-    //   icon: Calendar,
-    // },
     {
       title: "Settings",
       url: "settings",
       icon: Settings2,
     },
-    // {
-    //   title: "Templates",
-    //   url: "#",
-    //   icon: Blocks,
-    // },
-    // {
-    //   title: "Trash",
-    //   url: "#",
-    //   icon: Trash2,
-    // },
-    // {
-    //   title: "Help",
-    //   url: "#",
-    //   icon: MessageCircleQuestion,
-    // },
   ];
   return (
     <Sidebar className="border-r-0" {...props}>
@@ -83,7 +59,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <ModeToggle />
         </div>
 
-        <NavMain items={data.navMain} />
+        <NavMain items={data.navMain}/>
       </SidebarHeader>
       <SidebarContent>
         {/* <NavFavorites favorites={data.favorites} /> */}

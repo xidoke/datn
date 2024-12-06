@@ -14,4 +14,5 @@ export class IssueService extends APIService {
       throw error?.response.data
   });
   }
+
 }

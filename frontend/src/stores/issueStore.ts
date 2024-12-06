@@ -17,17 +17,20 @@ interface IssueFilters {
   label?: string;
   priority?: number;
   dueDate?: string;
+  assigneeIds?: string[];
+  startDate?: Date;
 }
 
-interface IssueUpdateDto {
+export interface IssueUpdateDto {
   title?: string;
   description?: string;
   stateId?: string;
   assigneeIds?: string[];
   labelIds?: string[];
   priority?: number;
-  dueDate?: Date;
-  startDate?: Date;
+  dueDate?: string;
+  startDate?: string;
+  cycleId?: string;
 }
 interface IssueStore {
   issues: Issue[];
@@ -101,7 +104,8 @@ const useIssueStore = create<IssueStore>()(
       createIssue: async (workspaceSlug, projectId, issueData) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await apiClient.post(`/workspaces/${workspaceSlug}/projects/${projectId}/issues`, issueData);
+          // TODO: fix this
+          const response : any = await apiClient.post(`/workspaces/${workspaceSlug}/projects/${projectId}/issues`, issueData);
           const newIssue = response.data;
           set(state => ({ issues: [...state.issues, newIssue], isLoading: false }));
           return newIssue;
@@ -114,7 +118,7 @@ const useIssueStore = create<IssueStore>()(
       updateIssue: async (workspaceSlug, projectId, issueId, issueData) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await apiClient.patch(`/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`, issueData);
+          const response : any= await apiClient.patch(`/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`, issueData);
           const updatedIssue = response.data;
           set(state => ({
             issues: state.issues.map(issue => issue.id === issueId ? updatedIssue : issue),

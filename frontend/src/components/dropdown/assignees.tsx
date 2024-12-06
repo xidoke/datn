@@ -27,6 +27,7 @@ import {
 import { useMemberStore } from "@/stores/member/memberStore";
 import { WorkspaceMember } from "@/types";
 import { API_BASE_URL } from "@/helpers/common.helper";
+import { Tooltip } from "../ui/tooltip-plane";
 
 export interface AssigneeDropdownProps extends TDropdownProps {
   button?: ReactNode;
@@ -37,6 +38,7 @@ export interface AssigneeDropdownProps extends TDropdownProps {
   values: string[];
   showCount?: boolean;
   maxDisplayedAssignees?: number;
+  size?: "icon" | "sm" | "md" | "lg";
 }
 
 const AssigneeDropdown = (props: AssigneeDropdownProps) => {
@@ -50,6 +52,7 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
     className,
     showCount = false,
     maxDisplayedAssignees = 3,
+    size = "sm",
   } = props;
 
   const [isOpen, setIsOpen] = useState(false);
@@ -62,7 +65,6 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
   const onOpen = async () => {
     if (!assignees.length && workspaceSlug && projectId) {
       setAssigneeLoader(true);
-      // Simulating API call to fetch assignees
       const members = await fetchWorkspaceMembers(workspaceSlug as string);
       setAssignees(members);
       setAssigneeLoader(false);
@@ -87,7 +89,6 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
       return (
         <div className="flex items-center gap-1">
           <User className="h-3 w-3" />
-          <span>Select assignees</span>
         </div>
       );
     }
@@ -96,31 +97,72 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
       <AvatarGroup limit={maxDisplayedAssignees}>
         <AvatarGroupList>
           {selectedAssignees.map((assignee) => (
-            <Avatar key={assignee.id}>
-              <AvatarImage
-                src={API_BASE_URL + assignee.user?.avatarUrl}
-                alt={assignee.user?.email}
-              />
-              <AvatarFallback>{assignee.user?.email.charAt(0)}</AvatarFallback>
-            </Avatar>
+            <Tooltip
+              tooltipContent={assignee.user?.email}
+              className="border-[1px] bg-background"
+              key={assignee.id}
+            >
+              <Avatar className="h-5 w-5">
+                <AvatarImage
+                  src={API_BASE_URL + assignee.user?.avatarUrl}
+                  alt={assignee.user?.email}
+                />
+                <AvatarFallback>
+                  {assignee.user?.email.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+            </Tooltip>
           ))}
         </AvatarGroupList>
-        <AvatarOverflowIndicator />
+        <AvatarOverflowIndicator className="h-5 w-5" />
       </AvatarGroup>
     );
   };
 
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger asChild>
-        {button ? (
-          button
-        ) : (
+  const renderButton = () => {
+    switch (size) {
+      case "icon":
+        return (
+          <Button
+            variant="outline"
+            size="icon"
+            className={cn(
+              "h-5 w-5 p-1",
+              className,
+              {
+                "ml-1": selectedAssignees.length > 0,
+              },
+              {
+                "ml-3": selectedAssignees.length > 1,
+              },
+              {
+                "ml-4": selectedAssignees.length > 2,
+              },
+            )}
+          >
+            {renderAssigneeContent()}
+            {showCount && selectedAssignees.length > 0 && (
+              <span className="ml-1 text-xs font-medium">
+                ({selectedAssignees.length})
+              </span>
+            )}
+            {dropdownArrow && (
+              <ChevronsUpDown
+                className={cn(
+                  "ml-2 h-4 w-4 shrink-0 opacity-50",
+                  dropdownArrowClassName,
+                )}
+              />
+            )}
+          </Button>
+        );
+      case "sm":
+        return (
           <Button
             variant="outline"
             size="sm"
             className={cn(
-              "h-auto min-h-[28px] p-1",
+              "h-auto min-h-[28px] p-1 hover:bg-background",
               {
                 "border-0": selectedAssignees.length > 0,
               },
@@ -142,7 +184,43 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
               />
             )}
           </Button>
-        )}
+        );
+      default:
+        return (
+          <Button
+            variant="outline"
+            size="default"
+            className={cn(
+              "h-auto min-h-[32px] p-1 hover:bg-background",
+              {
+                "border-0": selectedAssignees.length > 0,
+              },
+              className,
+            )}
+          >
+            {renderAssigneeContent()}
+            {showCount && selectedAssignees.length > 0 && (
+              <span className="ml-1 text-xs font-medium">
+                ({selectedAssignees.length})
+              </span>
+            )}
+            {dropdownArrow && (
+              <ChevronsUpDown
+                className={cn(
+                  "ml-2 h-4 w-4 shrink-0 opacity-50",
+                  dropdownArrowClassName,
+                )}
+              />
+            )}
+          </Button>
+        );
+    }
+  };
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        {button ? button : renderButton()}
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         {assigneeLoader ? (
@@ -167,7 +245,7 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
                     <Check
                       className={cn(
                         "mr-2 h-3 w-3",
-                        values.includes(assignee.id)
+                        values.includes(assignee.user.id)
                           ? "opacity-100"
                           : "opacity-0",
                       )}
