@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import {
   X,
   Plus,
@@ -25,6 +25,8 @@ import { PriorityDropdown } from "@/components/dropdown/priority";
 import { DatePicker } from "@/components/ui/date-picker";
 import { LabelDropdown } from "@/components/dropdown/label";
 import { AssigneeDropdown } from "@/components/dropdown/assignees";
+import Link from "next/link";
+import Comments from "@/components/comment/comments";
 
 interface IssueModalProps {
   issue: Issue;
@@ -58,6 +60,17 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
       <SheetContent className="w-full sm:max-w-none md:w-[50%]">
         <div className="flex h-full flex-col">
           <SheetHeader className="border-b px-6 py-4">
+            {/* link to detail page */}
+            <Link
+              href={`/${workspaceSlug}/projects/${projectId}/issues/${issue.id}`}
+            >
+              <div className="flex items-center gap-2">
+                <Link2 size={16} />
+                <span className="text-xs text-muted-foreground">
+                  {localIssue.fullIdentifier}
+                </span>
+              </div>
+            </Link>
             <div className="flex items-center justify-between">
               <SheetTitle className="text-base font-medium">
                 {localIssue.fullIdentifier}: {localIssue.title}
@@ -111,7 +124,6 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                   </div>
                 )}
               </div>
-
 
               {/* Properties */}
               <div className="space-y-4">
@@ -240,6 +252,13 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                   Activity
                 </h3>
                 {/* Activity content */}
+                <Suspense fallback={<div>Loading comments...</div>}>
+                  <Comments
+                    issueId={issue.id}
+                    projectId={projectId as string}
+                    workspaceSlug={workspaceSlug as string}
+                  />
+                </Suspense>
               </div>
             </div>
           </div>

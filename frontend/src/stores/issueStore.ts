@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { Issue } from '@/types';
-import { apiClient } from '@/lib/api/api-client';
 import { IssueService } from '@/services/issue.service';
 
 interface PaginationInfo {
@@ -9,16 +8,6 @@ interface PaginationInfo {
   pageSize: number;
   totalCount: number;
   totalPages: number;
-}
-
-interface IssueFilters {
-  state?: string;
-  assignee?: string;
-  label?: string;
-  priority?: number;
-  dueDate?: string;
-  assigneeIds?: string[];
-  startDate?: Date;
 }
 
 export interface IssueUpdateDto {
@@ -37,17 +26,12 @@ interface IssueStore {
   isLoading: boolean;
   error: string | null;
   pagination: PaginationInfo;
-  filters: IssueFilters;
-  groupBy: string | null;
-  subGroupBy: string | null;
 
   fetchIssues: (workspaceSlug: string, projectId: string, page?: number, pageSize?: number) => Promise<void>;
   getIssueById: (issueId: string) => Issue | undefined;
   createIssue: (workspaceSlug: string, projectId: string, issueData: Partial<Issue>) => Promise<Issue>;
   updateIssue: (workspaceSlug: string, projectId: string, issueId: string, issueData : Partial<IssueUpdateDto>) => Promise<Issue>;
   deleteIssue: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
-  setFilters: (filters: IssueFilters) => void;
-  setGrouping: (groupBy: string | null, subGroupBy: string | null) => void;
   reset: () => void;
 }
 
@@ -82,10 +66,6 @@ const useIssueStore = create<IssueStore>()(
           const issues : { issues: Issue[], pagination: any} = await issueService.fetchIssues(workspaceSlug, projectId, {
               page,
               pageSize,
-              ...get().filters,
-              group_by: get().groupBy,
-              sub_group_by: get().subGroupBy,
-
           });
           set({
             issues: issues.issues,
@@ -104,9 +84,7 @@ const useIssueStore = create<IssueStore>()(
       createIssue: async (workspaceSlug, projectId, issueData) => {
         set({ isLoading: true, error: null });
         try {
-          // TODO: fix this
-          const response : any = await apiClient.post(`/workspaces/${workspaceSlug}/projects/${projectId}/issues`, issueData);
-          const newIssue = response.data;
+          const newIssue = await issueService.createIssue(workspaceSlug, projectId, issueData);
           set(state => ({ issues: [...state.issues, newIssue], isLoading: false }));
           return newIssue;
         } catch (error) {
@@ -118,8 +96,7 @@ const useIssueStore = create<IssueStore>()(
       updateIssue: async (workspaceSlug, projectId, issueId, issueData) => {
         set({ isLoading: true, error: null });
         try {
-          const response : any= await apiClient.patch(`/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`, issueData);
-          const updatedIssue = response.data;
+          const updatedIssue = await issueService.updateIssue(workspaceSlug, projectId, issueId, issueData);
           set(state => ({
             issues: state.issues.map(issue => issue.id === issueId ? updatedIssue : issue),
             isLoading: false
@@ -134,7 +111,7 @@ const useIssueStore = create<IssueStore>()(
       deleteIssue: async (workspaceSlug, projectId, issueId) => {
         set({ isLoading: true, error: null });
         try {
-          await apiClient.delete(`/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`);
+          await issueService.deleteIssue(workspaceSlug, projectId, issueId);
           set(state => ({
             issues: state.issues.filter(issue => issue.id !== issueId),
             isLoading: false
@@ -143,14 +120,6 @@ const useIssueStore = create<IssueStore>()(
           set({ error: 'Failed to delete issue', isLoading: false });
           throw error;
         }
-      },
-
-      setFilters: (filters) => {
-        set({ filters });
-      },
-
-      setGrouping: (groupBy, subGroupBy) => {
-        set({ groupBy, subGroupBy });
       },
     }),
     { name: 'issue-store' } 

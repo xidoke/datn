@@ -15,4 +15,27 @@ export class IssueService extends APIService {
   });
   }
 
+  async createIssue(workspaceSlug: string, projectId: string, issueData: any) {
+    return this.post<Issue>(`workspaces/${workspaceSlug}/projects/${projectId}/issues`, issueData).then(
+      (response) => response.data.data
+    ).catch((error) => {
+      throw error?.response.data
+    });
+  }
+
+  async updateIssue(workspaceSlug: string, projectId: string, issueId: string, issueData: any) {
+    return this.patch<Issue>(`workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`, issueData).then(
+      (response) => response.data.data
+    ).catch((error) => {
+      throw error?.response.data
+    });
+  }
+
+  async deleteIssue(workspaceSlug: string, projectId: string, issueId: string) {
+    return this.delete<void>(`workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`).then(
+      (response) => response.data.data
+    ).catch((error) => {
+      throw error?.response.data
+    });
+  }
 }

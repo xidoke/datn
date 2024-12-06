@@ -1,20 +1,23 @@
 import { CommentService, Comment } from '@/services/comment.service';
 import {create} from 'zustand';
 
-interface CommentState {
+interface CommentStore {
   comments: Comment[];
   isLoading: boolean;
   error: string | null;
   fetchComments: (workspaceSlug: string, projectId: string, issueId: string) => Promise<void>;
   addComment: (workspaceSlug: string, projectId: string, issueId: string, content: string) => Promise<void>;
   deleteComment: (workspaceSlug: string, projectId: string, issueId: string,commentId: string) => Promise<void>;
+  updateComment: (workspaceSlug: string, projectId: string, issueId: string,commentId: string, content: string) => Promise<void>;
+  reset: () => void;
 }
 
 const commentService = new CommentService();
-export const useCommentStore = create<CommentState>((set, get) => ({
+export const useCommentStore = create<CommentStore>((set, get) => ({
   comments: [],
   isLoading: false,
   error: null,
+  reset: () => set({ comments: [], isLoading: false, error: null }),
   fetchComments: async (workspaceSlug: string, projectId: string, issueId: string) => {
     set({ isLoading: true, error: null });
     try {
@@ -40,6 +43,18 @@ export const useCommentStore = create<CommentState>((set, get) => ({
       }));
     } catch (error) {
       set({ error: 'Failed to delete comment' });
+    }
+  },
+  updateComment: async (workspaceSlug: string, projectId: string, issueId: string,commentId: string, content: string) => {
+    try {
+      const response = await commentService.updateComment(workspaceSlug, projectId, issueId, commentId, content);
+      set((state) => ({
+        comments: state.comments.map((comment) =>
+          comment.id === commentId ? { ...comment, content: response.data.content } : comment,
+        ),
+      }));
+    } catch (error) {
+      set({ error: 'Failed to update comment' });
     }
   },
 }));

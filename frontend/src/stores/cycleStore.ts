@@ -26,6 +26,7 @@ interface CycleState {
   getActiveCycle: () => ICycle | undefined;
   getFilteredCycles: (filter: (cycle: ICycle) => boolean) => ICycle[];
   fetchCycleProgress: (workspaceSlug : string, projectId: string, cycleId: string) => Promise<number>;
+  reset: () => void;
 }
 
 // Helper function to simulate API calls
@@ -46,6 +47,10 @@ export const useCycleStore = create<CycleState>()(
       upcomingCycleIds: [],
       isLoading: false,
       error: null,
+
+      reset: () => {
+        set({ cycles: {}, activeCycleId: null, compeletedCycleIds: [], upcomingCycleIds: [], isLoading: false, error: null });
+    },
 
       fetchCycles: async (workspaceSlug: string, projectId: string) => {
         set({ isLoading: true });

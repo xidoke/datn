@@ -35,7 +35,7 @@ export const ActiveCycleRoot: React.FC<IActiveCycleDetails> = (props) => {
       <Disclosure as="div" className="flex flex-shrink-0 flex-col bg-backdrop" defaultOpen>
         {({ open }) => (
           <>
-            <DisclosureButton className="sticky top-0 z-[2] w-full flex-shrink-0 border-b border-custom-border-200 bg-custom-background-90 cursor-pointer">
+            <DisclosureButton className="sticky top-0 z-[2] w-full flex-shrink-0 border-b   cursor-pointer bg-backdrop">
               <CycleListGroupHeader title="Active cycle" type="current" isExpanded={open} />
             </DisclosureButton>
             <DisclosurePanel>

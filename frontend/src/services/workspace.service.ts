@@ -47,4 +47,44 @@ export class WorkspaceService extends APIService {
       });
   }
 
+  async createWorkspace(data: Partial<Workspace>): Promise<Workspace> {
+    return this.post<Workspace>("/workspaces", data)
+      .then((response) => response?.data.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async deleteWorkspace(workspaceSlug: string) {
+    return this.delete<void>(`/workspaces/${workspaceSlug}`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async updateWorkspace(workspaceSlug: string, data: Partial<Workspace>) {
+    return this.patch<Workspace>(`/workspaces/${workspaceSlug}`, data)
+      .then((response) => response?.data.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  // update logo
+  async updateWorkspaceLogo(workspaceSlug: string, logoFile: File): Promise<Workspace> {
+    const formData = new FormData();
+    formData.append("logo", logoFile);
+
+    return this.post<Workspace>(`/workspaces/${workspaceSlug}/logo`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+      .then((response) => response?.data.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
 }

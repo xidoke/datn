@@ -45,4 +45,12 @@ export class CommentService extends APIService {
         throw error?.response?.data;
       });
   }
+
+  async updateComment(workspaceSlug: string, projectId: string, issueId: string,commentId: string, content: string): Promise<ApiResponse<Comment>> {
+    return this.patch<Comment>(`/workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}/comments/${commentId}`, { content })
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
 }

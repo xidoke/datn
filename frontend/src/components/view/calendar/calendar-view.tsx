@@ -23,7 +23,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { Issue, State } from "@/types";
 import { useProjectStateStore } from "@/stores/projectStateStore";
-import { filterStore } from "@/stores/filterStore";
+import { useFilterStore } from "@/stores/filterStore";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FilterDropdown from "@/components/dropdown/filter";
@@ -397,12 +397,20 @@ export type CalendarItemProps = {
   onClick?: () => void;
 };
 
-export const CalendarItem = ({ issue, className, onClick }: CalendarItemProps) => (
-  <div className={cn("flex items-center gap-2", className)} key={issue.id} onClick={() => {
-    if (onClick) {
-      onClick();
-    }
-  }}>
+export const CalendarItem = ({
+  issue,
+  className,
+  onClick,
+}: CalendarItemProps) => (
+  <div
+    className={cn("flex items-center gap-2", className)}
+    key={issue.id}
+    onClick={() => {
+      if (onClick) {
+        onClick();
+      }
+    }}
+  >
     <div
       className="h-2 w-2 shrink-0 rounded-full"
       style={{
@@ -444,7 +452,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 }) => {
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [search, setSearch] = useState("");
-  const { statusIds, labelIds, setFilter } = filterStore();
+  const { statusIds, labelIds, setFilter } = useFilterStore();
 
   const filteredIssues = issues.filter((issue) => {
     if (
