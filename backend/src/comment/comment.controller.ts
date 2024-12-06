@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CommentService } from './comment.service';
 import { RequestWithUser } from 'src/user/interfaces/request.interface';
@@ -25,5 +25,11 @@ export class CommentController {
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req : RequestWithUser ) {
     return this.commentsService.remove(id, req.user.userId);
+  }
+
+  // update comment
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateCommentDto: CreateCommentDto, @Req() req : RequestWithUser) {
+    return this.commentsService.update(id, updateCommentDto, req.user.userId);
   }
 }

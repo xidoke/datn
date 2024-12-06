@@ -20,13 +20,13 @@ const initialState: FilterStoreState = {
 
 interface FilterStoreActions {
     setFilter: (filter: Partial<FilterStoreState>) => void;
-    resetFilter: () => void;
+    reset: () => void;
 }
 
 type FilterStore = FilterStoreState & FilterStoreActions;
 
-export const filterStore = create<FilterStore>((set) => ({
+export const useFilterStore = create<FilterStore>((set) => ({
     ...initialState,
     setFilter: (filter: Partial<FilterStoreState>) => set(filter),
-    resetFilter: () => set(initialState),
+    reset: () => set(initialState),
 }));

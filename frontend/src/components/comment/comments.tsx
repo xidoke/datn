@@ -1,13 +1,14 @@
 "use client";
 
 import { useCommentStore } from "@/stores/commentStore";
+import { useUserStore } from "@/stores/userStore";
 import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Trash2 } from "lucide-react";
+import { Send, Trash2, Edit } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,8 +39,12 @@ export default function Comments({
     fetchComments,
     addComment,
     deleteComment,
+    updateComment,
   } = useCommentStore();
+  const { data: currentUser } = useUserStore();
   const [newComment, setNewComment] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editedContent, setEditedContent] = useState("");
 
   useEffect(() => {
     fetchComments(workspaceSlug, projectId, issueId);
@@ -55,6 +60,26 @@ export default function Comments({
 
   const handleDelete = async (commentId: string) => {
     await deleteComment(workspaceSlug, projectId, issueId, commentId);
+  };
+
+  const handleEdit = async (commentId: string) => {
+    if (editingCommentId === commentId) {
+      await updateComment(
+        workspaceSlug,
+        projectId,
+        issueId,
+        commentId,
+        editedContent,
+      );
+      setEditingCommentId(null);
+      setEditedContent("");
+    } else {
+      const commentToEdit = comments.find((c) => c.id === commentId);
+      if (commentToEdit) {
+        setEditingCommentId(commentId);
+        setEditedContent(commentToEdit.content);
+      }
+    }
   };
 
   if (isLoading) return <div className="p-4">Loading comments...</div>;
@@ -92,40 +117,60 @@ export default function Comments({
                           {new Date(comment.createdAt).toLocaleString()}
                         </span>
                       </div>
-                      <p className="text-sm leading-relaxed">
-                        {comment.content}
-                      </p>
+                      {editingCommentId === comment.id ? (
+                        <Textarea
+                          value={editedContent}
+                          onChange={(e) => setEditedContent(e.target.value)}
+                          className="min-h-[100px] resize-none"
+                        />
+                      ) : (
+                        <p className="text-sm leading-relaxed">
+                          {comment.content}
+                        </p>
+                      )}
                     </div>
                   </div>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
+                  {currentUser && currentUser.id === comment.user.id && (
+                    <div className="flex gap-2">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() => handleEdit(comment.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Edit className="h-4 w-4" />
                       </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Comment</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete this comment? This
-                          action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(comment.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Comment</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this comment? This
+                              action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(comment.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

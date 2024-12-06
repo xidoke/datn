@@ -29,18 +29,6 @@ const data = {
       // isActive: true,
     },
   ],
-  favorites: [
-    {
-      name: "Movie & TV Show Watchlist with Reviews",
-      url: "#",
-      emoji: "🎬",
-    },
-    {
-      name: "Daily Habit Tracker & Goal Setting",
-      url: "#",
-      emoji: "✅",
-    },
-  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -62,7 +50,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain}/>
       </SidebarHeader>
       <SidebarContent>
-        {/* <NavFavorites favorites={data.favorites} /> */}
         <NavProjects />
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>

@@ -11,7 +11,8 @@ const initialState : ViewStoreState = {
 }
 
 interface ViewStoreActions {
-    setViewType: (view: IssueLayoutTypes) => void
+    setViewType: (view: IssueLayoutTypes) => void,
+    reset: () => void
 }
 
 type ViewStore = ViewStoreState & ViewStoreActions;
@@ -19,4 +20,5 @@ type ViewStore = ViewStoreState & ViewStoreActions;
 export const useViewStore = create<ViewStore>((set) => ({
     ...initialState,
     setViewType: (view: IssueLayoutTypes) => set({ viewType: view }),
+    reset: () => set(initialState)
 }));

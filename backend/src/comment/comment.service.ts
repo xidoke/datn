@@ -48,5 +48,27 @@ export class CommentService {
 
     return this.prisma.issueComment.delete({ where: { id } });
   }
+
+  async update(id: string, createCommentDto: CreateCommentDto, userId: string) {
+    const { content } = createCommentDto;
+    const comment = await this.prisma.issueComment.findUnique({
+      where: { id },
+      include: { user: true },
+    });
+
+    if (!comment) {
+      throw new NotFoundException(`Comment with ID "${id}" not found`);
+    }
+
+    if (comment.user.id !== userId) {
+      throw new ForbiddenException('You are not authorized to update this comment');
+    }
+
+    return this.prisma.issueComment.update({
+      where: { id },
+      data: { content },
+      include: { user: true },
+    });
+  }
 }
 

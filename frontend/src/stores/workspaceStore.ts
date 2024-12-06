@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { apiClient } from "@/lib/api/api-client";
 import { Workspace } from "@/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -16,16 +14,9 @@ interface WorkspaceState {
 
 interface WorkspaceActions {
   getWorkspaceBySlug: (workspaceSlug: string) => Workspace | undefined;
-  // getWorkspaceById: (workspaceId: string) => Workspace | undefined;
-  // fetch actions
   getPermissions: (workspaceSlug: string) => any;
   fetchWorkspaces: () => Promise<Workspace[]>;
-  // // crud actions
   createWorkspace: (data: Partial<Workspace>) => Promise<Workspace>;
-  // updateWorkspace: (
-  //   workspaceSlug: string,
-  //   data: Partial<Workspace>,
-  // ) => Promise<Workspace>;
   updateWorkspaceLogo: (workspaceSlug: string, logoFile: File) => void;
   deleteWorkspace: (workspaceSlug: string) => Promise<void>;
   updateWorkspace: (
@@ -76,8 +67,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       },
       createWorkspace: async (data: Partial<Workspace>) => {
         try {
-          const res : any= await apiClient.post("workspaces", data);
-          const workspace = res.data
+            const workspace = await workspaceService.createWorkspace(data);
           set({
             workspaces: [...(get().workspaces || []), workspace],
           });
@@ -100,11 +90,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           throw new Error("Workspace not found");
         }
         try {
-          const res : any= await apiClient.patch(
-            `workspaces/${workspaceSlug}`,
-            data,
-          );
-          const updatedWorkspace = res.data;
+          const updatedWorkspace = await workspaceService.updateWorkspace(workspaceSlug, data);
+
           set({
             workspaces: get().workspaces?.map((w) =>
               w.slug === workspaceSlug ? updatedWorkspace : w,
@@ -117,20 +104,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       },
       updateWorkspaceLogo: async (slug: string, logoFile: File) => {
         try {
-          const formData = new FormData();
-          formData.append("logo", logoFile);
-
-          const res : any= await apiClient.patch(
-            `workspaces/${slug}/logo`,
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            },
+          const updatedWorkspace = await workspaceService.updateWorkspaceLogo(
+            slug,
+            logoFile,
           );
-
-          const updatedWorkspace = res.data;
 
           set((state) => ({
             workspaces: state.workspaces?.map((w) =>
@@ -145,7 +122,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       },
       deleteWorkspace: async (workspaceSlug: string) => {
         try {
-          await apiClient.delete(`workspaces/${workspaceSlug}`);
+          await workspaceService.deleteWorkspace(workspaceSlug);
           set({
             workspaces: get().workspaces?.filter(
               (workspace) => workspace.slug !== workspaceSlug,

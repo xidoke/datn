@@ -13,7 +13,7 @@ import { useProjectStateStore } from "@/stores/projectStateStore";
 import { useParams } from "next/navigation";
 import { Issue, Label, State } from "@/types";
 import FilterDropdown from "@/components/dropdown/filter";
-import { filterStore } from "@/stores/filterStore";
+import { useFilterStore } from "@/stores/filterStore";
 import { useMemberStore } from "@/stores/member/memberStore";
 
 const stateGroups = [
@@ -38,7 +38,7 @@ export default function KanbanBoard({
   const { fetchIssues, updateIssue } = useIssueStore();
   const { fetchStates } = useProjectStateStore();
   const { fetchLabels } = useProjectLabelStore();
-  const { workspaceMemberIds, workspaceMemberMap } = useMemberStore()
+  const { workspaceMemberIds, workspaceMemberMap } = useMemberStore();
   // filter
   const {
     statusIds,
@@ -46,8 +46,8 @@ export default function KanbanBoard({
     cycleIds,
     labelIds,
     setFilter,
-    resetFilter,
-  } = filterStore();
+    reset: resetFilter,
+  } = useFilterStore();
   const [selectedIssue, setSelectedIssue] = React.useState<Issue | null>(null);
   const [search, setSearch] = React.useState("");
 
@@ -65,7 +65,7 @@ export default function KanbanBoard({
     ) {
       return false;
     }
-  
+
     return true;
   });
 
@@ -74,11 +74,11 @@ export default function KanbanBoard({
       return false;
     }
     return true;
-  })
+  });
 
   const { workspaceSlug, projectId } = useParams();
   useEffect(() => {
-    fetchIssues(workspaceSlug as string, projectId as string); // Replace with actual project ID
+    (workspaceSlug as string, projectId as string); // Replace with actual project ID
     fetchStates(workspaceSlug as string, projectId as string);
     fetchLabels(workspaceSlug as string, projectId as string);
   }, [fetchIssues, fetchStates, fetchLabels, workspaceSlug, projectId]);
@@ -93,7 +93,9 @@ export default function KanbanBoard({
           id: state.id,
           icon: group.icon,
           title: state.name,
-          issues: issueAfterSearchandFilter.filter((issue) => issue.state?.id === state.id),
+          issues: issueAfterSearchandFilter.filter(
+            (issue) => issue.state?.id === state.id,
+          ),
           state, // Add the state object to pass to Column
         }));
       })
@@ -137,7 +139,12 @@ export default function KanbanBoard({
         <div className="flex items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input className="w-64 pl-8 text-sm" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)}/>
+            <Input
+              className="w-64 pl-8 text-sm"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
           <FilterDropdown
             label="Status"
@@ -167,7 +174,7 @@ export default function KanbanBoard({
         </div>
       </DragDropContext>
       {selectedIssue && (
-        <IssueModal issue={selectedIssue} onClose={handleCloseModal}/>
+        <IssueModal issue={selectedIssue} onClose={handleCloseModal} />
       )}
     </div>
   );
