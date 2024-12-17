@@ -23,7 +23,7 @@ import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
 import { plainToInstance } from "class-transformer";
 import { Roles } from "src/auth/decorators/roles.decorator";
 import { Role } from "src/auth/enums/role.enum";
-import { PaginationQueryDto } from "./dto/pagination-query.dto";
+import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
 import { UserListResponseDto } from "./dto/user-list-response.dto";
 import { CreateAdminUserDto } from "./dto/create-admin-user.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -142,6 +142,15 @@ export class UserController {
       page: paginationQuery.page,
       pageSize: paginationQuery.pageSize,
     };
+  }
+
+  // chart data user for admin
+  @Get("admin/chart-data")
+  @Roles(Role.ADMIN)
+  @UseGuards(CognitoAuthGuard)
+  async getChartData() {
+    console.log("get chart data");
+    return this.userService.getChartData();
   }
 
   // retrieve user by userId

@@ -53,8 +53,8 @@ export default function LoginForm() {
   const onSubmit = async (values: LoginFormValues) => {
     try {
       await login({ email: values.email, password: values.password });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err : any) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
       toast({
         title: "Error",
         description: err.message,
@@ -101,7 +101,7 @@ export default function LoginForm() {
                     <div className="flex items-center">
                       <Label htmlFor="password">Password</Label>
                       <Link
-                        href="/forgot-password"
+                        href="/accounts/forgot-password"
                         className="ml-auto inline-block text-sm underline"
                       >
                         Forgot your password?

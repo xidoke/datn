@@ -15,7 +15,7 @@ import { WorkspaceMemberModule } from "./workspace-member/workspace-member.modul
 import { PermissionModule } from "./permission/permission.module";
 import { LabelModule } from "./label/label.module";
 import { CycleModule } from "./cycle/cycle.module";
-import { CommentModule } from './comment/comment.module';
+import { CommentModule } from "./comment/comment.module";
 
 @Module({
   imports: [

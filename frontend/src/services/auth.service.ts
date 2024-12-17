@@ -22,7 +22,31 @@ export class AuthService extends APIService {
   });
   }
 
+  async changePassword(data: { oldPassword: string, newPassword: string }) {
+    return this.post('/auth/change-password', data).then(
+      (response) => response.data
+    ).catch((error) => {
+      throw error?.response.data
+    });
+  }
+
   async signOut() {
     return await this.post('/auth/logout');
+  }
+
+  async forgotPassword(email: string) {
+    return this.post('/auth/forgot-password', { email }).then(
+      (response) => response.data
+    ).catch((error) => {
+      throw error?.response.data
+    });
+  }
+
+  async confirmForgotPassword(data: { email: string, code: string, newPassword: string }) {
+    return this.post('/auth/confirm-forgot-password', data).then(
+      (response) => response.data
+    ).catch((error) => {
+      throw error?.response.data
+    });
   }
 }

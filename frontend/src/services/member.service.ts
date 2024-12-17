@@ -1,6 +1,6 @@
 // src/services/member.service.ts
 
-import { ApiResponse, WorkspaceMember, MemberResponse } from "@/types";
+import { WorkspaceMember, MemberResponse, InvitationsWorkspaceResponse } from "@/types";
 import { APIService } from "./api.service";
 import { API_BASE_URL } from "@/helpers/common.helper";
 
@@ -19,12 +19,15 @@ export class MemberService extends APIService {
   }
 
   async inviteMember(workspaceSlug: string, email: string, role: string): Promise<WorkspaceMember> {
-    try {
-      const response = await this.post<WorkspaceMember>(`/workspaces/${workspaceSlug}/members`, { email, role });
-      return response.data.data;
-    } catch (error) {
-      throw error;
-    }
+    return this.post<WorkspaceMember>(`/workspaces/${workspaceSlug}/invitations`, { email, role }).then((response) => response.data.data).catch((error) => {
+      throw error.response.data;
+    })
+  }
+
+  async fetchWorkspaceMemberInvitations(workspaceSlug: string): Promise<InvitationsWorkspaceResponse> {
+    return this.get<InvitationsWorkspaceResponse>(`/workspaces/${workspaceSlug}/invitations?status=PENDING`).then((response) => response.data.data).catch((error) => {
+      throw error.response.data;
+    })
   }
 
   async updateMemberRole(workspaceSlug: string, memberId: string, role: string): Promise<WorkspaceMember> {

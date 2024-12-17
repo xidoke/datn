@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { WorkspaceRole } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
-import { PaginationQueryDto } from "src/user/dto/pagination-query.dto";
+import { PaginationQueryDto } from "src/common/dto/pagination-query.dto";
 
 @Injectable()
 export class WorkspaceMemberService {
@@ -244,8 +244,19 @@ export class WorkspaceMemberService {
       throw new ForbiddenException("Cannot remove the workspace owner");
     }
 
+    const { email } = await this.prisma.user.findUnique({
+      where: { id: memberToRemove.userId },
+      select: { email: true },
+    });
     await this.prisma.workspaceMember.delete({ where: { id: memberId } });
-
+    await this.prisma.workspaceInvitation.delete({
+      where: {
+        email_workspaceId: {
+          workspaceId: workspace.id,
+          email,
+        },
+      },
+    });
     return { message: "Member removed successfully" };
   }
 }

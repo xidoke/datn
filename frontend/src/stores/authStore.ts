@@ -4,7 +4,6 @@ import { persist } from "zustand/middleware";
 import { useUserStore } from "./userStore";
 import { LoginDto, RegisterDto, User } from "@/types";
 import { AuthService } from "@/services/auth.service";
-import { use } from "react";
 
 interface AuthState {
   isLoading: boolean;
@@ -19,6 +18,10 @@ interface AuthActions {
   ) => Promise<void>;
   logout: () => void;
   reset: () => void;
+  changePassword: (oldPassword: string, newPassword: string) => Promise<void>; 
+  forgotPassword: (email: string) => Promise<void>;
+  confirmForgotPassword: (email: string, code: string, newPassword: string) => Promise<void>;
+  
 }
 
 const authService = new AuthService();
@@ -56,6 +59,22 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           throw new Error(errorMessage);
         }
       },
+
+      confirmForgotPassword: async (email: string, code: string, newPassword: string) => {
+        set({ isLoading: true, error: undefined });
+        try {
+          await authService.confirmForgotPassword({email, code, newPassword});
+          set({ isLoading: false });
+        } catch (error: any) {
+          const errorMessage = error?.message || "Failed to confirm OTP. Please try again.";
+          set({
+            error: errorMessage,
+            isLoading: false,
+          });
+          throw new Error(errorMessage);      
+        }
+      },
+      
       // Test register
       register: async ( registerDto: RegisterDto
       ) => {
@@ -98,7 +117,39 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           });
         }
       },
+      // Change Password
+      changePassword: async (oldPassword: string, newPassword: string) => {
+        set({ isLoading: true, error: undefined });
+        try {
+          await authService.changePassword({oldPassword, newPassword});
+          set({ isLoading: false });
+        } catch (error: any) {
+          const errorMessage = error?.message || "Failed to change password. Please try again.";
+          set({
+            error: errorMessage,
+            isLoading: false,
+          });
+          throw new Error(errorMessage);
+        }
+      },
+
+      forgotPassword: async (email: string) => {
+        set({ isLoading: true, error: undefined });
+        try {
+          await authService.forgotPassword(email);
+          set({ isLoading: false });
+        } catch (error: any) {
+          const errorMessage = error?.message || "Failed to reset password. Please try again.";
+          set({
+            error: errorMessage,
+            isLoading: false,
+          });
+          throw new Error(errorMessage);
+        }
+      }
     }),
+
+
     {
       name: "auth-storage",
     },

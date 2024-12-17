@@ -29,7 +29,7 @@ export class CycleService {
       },
       orderBy: {
         startDate: "asc",
-      }
+      },
     });
   }
 
@@ -105,7 +105,9 @@ export class CycleService {
     const { startDate, dueDate } = updateData;
     // we must check no cycle has intersected date
     if ((startDate && !dueDate) || (!startDate && dueDate)) {
-      throw new Error("Both start date and due date must be defined or undefined.");
+      throw new Error(
+        "Both start date and due date must be defined or undefined.",
+      );
     }
 
     if (startDate && dueDate) {
@@ -134,16 +136,15 @@ export class CycleService {
         throw new Error("Cycle dates overlap with an existing cycle.");
       }
     }
-    
 
     return this.prisma.cycle.update({
       where: {
-      id: cycleId,
+        id: cycleId,
       },
       data: {
-      ...updateData,
-      startDate: startDate || null,
-      dueDate: dueDate || null,
+        ...updateData,
+        startDate: startDate || null,
+        dueDate: dueDate || null,
       },
       include: {
         creator: {
@@ -178,7 +179,11 @@ export class CycleService {
     });
   }
 
-  async getCycleProgress(workspaceSlug: string, projectId: string, cycleId: string) {
+  async getCycleProgress(
+    workspaceSlug: string,
+    projectId: string,
+    cycleId: string,
+  ) {
     // progress calculation
     const totalIssues = await this.prisma.issue.count({
       where: {
@@ -186,9 +191,9 @@ export class CycleService {
         projectId,
         state: {
           group: {
-            not: "cancelled"
-          }
-        }
+            not: "cancelled",
+          },
+        },
       },
     });
 
@@ -198,13 +203,14 @@ export class CycleService {
         projectId,
         state: {
           group: {
-            notIn: ["completed", "cancelled"]
-          }
-        }
+            notIn: ["completed", "cancelled"],
+          },
+        },
       },
     });
 
-    const unProgress = totalIssues > 0 ? (incompleteIssues / totalIssues) * 100 : 0;
+    const unProgress =
+      totalIssues > 0 ? Math.floor((incompleteIssues / totalIssues) * 100) : 0;
 
     return {
       totalIssues,

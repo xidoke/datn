@@ -14,7 +14,7 @@ import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
 import { WorkspaceMemberService } from "./workspace-member.service";
 import { RequestWithUser } from "src/user/interfaces/request.interface";
 import { UpdateMemberRoleDto } from "./dto/update-member-role.dto";
-import { PaginationQueryDto } from "src/user/dto/pagination-query.dto";
+import { PaginationQueryDto } from "src/common/dto/pagination-query.dto";
 import { WorkspaceRole } from "@prisma/client";
 import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
 import { WorkspacePermission } from "src/permission/permission.type";

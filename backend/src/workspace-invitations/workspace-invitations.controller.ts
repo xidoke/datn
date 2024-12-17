@@ -13,8 +13,8 @@ import { WorkspaceInvitationsService } from "./workspace-invitations.service";
 import { InviteWorkspaceDto } from "./dto/invite-workspace.dto";
 import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
 import { WorkspacePermission } from "src/permission/permission.type";
-import { PaginationQueryDto } from "src/user/dto/pagination-query.dto";
 import { Permissions } from "src/permission/permission.decorator";
+import { InviteQueryDto } from "./dto/invite-query.dto";
 
 @Controller("workspaces/:slug/invitations")
 @UseGuards(CognitoAuthGuard, WorkspacePermissionGuard)
@@ -27,12 +27,9 @@ export class WorkspaceInvitationsController {
   @Permissions(WorkspacePermission.VIEW_INVITATIONS)
   async getInvitations(
     @Param("slug") slug: string,
-    @Query() paginationQueryDto: PaginationQueryDto,
+    @Query() inviteQueryDto: InviteQueryDto,
   ) {
-    return this.workspaceInvitationService.getInvitations(
-      slug,
-      paginationQueryDto,
-    );
+    return this.workspaceInvitationService.getInvitations(slug, inviteQueryDto);
   }
 
   @Post()

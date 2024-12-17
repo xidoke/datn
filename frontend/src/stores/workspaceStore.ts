@@ -117,6 +117,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
           return updatedWorkspace;
         } catch (error) {
+          console.log(error);
           throw error;
         }
       },

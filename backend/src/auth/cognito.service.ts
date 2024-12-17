@@ -8,7 +8,6 @@ import {
   ForgotPasswordCommand,
   GlobalSignOutCommand,
   AuthFlowType,
-  AdminSetUserPasswordCommandInput,
   CognitoIdentityProviderServiceException,
   AdminDeleteUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
@@ -100,6 +99,7 @@ export class CognitoService {
     const command = new ForgotPasswordCommand({
       ClientId: AWS_CONFIG.cognito.clientId,
       Username: email,
+      SecretHash: this.calculateSecretHash(email),
     });
     return this.cognitoClient.send(command);
   }
@@ -114,32 +114,9 @@ export class CognitoService {
       Username: email,
       ConfirmationCode: code,
       Password: newPassword,
+      SecretHash: this.calculateSecretHash(email),
     });
     return this.cognitoClient.send(command);
-  }
-
-  async changePassword(
-    cognitoId: string,
-    oldPassword: string,
-    newPassword: string,
-  ) {
-    const params: AdminSetUserPasswordCommandInput = {
-      UserPoolId: AWS_CONFIG.cognito.userPoolId,
-      Username: cognitoId,
-      Password: newPassword,
-      Permanent: true,
-    };
-
-    const command = new AdminSetUserPasswordCommand(params);
-
-    try {
-      return await this.cognitoClient.send(command);
-    } catch (error) {
-      if (error.name === "InvalidPasswordException") {
-        throw new BadRequestException("Invalid password format");
-      }
-      throw error;
-    }
   }
 
   async deleteUser(username: string) {
@@ -155,6 +132,50 @@ export class CognitoService {
       console.error("Error deleting user from Cognito:", error);
       throw new Error(
         `Failed to delete user ${username} from Cognito: ${error.message}`,
+      );
+    }
+  }
+
+  async changePassword(
+    email: string,
+    oldPassword: string,
+    newPassword: string,
+  ) {
+    try {
+      // First, verify the old password
+      const authCommand = new AdminInitiateAuthCommand({
+        AuthFlow: AuthFlowType.ADMIN_USER_PASSWORD_AUTH,
+        UserPoolId: AWS_CONFIG.cognito.userPoolId,
+        ClientId: AWS_CONFIG.cognito.clientId,
+        AuthParameters: {
+          USERNAME: email,
+          PASSWORD: oldPassword,
+          SECRET_HASH: this.calculateSecretHash(email),
+        },
+      });
+
+      await this.cognitoClient.send(authCommand);
+
+      // If authentication is successful, proceed to change the password
+      const changePasswordCommand = new AdminSetUserPasswordCommand({
+        UserPoolId: AWS_CONFIG.cognito.userPoolId,
+        Username: email,
+        Password: newPassword,
+        Permanent: true,
+      });
+
+      await this.cognitoClient.send(changePasswordCommand);
+      return { message: `Password for user ${email} successfully changed` };
+    } catch (error) {
+      if (error instanceof CognitoIdentityProviderServiceException) {
+        if (error.name === "NotAuthorizedException") {
+          throw new BadRequestException("Incorrect old password");
+        }
+        throw new CognitoServiceException(error);
+      }
+      throw new HttpException(
+        `Failed to change password for user ${email}: ${error.message}`,
+        500,
       );
     }
   }

@@ -92,7 +92,7 @@ export class CognitoAuthGuard implements CanActivate {
       const user = await this.authService.findByCognitoId(cognitoId);
 
       if (!user) {
-        throw new UnauthorizedException("User not found");
+        throw new UnauthorizedException("User not found!");
       }
 
       const userInfo = {
@@ -179,7 +179,7 @@ export class CognitoAuthGuard implements CanActivate {
       httpOnly: true,
       secure: process.env.NODE_ENV !== "development",
       sameSite: "none",
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 60 * 60 * 1000, // 60 minutes
     });
 
     if (tokens.RefreshToken) {
@@ -187,7 +187,7 @@ export class CognitoAuthGuard implements CanActivate {
         httpOnly: true,
         secure: process.env.NODE_ENV !== "development",
         sameSite: "none",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       });
     }
   }

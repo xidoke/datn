@@ -23,19 +23,18 @@ const UserInvitationsPage = () => {
   // router
   const router = useAppRouter();
   //   user store
-  const { data: currentUser, updateLastWorkspaceSlug } = useUserStore();
+  const { updateLastWorkspaceSlug } = useUserStore();
   //  workspace fetch
   const { fetchWorkspaces } = useWorkspaceStore();
   //   fetch invitations
   const {
     data: invitationResponse,
-    error: invitationError,
     mutate: mutateInvitations,
     isLoading,
   } = useSWR("USER_WORKSPACE_INVITATIONS", () =>
     workspaceService.userWorkspaceInvitations(),
   );
-  const { invitations, totalCount } = invitationResponse || {};
+  const { invitations } = invitationResponse || {};
 
   const handleInvitation = (
     invitation: Invitation,
@@ -68,12 +67,12 @@ const UserInvitationsPage = () => {
         workspaceService.acceptWorkspaceInvitation(invitationId),
       );
       // TODO: fix this
-      const results : any= await Promise.all(acceptPromises);
+      const results: any = await Promise.all(acceptPromises);
 
       // Update last workspace slug with the last accepted invitation
       if (results.length > 0) {
         // TODO: fix this
-        const lastAcceptedWorkspace : any = results[results.length - 1];
+        const lastAcceptedWorkspace: any = results[results.length - 1];
         await updateLastWorkspaceSlug(lastAcceptedWorkspace.slug);
       }
 
@@ -92,7 +91,8 @@ const UserInvitationsPage = () => {
 
       // Redirect to the last joined workspace
       if (results.length > 0) {
-        router.push(`/${results[results.length - 1].slug}`);
+        // router.push(`/${results[results.length - 1].slug}`);
+        router.push(`/`);
       } else {
         router.push("/");
       }

@@ -44,11 +44,12 @@ export default function UserAvatar({
           title: "Success",
           description: "Avatar updated successfully",
         });
-      } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error : any) {
         console.error("Failed to update avatar:", error);
         toast({
           title: "Error",
-          description: "Failed to update avatar. Please try again.",
+          description: error.message || "Failed to update avatar",
           variant: "destructive",
         });
       }
@@ -62,6 +63,7 @@ export default function UserAvatar({
           <div className="relative h-24 w-24 overflow-hidden rounded-full border border-border">
             <Image
               src={`${API_BASE_URL}${avatarUrl}`}
+              
               alt="User Avatar"
               fill
               className="object-cover"

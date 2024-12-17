@@ -11,7 +11,7 @@ import { LoginDto } from "../auth/dto/login.dto";
 import { Role } from "src/auth/enums/role.enum";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { CognitoService } from "src/auth/cognito.service";
-import { PaginationQueryDto } from "./dto/pagination-query.dto";
+import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
 import { CreateAdminUserDto } from "./dto/create-admin-user.dto";
 import { FileStorageService } from "src/file-storage/file-storage.service";
 import * as path from "path";
@@ -344,5 +344,81 @@ export class UserService {
     return {
       message: "Invitation rejected successfully",
     };
+  }
+
+  async getChartData() {
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    // Xây dựng danh sách 12 tháng gần nhất
+    const last12Months = Array.from({ length: 12 }, (_, i) => {
+      const monthIndex = (currentMonth - i + 12) % 12;
+      const yearOffset = Math.floor((currentMonth - i) / 12);
+      return {
+        month: months[monthIndex],
+        year: currentYear + yearOffset,
+        index: monthIndex,
+      };
+    }).reverse(); // Đảo ngược thứ tự để tháng cũ nhất ở đầu
+
+    // Lấy dữ liệu cho từng tháng
+    const chartData = await Promise.all(
+      last12Months.map(async ({ month, year, index }) => {
+        const startDate = new Date(year, index, 1);
+        const endDate = new Date(year, index + 1, 0);
+
+        const userCount = await this.prisma.user.count({
+          where: {
+            createdAt: {
+              gte: startDate,
+              lt: endDate,
+            },
+          },
+        });
+
+        const workspaceCount = await this.prisma.workspace.count({
+          where: {
+            createdAt: {
+              gte: startDate,
+              lt: endDate,
+            },
+          },
+        });
+
+        const projectCount = await this.prisma.project.count({
+          where: {
+            createdAt: {
+              gte: startDate,
+              lt: endDate,
+            },
+          },
+        });
+
+        return {
+          month,
+          year,
+          users: userCount,
+          workspaces: workspaceCount,
+          projects: projectCount,
+        };
+      }),
+    );
+
+    return chartData;
   }
 }

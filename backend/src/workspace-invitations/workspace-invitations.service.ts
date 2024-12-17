@@ -6,13 +6,14 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { InviteWorkspaceDto } from "./dto/invite-workspace.dto";
-import { PaginationQueryDto } from "src/user/dto/pagination-query.dto";
+import { InviteQueryDto } from "./dto/invite-query.dto";
 
 @Injectable()
 export class WorkspaceInvitationsService {
   constructor(private prisma: PrismaService) {}
-  async getInvitations(slug: string, paginationQueryDto: PaginationQueryDto) {
-    const { page = 1, pageSize = 20 } = paginationQueryDto;
+
+  async getInvitations(slug: string, inviteQueryDto: InviteQueryDto) {
+    const { page = 1, pageSize = 1000, status } = inviteQueryDto;
     const skip = (page - 1) * pageSize;
 
     const workspace = await this.prisma.workspace.findUnique({
@@ -25,13 +26,19 @@ export class WorkspaceInvitationsService {
 
     const [invitations, totalCount] = await Promise.all([
       this.prisma.workspaceInvitation.findMany({
-        where: { workspaceId: workspace.id },
+        where: {
+          workspaceId: workspace.id,
+          status: status ? { equals: status } : undefined,
+        },
         skip,
         take: pageSize,
         orderBy: { createdAt: "desc" },
       }),
       this.prisma.workspaceInvitation.count({
-        where: { workspaceId: workspace.id },
+        where: {
+          workspaceId: workspace.id,
+          status: status ? { equals: status } : undefined,
+        },
       }),
     ]);
 

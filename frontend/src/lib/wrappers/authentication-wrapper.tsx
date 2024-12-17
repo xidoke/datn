@@ -6,6 +6,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useUserStore } from "@/stores/userStore";
 import { useWorkspace } from "@/stores/workspaceStore";
 import { PageType } from "@/helpers/authentication.helper";
+import AdminAccessRequired from "@/components/admin-access-required";
 
 type TAuthenticationWrapper = {
   children: ReactNode;
@@ -87,6 +88,13 @@ export const AuthenticationWrapper: FC<TAuthenticationWrapper> = ({
     );
   }
 
+  if (user?.role === "ADMIN") {
+    if (pathname === "/") {
+      router.push("/admin/");
+      return;
+    }
+  }
+
   if (pageType === PageType.PUBLIC) {
     return <>{children}</>;
   }
@@ -99,6 +107,14 @@ export const AuthenticationWrapper: FC<TAuthenticationWrapper> = ({
     console.log("Redirecting to", currentRedirectRoute);
     router.push(currentRedirectRoute);
     return <></>;
+  }
+
+  if (pageType === PageType.ADMIN) {
+    if (user?.role === "ADMIN") {
+      return <>{children}</>;
+    } else {
+      return <AdminAccessRequired />;
+    }
   }
 
   if (pageType === PageType.AUTHENTICATED) {

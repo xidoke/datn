@@ -16,7 +16,7 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import { FileStorageService } from "./file-storage.service";
 import { createReadStream } from "fs";
-import mime from "mime";
+import { lookup } from "mime-types";
 import { Response } from "express";
 
 @Controller("file-storage")
@@ -73,8 +73,9 @@ export class FileStorageController {
     const filePath = this.fileStorageService.getFilePath(filename);
     const file = createReadStream(filePath);
     const stats = await this.fileStorageService.getFileStats(filename);
-
-    const mimeType = mime.lookup(filename) || "application/octet-stream";
+    console.log("hit");
+    console.log(lookup("file.pdf"));
+    const mimeType = lookup(filename) || "application/octet-stream";
 
     res.set({
       "Content-Type": mimeType,

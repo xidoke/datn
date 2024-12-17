@@ -7,6 +7,13 @@ export interface WorkspaceMember {
   user: UserLite;
 }
 
+export interface InvitationUser {
+  id: string;
+  email: string;
+  role: string;
+  status: string;
+  createdAt: string;
+}
 export interface UserLite {
   id: string;
   email: string;

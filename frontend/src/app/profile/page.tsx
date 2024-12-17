@@ -187,12 +187,7 @@ export default function ProfileSettings() {
                   description: "Avatar updated successfully",
                 });
               } catch (error) {
-                console.error("Failed to update avatar:", error);
-                toast({
-                  title: "Error",
-                  description: "Failed to update avatar. Please try again.",
-                  variant: "destructive",
-                });
+                throw error
               }
             }}
           />

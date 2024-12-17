@@ -3,7 +3,8 @@
 import { StateCreator } from "zustand";
 import { MemberStore } from "../memberStore";
 import { MemberService } from "@/services/member.service";
-import { MemberResponse, User, WorkspaceMember } from "@/types";
+import { WorkspaceMember } from "@/types";
+import { InvitationUser } from "@/types/workspaceMember";
 
 export enum EWorkspaceRole {
   OWNER = "OWNER",
@@ -39,20 +40,21 @@ export interface IWorkspaceMemberInvitation {
 
 interface WorkspaceMemberSliceState {
   workspaceMemberMap: Record<string, Record<string, WorkspaceMember>>;
-  workspaceMemberInvitations: Record<string, IWorkspaceMemberInvitation[]>;
+  workspaceMemberInvitationsMap: Record<string, Record<string,InvitationUser[]>>;
   workspaceMemberIds: string[];
   workspaceMemberInvitationIds: string[] | undefined;
 }
 
 const initialState: WorkspaceMemberSliceState = {
   workspaceMemberMap: {},
-  workspaceMemberInvitations: {},
+  workspaceMemberInvitationsMap: {},
   workspaceMemberIds: [],
   workspaceMemberInvitationIds: undefined,
 };
 
 interface WorkspaceMemberSliceActions {
   fetchWorkspaceMembers: (workspaceSlug: string) => Promise<WorkspaceMember[]>;
+  fetchWorkspaceMemberInvitations: (workspaceSlug: string) => Promise<InvitationUser[]>;
   inviteMember: (workspaceSlug: string, email: string, role: string) => Promise<void>;
   updateMemberRole: (workspaceSlug: string, memberId: string, role: string) => Promise<WorkspaceMember>;
   removeMember: (workspaceSlug: string, memberId: string) => Promise<void>;
@@ -98,27 +100,39 @@ export const workspaceMemberSlice: StateCreator<
       throw error;
     }
   },
+  fetchWorkspaceMemberInvitations: async (workspaceSlug: string) => {
+    try {
+      const response = await memberService.fetchWorkspaceMemberInvitations(workspaceSlug);
+      const { invitations } = response;
+      set((state) => {
+        const newWorkspaceMemberInvitationsMap = { ...state.workspaceMemberInvitationsMap };
+        const invitationMap: Record<string, InvitationUser[]> = {};
+
+        invitations.forEach((invitation) => {
+          if (!invitationMap[invitation.email]) {
+            invitationMap[invitation.email] = [];
+          }
+          invitationMap[invitation.email].push(invitation);
+        });
+
+        newWorkspaceMemberInvitationsMap[workspaceSlug] = invitationMap;
+
+        return {
+          workspaceMemberInvitationsMap: newWorkspaceMemberInvitationsMap,
+          workspaceMemberInvitationIds: invitations.map((invitation) => invitation.id),
+        };
+      });
+      return invitations;
+    } catch (error) {
+      console.error("Error fetching workspace member invitations:", error);
+      throw error;
+    }
+  },
+
   inviteMember: async (workspaceSlug: string, email: string, role: string)  => {
     try {
-      const workspaceMember = await memberService.inviteMember(workspaceSlug, email, role);
-      set( (state) => {
-        const newWorkspaceMemberMap = { ...state.workspaceMemberMap };
-        if (newWorkspaceMemberMap[workspaceSlug]) {
-          newWorkspaceMemberMap[workspaceSlug][workspaceMember.id] = workspaceMember;
-        } else {
-          newWorkspaceMemberMap[workspaceSlug] = { [workspaceMember.id]: workspaceMember };
-        }
-        return {
-          workspaceMemberMap: newWorkspaceMemberMap,
-          workspaceMemberIds: [...state.workspaceMemberIds, workspaceMember.id],
-        };
-      }
-
-      );
-      
-        
+      await memberService.inviteMember(workspaceSlug, email, role);   
     } catch (error) {
-      console.error("Error inviting member:", error);
       throw error;
     }
   },

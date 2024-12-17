@@ -76,7 +76,7 @@ export class WorkspaceService extends APIService {
     const formData = new FormData();
     formData.append("logo", logoFile);
 
-    return this.post<Workspace>(`/workspaces/${workspaceSlug}/logo`, formData, {
+    return this.patch<Workspace>(`/workspaces/${workspaceSlug}/logo`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

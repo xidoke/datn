@@ -80,7 +80,11 @@ export class CycleController {
     @Param("projectId") projectId: string,
     @Param("cycleId") cycleId: string,
   ) {
-    return this.cycleService.getCycleProgress(workspaceSlug, projectId, cycleId);
+    return this.cycleService.getCycleProgress(
+      workspaceSlug,
+      projectId,
+      cycleId,
+    );
   }
 
   @Post("/date-check")

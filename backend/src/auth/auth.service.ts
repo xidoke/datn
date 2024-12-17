@@ -56,4 +56,24 @@ export class AuthService {
       where: { cognitoId },
     });
   }
+
+  async changePassword(
+    email: string,
+    oldPassword: string,
+    newPassword: string,
+  ) {
+    return this.cognitoService.changePassword(email, oldPassword, newPassword);
+  }
+
+  async forgotPassword(email: string) {
+    return this.cognitoService.forgotPassword(email);
+  }
+
+  async confirmForgotPassword(
+    email: string,
+    code: string,
+    newPassword: string,
+  ) {
+    return this.cognitoService.confirmForgotPassword(email, code, newPassword);
+  }
 }
