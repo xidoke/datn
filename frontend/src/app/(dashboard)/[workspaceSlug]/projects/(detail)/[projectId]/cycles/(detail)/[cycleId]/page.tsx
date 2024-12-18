@@ -1,9 +1,11 @@
-"use client"
+"use client";
 import CalendarView from "@/components/view/calendar/calendar-view";
+import GanttView from "@/components/view/gantt/GanttView";
 import KanbanBoard from "@/components/view/kanban/KanbanBoard";
 import ListView from "@/components/view/list/list-view";
+import TableView from "@/components/view/table/table-view";
 import { IssueLayoutTypes } from "@/helpers/constants/issue";
-import { useCycleStore } from "@/stores/cycleStore"
+import { useCycleStore } from "@/stores/cycleStore";
 import useIssueStore from "@/stores/issueStore";
 import { useProjectLabelStore } from "@/stores/projectLabelStore";
 import { useProjectStateStore } from "@/stores/projectStateStore";
@@ -14,25 +16,41 @@ const CycleDetailsPage = () => {
   const { cycleId } = useParams();
   const { getCycleById } = useCycleStore();
   const { issues } = useIssueStore();
-  const { states } = useProjectStateStore()
+  const { states } = useProjectStateStore();
   const { labels } = useProjectLabelStore();
   const { viewType } = useViewStore();
-  
+
   const cycle = getCycleById(cycleId as string);
 
   if (!cycle) {
-    return <div>Cycle not found</div>
+    return <div>Cycle not found</div>;
   }
 
-  const issuesOfCycle = issues.filter(issue => issue.cycleId === cycleId);
-
-
+  const issuesOfCycle = issues.filter((issue) => issue.cycleId === cycleId);
 
   switch (viewType) {
     case IssueLayoutTypes.KANBAN:
       return (
         <main className="min-h-screen">
           <KanbanBoard issues={issuesOfCycle} states={states} labels={labels} />
+        </main>
+      );
+    case IssueLayoutTypes.LIST:
+      return (
+        <main className="min-h-screen">
+          <ListView issues={issuesOfCycle} states={states} labels={labels} />
+        </main>
+      );
+    case IssueLayoutTypes.GANTT:
+      return (
+        <main className="min-h-screen">
+          <GanttView issues={issuesOfCycle} states={states} labels={labels} />
+        </main>
+      );
+    case IssueLayoutTypes.SPREADSHEET:
+      return (
+        <main className="min-h-screen">
+          <TableView issues={issuesOfCycle} states={states} labels={labels} />
         </main>
       );
     case IssueLayoutTypes.CALENDAR:
@@ -46,18 +64,18 @@ const CycleDetailsPage = () => {
         </main>
       );
 
-    case IssueLayoutTypes.LIST:
-      return (
-        <main className="min-h-screen">
-          <ListView
-            issues={issuesOfCycle}
-            states={states}
-            labels={labels}
-            onIssueClick={() => {}}
-          />
-        </main>
-      );
+    // case IssueLayoutTypes.LIST:
+    //   return (
+    //     <main className="min-h-screen">
+    //       <ListView
+    //         issues={issuesOfCycle}
+    //         states={states}
+    //         labels={labels}
+    //         onIssueClick={() => {}}
+    //       />
+    //     </main>
+    //   );
   }
   return <main className="min-h-screen">This view is not supported now</main>;
-}
-export default CycleDetailsPage 
+};
+export default CycleDetailsPage;

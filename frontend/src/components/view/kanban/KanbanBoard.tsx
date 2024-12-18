@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo } from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { Search } from "lucide-react";
+import { Search, CalendarCheck2, CalendarClock } from "lucide-react";
 import { AlignLeft, Clock, Circle, CheckCircle2, XCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Column from "./Column";
@@ -16,6 +16,7 @@ import FilterDropdown from "@/components/dropdown/filter";
 import { useFilterStore } from "@/stores/filterStore";
 import { useMemberStore } from "@/stores/member/memberStore";
 import PriorityMultiSelect from "@/components/dropdown/priority-multi-select";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const stateGroups = [
   { name: "backlog", label: "Backlog", icon: AlignLeft },
@@ -46,6 +47,8 @@ export default function KanbanBoard({
     cycleIds,
     labelIds,
     priorityIds,
+    startDate,
+    dueDate,
     setFilter,
     reset: resetFilter,
   } = useFilterStore();
@@ -67,7 +70,26 @@ export default function KanbanBoard({
       return false;
     }
 
-    if (priorityIds.length > 0 && !priorityIds.includes(issue.priority.toString() as TIssuePriorities)) {
+    if (
+      priorityIds.length > 0 &&
+      !priorityIds.includes(issue.priority.toString() as TIssuePriorities)
+    ) {
+      return false;
+    }
+
+    if (
+      startDate &&
+      issue.startDate &&
+      new Date(issue.startDate) < new Date(startDate)
+    ) {
+      return false;
+    }
+
+    if (
+      dueDate &&
+      issue.dueDate &&
+      new Date(issue.dueDate) > new Date(dueDate)
+    ) {
       return false;
     }
 
@@ -169,6 +191,20 @@ export default function KanbanBoard({
           <PriorityMultiSelect
             selectedPriorities={priorityIds}
             onChange={(selected) => setFilter({ priorityIds: selected })}
+          />
+          <DatePicker
+            date={startDate}
+            onDateChange={(date) => setFilter({ startDate: date })}
+            placeholder="Start Date"
+            Icon={CalendarCheck2}
+            tooltipHeading="Filter Start Date"
+          />
+          <DatePicker
+            date={dueDate}
+            onDateChange={(date) => setFilter({ dueDate: date })}
+            placeholder="Due Date"
+            Icon={CalendarClock}
+            tooltipHeading="Filter Due Date"
           />
         </div>
       </div>

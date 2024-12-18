@@ -1,112 +1,116 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, useState } from "react";
+import { ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { Issue, Label, State } from "@/types";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // Một component hiển thị avatar
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Circle } from "lucide-react";
-import { API_BASE_URL } from "@/helpers/common.helper";
-import { Tooltip } from "@/components/ui/tooltip-plane";
+import { CreateIssueDialog } from "@/components/issues/create-issue-dialog";
+import IssueListItem from "./issue-list-item";
+import { Card } from "@/components/ui/card";
+import { AlignLeft, Clock, Circle, CheckCircle2, XCircle } from "lucide-react";
 
 interface ListViewProps {
   issues: Issue[];
   states: State[];
   labels: Label[];
-  onIssueClick: (issue: Issue) => void;
 }
 
-export default function ListView({
-  issues,
-  states,
-  labels,
-  onIssueClick,
-}: ListViewProps) {
+const stateGroups = [
+  { name: "backlog", label: "Backlog", icon: AlignLeft },
+  { name: "unstarted", label: "Unstarted", icon: Clock },
+  { name: "started", label: "Started", icon: Circle },
+  { name: "completed", label: "Completed", icon: CheckCircle2 },
+  { name: "cancelled", label: "Cancelled", icon: XCircle },
+];
+
+export default function ListView({ issues, states, labels }: ListViewProps) {
+  const [collapsedStates, setCollapsedStates] = useState<string[]>([]);
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+
+  const groupedStates = useMemo(() => {
+    return stateGroups.map((group) => ({
+      group,
+      states: states.filter((state) => state.group === group.name),
+    }));
+  }, [states]);
+
+  const toggleState = (stateId: string) => {
+    setCollapsedStates((prev) =>
+      prev.includes(stateId)
+        ? prev.filter((id) => id !== stateId)
+        : [...prev, stateId],
+    );
+  };
+
+  const handleIssueClick = (issue: Issue) => {
+    setSelectedIssue(issue);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="flex items-center justify-between pb-4">
-        <h2 className="text-lg font-medium">Issues List</h2>
-      </div>
-      <table className="min-w-full border-collapse">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">
-              Title
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">
-              State
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">
-              Assignees
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">
-              Labels
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">
-              Dates
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {issues.map((issue) => (
-            <tr
-              key={issue.id}
-              className="cursor-pointer border-b hover:bg-gray-50"
-              onClick={() => onIssueClick(issue)}
-            >
-              <td className="px-4 py-2">
-                <span className="text-sm font-medium text-gray-800">
-                  {issue.title}
-                </span>
-              </td>
-              <td className="px-4 py-2">
-                <Badge
-                  style={{ backgroundColor: issue.state?.color || "#ddd" }}
-                >
-                  {issue.state?.name}
-                </Badge>
-              </td>
-              <td className="flex gap-2 px-4 py-2">
-                {issue.assignees.map((assignee) => (
-                  <Tooltip key={assignee.id} tooltipContent={assignee.email}>
-                    <Avatar>
-                      <AvatarImage src={API_BASE_URL + assignee.avatarUrl} />
-                      <AvatarFallback></AvatarFallback>
-                    </Avatar>
-                  </Tooltip>
-                ))}
-              </td>
-              <td className="px-4 py-2">
-                <div className="flex flex-wrap gap-2">
-                  {issue.labels.map((label) => (
-                    <Badge
-                      key={label.id}
-                      style={{
-                        backgroundColor: label.color || "#ddd",
-                        color: "white",
-                      }}
+    <div className="flex flex-col space-y-4 p-4">
+      {groupedStates.map(({ group, states }) => (
+        <div key={group.name}>
+          <h2 className="mb-2 text-lg font-semibold">{group.label}</h2>
+          {states.map((state) => {
+            const stateIssues = issues.filter(
+              (issue) => issue.state?.id === state.id,
+            );
+            return (
+              <Card key={state.id} className="mb-4 overflow-hidden">
+                <div className="flex items-center justify-between border-b p-4">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => toggleState(state.id)}
                     >
-                      {label.name}
-                    </Badge>
-                  ))}
-                </div>
-              </td>
-              <td className="px-4 py-2">
-                <div className="text-xs text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />{" "}
-                    {issue.startDate ? issue.startDate : "N/A"}
+                      {collapsedStates.includes(state.id) ? (
+                        <ChevronRight className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <div className="flex items-center gap-2">
+                      {React.createElement(group.icon, {
+                        className: "h-4 w-4",
+                        style: { color: state.color },
+                      })}
+                      <span
+                        className="text-sm font-medium"
+                        style={{ color: state.color }}
+                      >
+                        {state.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {stateIssues.length}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />{" "}
-                    {issue.dueDate ? issue.dueDate : "N/A"}
-                  </div>
+                  <CreateIssueDialog stateId={state.id}>
+                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </CreateIssueDialog>
                 </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                {!collapsedStates.includes(state.id) && (
+                  <div className="divide-y">
+                    {stateIssues
+                      .sort((a, b) => a.sequenceNumber - b.sequenceNumber)
+                      .map((issue) => (
+                        <IssueListItem
+                          key={issue.id}
+                          issue={issue}
+                          onClick={() => handleIssueClick(issue)}
+                        />
+                      ))}
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      ))}
     </div>
   );
 }

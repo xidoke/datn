@@ -89,19 +89,19 @@ export function NavProjects() {
                           <Folder className="h-4 w-4" />
                           <span className="ml-2 truncate">{project.name}</span>
                         </div>
-
-                        <CollapsibleTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 items-end p-0 opacity-0 group-hover:opacity-100"
-                          >
-                            <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                            <span className="sr-only">Toggle project menu</span>
-                          </Button>
-                        </CollapsibleTrigger>
                       </Link>
                     </SidebarMenuButton>
+
+                    <CollapsibleTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 items-end p-0 opacity-0 group-hover:opacity-100"
+                      >
+                        <ChevronDown className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                        <span className="sr-only">Toggle project menu</span>
+                      </Button>
+                    </CollapsibleTrigger>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button

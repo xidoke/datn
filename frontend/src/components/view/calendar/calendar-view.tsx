@@ -16,18 +16,24 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { getDay, getDaysInMonth, isSameDay } from "date-fns";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import {
+  CalendarCheck2,
+  CalendarClock,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "lucide-react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { type ReactNode, createContext, useContext, useState } from "react";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { Issue, State } from "@/types";
-import { useProjectStateStore } from "@/stores/projectStateStore";
+import { Issue, State, TIssuePriorities } from "@/types";
 import { useFilterStore } from "@/stores/filterStore";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FilterDropdown from "@/components/dropdown/filter";
 import IssueModal from "../kanban/IssueModal";
+import { DatePicker } from "@/components/ui/date-picker";
+import PriorityMultiSelect from "@/components/dropdown/priority-multi-select";
 
 export type CalendarState = {
   month: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
@@ -283,7 +289,7 @@ export const CalendarMonthPicker = ({
       setValue={(value) =>
         setMonth(monthNames.indexOf(value) as CalendarState["month"])
       }
-      data={monthNames.map((monthName, index) => ({
+      data={monthNames.map((monthName) => ({
         value: monthName,
         label: monthName,
       }))}
@@ -452,21 +458,60 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 }) => {
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [search, setSearch] = useState("");
-  const { statusIds, labelIds, setFilter } = useFilterStore();
+  const {
+    statusIds,
+    assigneeIds,
+    cycleIds,
+    labelIds,
+    priorityIds,
+    startDate,
+    dueDate,
+    setFilter,
+    reset: resetFilter,
+  } = useFilterStore();
 
-  const filteredIssues = issues.filter((issue) => {
+  const issueAfterFilter = issues.filter((issue) => {
     if (
       statusIds.length > 0 &&
       !statusIds.includes(issue.state?.id as string)
     ) {
       return false;
     }
+
     if (
       labelIds.length > 0 &&
       !issue.labels?.some((label) => labelIds.includes(label.id))
     ) {
       return false;
     }
+
+    if (
+      priorityIds.length > 0 &&
+      !priorityIds.includes(issue.priority.toString() as TIssuePriorities)
+    ) {
+      return false;
+    }
+
+    if (
+      startDate &&
+      issue.startDate &&
+      new Date(issue.startDate) < new Date(startDate)
+    ) {
+      return false;
+    }
+
+    if (
+      dueDate &&
+      issue.dueDate &&
+      new Date(issue.dueDate) > new Date(dueDate)
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const issueAfterSearchandFilter = issueAfterFilter.filter((issue) => {
     if (
       search.length > 0 &&
       !issue.title.toLowerCase().includes(search.toLowerCase())
@@ -488,7 +533,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           <div className="relative">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
-              className="w-64 pl-8 text-sm"
+              className="w-44 pl-8 text-sm"
               placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -506,6 +551,24 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             selectedIds={labelIds}
             onChange={(selected) => setFilter({ labelIds: selected })}
           />
+          <PriorityMultiSelect
+            selectedPriorities={priorityIds}
+            onChange={(selected) => setFilter({ priorityIds: selected })}
+          />
+          <DatePicker
+            date={startDate}
+            onDateChange={(date) => setFilter({ startDate: date })}
+            placeholder="Start Date"
+            Icon={CalendarCheck2}
+            tooltipHeading="Filter Start Date"
+          />
+          <DatePicker
+            date={dueDate}
+            onDateChange={(date) => setFilter({ dueDate: date })}
+            placeholder="Due Date"
+            Icon={CalendarClock}
+            tooltipHeading="Filter Due Date"
+          />
         </div>
       </div>
       <CalendarDate>
@@ -516,7 +579,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         <CalendarDatePagination />
       </CalendarDate>
       <CalendarHeader />
-      <CalendarBody issues={filteredIssues}>
+      <CalendarBody issues={issueAfterSearchandFilter}>
         {({ issue }) => (
           <CalendarItem
             key={issue.id}

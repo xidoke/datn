@@ -1,16 +1,14 @@
-// filter for issues in each project
-
-import { TIssuePriorities } from "@/types";
 import { create } from "zustand";
+import { TIssuePriorities } from "@/types";
 
 interface FilterStoreState {
-     priorityIds: TIssuePriorities[];
+    priorityIds: TIssuePriorities[];
     statusIds: string[];
     assigneeIds: string[];
     cycleIds: string[];
     labelIds: string[];
-    startDate: string;
-    dueDate: string;
+    startDate: string | undefined;
+    dueDate: string | undefined;
 }
 
 const initialState: FilterStoreState = {
@@ -19,8 +17,8 @@ const initialState: FilterStoreState = {
     assigneeIds: [],
     cycleIds: [],
     labelIds: [],
-    startDate: "",
-    dueDate: "",
+    startDate: undefined,
+    dueDate: undefined,
 };
 
 interface FilterStoreActions {
@@ -32,6 +30,6 @@ type FilterStore = FilterStoreState & FilterStoreActions;
 
 export const useFilterStore = create<FilterStore>((set) => ({
     ...initialState,
-    setFilter: (filter: Partial<FilterStoreState>) => set(filter),
+    setFilter: (filter: Partial<FilterStoreState>) => set((state) => ({ ...state, ...filter })),
     reset: () => set(initialState),
 }));

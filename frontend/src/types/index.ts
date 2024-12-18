@@ -1,4 +1,5 @@
-import { InvitationUser, WorkspaceMember } from "./workspaceMember";
+import { Invitation } from "./invitations";
+import { WorkspaceMember } from "./workspaceMember";
 
 
 export * from "./user";
@@ -33,7 +34,7 @@ export interface MemberResponse {
 }
 
 export interface InvitationsWorkspaceResponse {
-  invitations: InvitationUser[];
+  invitations: Invitation[];
   meta: {
     totalCOunt: number,
     page: number,

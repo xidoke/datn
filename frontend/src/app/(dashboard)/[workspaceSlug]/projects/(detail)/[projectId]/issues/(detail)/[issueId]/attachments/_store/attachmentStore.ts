@@ -1,5 +1,11 @@
 import {create} from 'zustand';
-
+type Attachment = {
+  id: string;
+  name: string;
+  url: string;
+  createdAt: string;
+  fileName: string;
+};
 interface AttachmentState {
   attachments: Attachment[];
   isLoading: boolean;

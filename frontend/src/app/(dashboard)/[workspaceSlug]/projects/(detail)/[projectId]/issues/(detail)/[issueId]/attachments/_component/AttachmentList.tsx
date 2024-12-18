@@ -2,7 +2,7 @@
 import React from "react";
 import useAttachmentStore from "../_store/attachmentStore";
 
-const AttachmentList = ({ issueId }) => {
+const AttachmentList = ({ issueId }: { issueId: string }) => {
   const { attachments, isLoading, error, fetchAttachments, removeAttachment } =
     useAttachmentStore();
 
