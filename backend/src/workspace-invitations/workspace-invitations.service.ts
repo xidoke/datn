@@ -7,6 +7,7 @@ import {
 import { PrismaService } from "src/prisma/prisma.service";
 import { InviteWorkspaceDto } from "./dto/invite-workspace.dto";
 import { InviteQueryDto } from "./dto/invite-query.dto";
+import { WorkspaceRole } from "@prisma/client";
 
 @Injectable()
 export class WorkspaceInvitationsService {
@@ -166,6 +167,32 @@ export class WorkspaceInvitationsService {
       // Re-throw other errors
       throw error;
     }
+  }
+
+  async updateInvitationRole(
+    workspaceSlug: string,
+    invitationId: string,
+    role: WorkspaceRole,
+  ) {
+    const invitation = await this.prisma.workspaceInvitation.findUnique({
+      where: { id: invitationId },
+    });
+
+    if (!invitation) {
+      throw new NotFoundException("Invitation not found");
+    }
+
+    const updatedInvitation = await this.prisma.workspaceInvitation.update({
+      where: { id: invitationId },
+      data: {
+        role: role,
+      },
+      include: {
+        workspace: true,
+      },
+    });
+
+    return updatedInvitation;
   }
 
   async getInvitation(id: string) {

@@ -1,21 +1,26 @@
 // filter for issues in each project
 
+import { TIssuePriorities } from "@/types";
 import { create } from "zustand";
 
 interface FilterStoreState {
-    priorityNumber: number[]
+     priorityIds: TIssuePriorities[];
     statusIds: string[];
     assigneeIds: string[];
     cycleIds: string[];
     labelIds: string[];
+    startDate: string;
+    dueDate: string;
 }
 
 const initialState: FilterStoreState = {
-    priorityNumber: [],
+    priorityIds: [],
     statusIds: [],
     assigneeIds: [],
     cycleIds: [],
     labelIds: [],
+    startDate: "",
+    dueDate: "",
 };
 
 interface FilterStoreActions {

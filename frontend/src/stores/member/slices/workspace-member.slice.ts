@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/stores/slices/workspaceMemberSlice.ts
 
 import { StateCreator } from "zustand";
 import { MemberStore } from "../memberStore";
 import { MemberService } from "@/services/member.service";
-import { WorkspaceMember } from "@/types";
-import { InvitationUser } from "@/types/workspaceMember";
+import { Invitation, WorkspaceMember } from "@/types";
 
 export enum EWorkspaceRole {
   OWNER = "OWNER",
@@ -40,7 +40,7 @@ export interface IWorkspaceMemberInvitation {
 
 interface WorkspaceMemberSliceState {
   workspaceMemberMap: Record<string, Record<string, WorkspaceMember>>;
-  workspaceMemberInvitationsMap: Record<string, Record<string,InvitationUser[]>>;
+  workspaceMemberInvitationsMap: Record<string, Record<string,Invitation>>;
   workspaceMemberIds: string[];
   workspaceMemberInvitationIds: string[] | undefined;
 }
@@ -54,11 +54,14 @@ const initialState: WorkspaceMemberSliceState = {
 
 interface WorkspaceMemberSliceActions {
   fetchWorkspaceMembers: (workspaceSlug: string) => Promise<WorkspaceMember[]>;
-  fetchWorkspaceMemberInvitations: (workspaceSlug: string) => Promise<InvitationUser[]>;
+  fetchWorkspaceMemberInvitations: (workspaceSlug: string) => Promise<Invitation[]>;
   inviteMember: (workspaceSlug: string, email: string, role: string) => Promise<void>;
   updateMemberRole: (workspaceSlug: string, memberId: string, role: string) => Promise<WorkspaceMember>;
   removeMember: (workspaceSlug: string, memberId: string) => Promise<void>;
   // leaveWorkspace: (workspaceId: string) => Promise<void>;
+  deleteInvitation: (workspaceSlug: string, invitationId: string) => Promise<void>;
+
+  updateInvitationRole: (workspaceSlug: string, invitationId: string, role: string) => Promise<Invitation>;
   resetWorkspaceMember: () => void;
 }
 
@@ -106,13 +109,10 @@ export const workspaceMemberSlice: StateCreator<
       const { invitations } = response;
       set((state) => {
         const newWorkspaceMemberInvitationsMap = { ...state.workspaceMemberInvitationsMap };
-        const invitationMap: Record<string, InvitationUser[]> = {};
+        const invitationMap: Record<string, Invitation> = {};
 
         invitations.forEach((invitation) => {
-          if (!invitationMap[invitation.email]) {
-            invitationMap[invitation.email] = [];
-          }
-          invitationMap[invitation.email].push(invitation);
+          invitationMap[invitation.id] = invitation;
         });
 
         newWorkspaceMemberInvitationsMap[workspaceSlug] = invitationMap;
@@ -125,6 +125,45 @@ export const workspaceMemberSlice: StateCreator<
       return invitations;
     } catch (error) {
       console.error("Error fetching workspace member invitations:", error);
+      throw error;
+    }
+  },
+
+  deleteInvitation: async (workspaceSlug: string, invitationId: string) => {
+    try {
+      await memberService.deleteInvitation(workspaceSlug, invitationId);
+      set((state) => {
+        const newWorkspaceMemberInvitationsMap = { ...state.workspaceMemberInvitationsMap };
+        if (newWorkspaceMemberInvitationsMap[workspaceSlug]) {
+          delete newWorkspaceMemberInvitationsMap[workspaceSlug][invitationId];
+        }
+        return {
+          workspaceMemberInvitationsMap: newWorkspaceMemberInvitationsMap,
+          workspaceMemberInvitationIds: state.workspaceMemberInvitationIds?.filter((id) => id !== invitationId),
+        };
+      });
+    } catch (error) {
+      console.error("Error deleting invitation:", error);
+      throw error;
+    }
+  },
+
+  updateInvitationRole: async (workspaceSlug: string, invitationId: string, role: string) => {
+    try {
+      const response = await memberService.updateInvitationRole(workspaceSlug, invitationId, role);
+      set((state) => {
+        const newWorkspaceMemberInvitationsMap = { ...state.workspaceMemberInvitationsMap };
+        if (newWorkspaceMemberInvitationsMap[workspaceSlug] && newWorkspaceMemberInvitationsMap[workspaceSlug][invitationId]) {
+          newWorkspaceMemberInvitationsMap[workspaceSlug][invitationId] = {
+            ...newWorkspaceMemberInvitationsMap[workspaceSlug][invitationId],
+            role,
+          };
+        }
+        return { workspaceMemberInvitationsMap: newWorkspaceMemberInvitationsMap };
+      });
+      return response;
+    } catch (error) {
+      console.error("Error updating invitation role:", error);
       throw error;
     }
   },

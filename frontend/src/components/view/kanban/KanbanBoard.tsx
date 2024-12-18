@@ -11,10 +11,11 @@ import useIssueStore from "@/stores/issueStore";
 import { useProjectLabelStore } from "@/stores/projectLabelStore";
 import { useProjectStateStore } from "@/stores/projectStateStore";
 import { useParams } from "next/navigation";
-import { Issue, Label, State } from "@/types";
+import { Issue, Label, State, TIssuePriorities } from "@/types";
 import FilterDropdown from "@/components/dropdown/filter";
 import { useFilterStore } from "@/stores/filterStore";
 import { useMemberStore } from "@/stores/member/memberStore";
+import PriorityMultiSelect from "@/components/dropdown/priority-multi-select";
 
 const stateGroups = [
   { name: "backlog", label: "Backlog", icon: AlignLeft },
@@ -39,12 +40,12 @@ export default function KanbanBoard({
   const { fetchStates } = useProjectStateStore();
   const { fetchLabels } = useProjectLabelStore();
   const { workspaceMemberIds, workspaceMemberMap } = useMemberStore();
-  // filter
   const {
     statusIds,
     assigneeIds,
     cycleIds,
     labelIds,
+    priorityIds,
     setFilter,
     reset: resetFilter,
   } = useFilterStore();
@@ -66,11 +67,18 @@ export default function KanbanBoard({
       return false;
     }
 
+    if (priorityIds.length > 0 && !priorityIds.includes(issue.priority.toString() as TIssuePriorities)) {
+      return false;
+    }
+
     return true;
   });
 
   const issueAfterSearchandFilter = issueAfterFilter.filter((issue) => {
-    if (search.length > 0 && !issue.title.includes(search)) {
+    if (
+      search.length > 0 &&
+      !issue.title.toLowerCase().includes(search.toLowerCase())
+    ) {
       return false;
     }
     return true;
@@ -78,7 +86,7 @@ export default function KanbanBoard({
 
   const { workspaceSlug, projectId } = useParams();
   useEffect(() => {
-    (workspaceSlug as string, projectId as string); // Replace with actual project ID
+    fetchIssues(workspaceSlug as string, projectId as string);
     fetchStates(workspaceSlug as string, projectId as string);
     fetchLabels(workspaceSlug as string, projectId as string);
   }, [fetchIssues, fetchStates, fetchLabels, workspaceSlug, projectId]);
@@ -96,11 +104,11 @@ export default function KanbanBoard({
           issues: issueAfterSearchandFilter.filter(
             (issue) => issue.state?.id === state.id,
           ),
-          state, // Add the state object to pass to Column
+          state,
         }));
       })
       .flat();
-  }, [states, issueAfterFilter]);
+  }, [states, issueAfterSearchandFilter]);
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;
@@ -157,6 +165,10 @@ export default function KanbanBoard({
             options={labels}
             selectedIds={labelIds}
             onChange={(selected) => setFilter({ labelIds: selected })}
+          />
+          <PriorityMultiSelect
+            selectedPriorities={priorityIds}
+            onChange={(selected) => setFilter({ priorityIds: selected })}
           />
         </div>
       </div>

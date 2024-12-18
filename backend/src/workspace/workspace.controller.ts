@@ -123,4 +123,12 @@ export class WorkspaceController {
   ) {
     return this.workspaceService.getWorkspaceDashboard(slug, req.user.userId);
   }
+
+  @Post(":slug/leave")
+  async leaveWorkspace(
+    @Param("slug") slug: string,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.workspaceService.leaveWorkspace(slug, req.user.userId);
+  }
 }

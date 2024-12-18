@@ -1,6 +1,6 @@
 // src/services/member.service.ts
 
-import { WorkspaceMember, MemberResponse, InvitationsWorkspaceResponse } from "@/types";
+import { WorkspaceMember, MemberResponse, InvitationsWorkspaceResponse, Invitation } from "@/types";
 import { APIService } from "./api.service";
 import { API_BASE_URL } from "@/helpers/common.helper";
 
@@ -42,6 +42,24 @@ export class MemberService extends APIService {
   async removeMember(workspaceSlug: string, memberId: string) {
     try {
       const response = await this.delete<void>(`/workspaces/${workspaceSlug}/members/${memberId}`);
+      return response.data.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async deleteInvitation(workspaceSlug: string, invitationId: string) {
+    try {
+      const response = await this.delete<void>(`/workspaces/${workspaceSlug}/invitations/${invitationId}`);
+      return response.data.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateInvitationRole(workspaceSlug: string, invitationId: string, role: string) {
+    try {
+      const response = await this.patch<Invitation>(`/workspaces/${workspaceSlug}/invitations/${invitationId}`, { role });
       return response.data.data;
     } catch (error) {
       throw error;

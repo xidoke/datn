@@ -7,12 +7,16 @@ import {
   Body,
   Query,
   Delete,
+  Patch,
 } from "@nestjs/common";
 import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
 import { WorkspaceInvitationsService } from "./workspace-invitations.service";
 import { InviteWorkspaceDto } from "./dto/invite-workspace.dto";
 import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
-import { WorkspacePermission } from "src/permission/permission.type";
+import {
+  WorkspacePermission,
+  WorkspaceRole,
+} from "src/permission/permission.type";
 import { Permissions } from "src/permission/permission.decorator";
 import { InviteQueryDto } from "./dto/invite-query.dto";
 
@@ -41,6 +45,20 @@ export class WorkspaceInvitationsController {
     return this.workspaceInvitationService.createInvitation(
       slug,
       inviteWorkspaceDto,
+    );
+  }
+
+  @Patch(":id")
+  @Permissions(WorkspacePermission.INVITE_MEMBER)
+  async resendInvitation(
+    @Param("slug") slug: string,
+    @Param("id") id: string,
+    @Body() data: { role: WorkspaceRole },
+  ) {
+    return this.workspaceInvitationService.updateInvitationRole(
+      slug,
+      id,
+      data.role,
     );
   }
 

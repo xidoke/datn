@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -40,7 +41,7 @@ import { useMemberStore } from "@/stores/member/memberStore";
 import { API_BASE_URL } from "@/helpers/common.helper";
 import { hasPermission } from "@/helpers/permission";
 import { useParams } from "next/navigation";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 
 export default function MembersPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,22 +59,6 @@ export default function MembersPage() {
 
   const { workspaceSlug } = useParams();
   const currentWorkspace = getWorkspaceBySlug(workspaceSlug as string);
-  const {
-    inviteMember,
-    updateMemberRole,
-    removeMember,
-    fetchWorkspaceMemberInvitations,
-  } = useMemberStore();
-  const userPermission = currentWorkspace ? currentWorkspace.permissions : [];
-  const {
-    workspaceMemberMap,
-    workspaceMemberIds,
-    workspaceMemberInvitationsMap: workspaceMemberInvitations,
-  } = useMemberStore();
-  const { data: user } = useUser();
-  const membersRecord = workspaceMemberMap[currentWorkspace!.slug];
-  const members = workspaceMemberIds.map((id) => membersRecord[id]);
-  const currentUser = members.find((member) => member.user.id === user?.id);
 
   // fetch Invitations
   useSWR(
@@ -86,12 +71,42 @@ export default function MembersPage() {
     { revalidateIfStale: false, revalidateOnFocus: false },
   );
 
+  const {
+    inviteMember,
+    updateMemberRole,
+    removeMember,
+    fetchWorkspaceMemberInvitations,
+  } = useMemberStore();
+  const userPermission = currentWorkspace ? currentWorkspace.permissions : [];
+  const {
+    workspaceMemberMap,
+    workspaceMemberIds,
+    workspaceMemberInvitationsMap,
+    workspaceMemberInvitationIds,
+    deleteInvitation,
+    updateInvitationRole,
+  } = useMemberStore();
+  const { data: user } = useUser();
+  const membersRecord = workspaceMemberMap[currentWorkspace!.slug];
+  const members = workspaceMemberIds.map((id) => membersRecord[id]);
+  const currentUser = members.find((member) => member.user.id === user?.id);
+
+  const invitationsRecord =
+    workspaceMemberInvitationsMap[currentWorkspace!.slug];
+  const invitations = workspaceMemberInvitationIds?.map(
+    (id) => invitationsRecord[id],
+  );
+
   const filteredMembers = members.filter(
     (member) =>
       (member.user.firstName + " " + member.user.lastName)
         ?.toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
       member.user.email.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  const filteredInvitations = invitations?.filter((invitation) =>
+    invitation.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleRoleChange = async (memberId: string, newRole: string) => {
@@ -111,6 +126,31 @@ export default function MembersPage() {
       toast({
         title: "Error",
         description: "Failed to update member role. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleInvitationRoleChange = async (
+    invitaionId: string,
+    newRole: string,
+  ) => {
+    try {
+      console.log(currentWorkspace?.slug, invitaionId, newRole);
+      await updateInvitationRole(
+        currentWorkspace?.slug as string,
+        invitaionId,
+        newRole,
+      );
+      toast({
+        title: "Role updated",
+        description: "Invitation role has been updated successfully.",
+      });
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Error",
+        description: "Failed to update invitation role. Please try again.",
         variant: "destructive",
       });
     }
@@ -159,12 +199,30 @@ export default function MembersPage() {
         title: "Invitation sent",
         description: "An invitation has been sent to the email address.",
       });
+      mutate(`WORKSPACE_INVITATIONS_${currentWorkspace!.slug}`);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({
         title: "Error",
         description:
           error?.message || "Failed to send invitation. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteInvitation = async (invitationId: string) => {
+    try {
+      await deleteInvitation(currentWorkspace!.slug, invitationId);
+      toast({
+        title: "Invitation deleted",
+        description: "Invitation has been deleted successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description:
+          error.message || "Failed to delete invitation. Please try again.",
         variant: "destructive",
       });
     }
@@ -307,35 +365,35 @@ export default function MembersPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Email address</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead className="w-24">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredMembers.map((member) => (
-                <TableRow key={member.user.id}>
-                  <TableCell>{member.user.email}</TableCell>
+              {filteredInvitations?.map((invitation) => (
+                <TableRow key={invitation.email}>
+                  <TableCell>{invitation.email}</TableCell>
+                  <TableCell>{invitation.status}</TableCell>
                   <TableCell>
-                    {hasPermission(userPermission, "UPDATE_MEMBER_ROLE") &&
-                    member.user.id !== currentUser?.user.id &&
-                    member.role !== "OWNER" ? (
-                      <Select
-                        value={member.role}
-                        onValueChange={(value) =>
-                          handleRoleChange(member.id, value.toUpperCase())
-                        }
-                      >
-                        <SelectTrigger className="w-[100px]">
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="ADMIN">Admin</SelectItem>
-                          <SelectItem value="MEMBER">Member</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      member.role
-                    )}
+                    {/* TODO: sửa lời mời */}
+                    <Select
+                      value={invitation.role}
+                      onValueChange={(value) =>
+                        handleInvitationRoleChange(
+                          invitation.id,
+                          value.toUpperCase(),
+                        )
+                      }
+                    >
+                      <SelectTrigger className="w-min">
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ADMIN">Admin</SelectItem>
+                        <SelectItem value="MEMBER">Member</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -346,19 +404,11 @@ export default function MembersPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {member.user.id === currentUser?.user.id ? (
-                          <DropdownMenuItem onClick={handleLeaveWorkspace}>
-                            Leave workspace
-                          </DropdownMenuItem>
-                        ) : (
-                          hasPermission(userPermission, "REMOVE_MEMBER") && (
-                            <DropdownMenuItem
-                              onClick={() => handleRemoveMember(member.id)}
-                            >
-                              Remove member
-                            </DropdownMenuItem>
-                          )
-                        )}
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteInvitation(invitation.id)}
+                        >
+                          Cancel invitation
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

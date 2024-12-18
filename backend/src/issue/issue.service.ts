@@ -158,6 +158,7 @@ export class IssuesService {
       fullIdentifier: `${issue.project.token}-${issue.sequenceNumber}`,
     };
   }
+
   async update(id: string, updateIssueDto: UpdateIssueDto) {
     const { assigneeIds, labelIds, ...issueData } = updateIssueDto;
 
@@ -218,10 +219,12 @@ export class IssuesService {
         where: { id },
         data: {
           ...issueData,
-          assignees: {
-            deleteMany: {},
-            create: assigneeIds?.map((userId) => ({ userId })) || [],
-          },
+          assignees: assigneeIds
+            ? {
+                deleteMany: {}, // Xóa toàn bộ assignees cũ
+                create: assigneeIds.map((userId) => ({ userId })), // Thêm assignees mới
+              }
+            : undefined, // Nếu không có `assigneeIds`, không thực hiện thay đổi
           labels: {
             set: labelIds?.map((id) => ({ id })) || [],
           },

@@ -558,4 +558,41 @@ export class WorkspaceService {
       issuesByStateGroup: issuesByStateGroupArray,
     };
   }
+
+  async leaveWorkspace(userId: string, slug: string) {
+    const workspace = await this.findBySlug(slug);
+    if (!workspace) {
+      throw new NotFoundException("Workspace not found");
+    }
+
+    const member = await this.prisma.workspaceMember.findFirst({
+      where: { workspaceId: workspace.id, userId },
+    });
+
+    if (!member) {
+      throw new NotFoundException("You are not a member of this workspace");
+    }
+
+    // Check if the user is the owner
+    if (workspace.ownerId === userId) {
+      throw new ForbiddenException(
+        "You cannot leave the workspace as the owner",
+      );
+    }
+
+    const { email } = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    await this.prisma.workspaceMember.delete({ where: { id: member.id } });
+    await this.prisma.workspaceInvitation.delete({
+      where: {
+        email_workspaceId: {
+          workspaceId: workspace.id,
+          email,
+        },
+      },
+    });
+    return { message: "Member removed successfully" };
+  }
 }
