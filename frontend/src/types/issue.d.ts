@@ -9,12 +9,6 @@ export interface IssueLabel {
   color: string;
 }
 
-export interface IssueAssignee {
-  id: string;
-  avatarUrl: string;
-  email: string;
-}
-
 
 interface Issue {
   id: string;
@@ -54,7 +48,9 @@ interface Issue {
 
 export interface IssueAssignee {
   id: string;
-  user: User;
+  workspaceMember: {
+    user: User;
+  };
   userId: string;
   issueId: string;
 }

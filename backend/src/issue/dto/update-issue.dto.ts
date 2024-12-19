@@ -6,7 +6,6 @@ import {
   IsNumber,
   Min,
   Max,
-  IsDate,
   IsDateString,
 } from "class-validator";
 
@@ -52,5 +51,4 @@ export class UpdateIssueDto {
   @IsUUID()
   @IsOptional()
   cycleId?: string;
-  
 }

@@ -40,7 +40,9 @@ interface DashboardData {
       token: string
     }
     assignees: Array<{
-      user: User
+      workspaceMember: {
+        user: User
+      }
     }>
   }>
   issuesByStateGroup: Array<{

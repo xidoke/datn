@@ -359,7 +359,8 @@ export class WorkspaceService {
         },
         assignees: {
           some: {
-            userId: userId,
+            memberId: userId,
+            workspaceId: workspace.id,
           },
         },
       },
@@ -373,7 +374,8 @@ export class WorkspaceService {
         },
         assignees: {
           some: {
-            userId: userId,
+            memberId: userId,
+            workspaceId: workspace.id,
           },
         },
         dueDate: {
@@ -420,7 +422,8 @@ export class WorkspaceService {
         },
         assignees: {
           some: {
-            userId: userId,
+            memberId: userId,
+            workspaceId: workspace.id,
           },
         },
       },
@@ -482,13 +485,17 @@ export class WorkspaceService {
         },
         assignees: {
           select: {
-            user: {
+            workspaceMember: {
               select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                avatarUrl: true,
+                user: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    avatarUrl: true,
+                  },
+                },
               },
             },
           },
@@ -554,11 +561,10 @@ export class WorkspaceService {
         completedCount,
       },
       recentAssignedIssues,
-      recentCreatedIssues,
+    recentCreatedIssues: recentCreatedIssues,
       issuesByStateGroup: issuesByStateGroupArray,
     };
   }
-
   async leaveWorkspace(userId: string, slug: string) {
     const workspace = await this.findBySlug(slug);
     if (!workspace) {

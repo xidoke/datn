@@ -10,7 +10,6 @@ export type { IssueComment } from "./comment";
 export type { Label } from "./label";
 export type { Project } from "./project";
 export * from "./state";
-export type { IssueAssignee } from "./issueAssignee";
 export * from "./invitations";
 
 

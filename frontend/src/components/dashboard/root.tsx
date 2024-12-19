@@ -2,7 +2,14 @@
 import { CalendarIcon } from "lucide-react";
 import { Card } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupList, AvatarImage, AvatarOverflowIndicator } from "../ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarGroup,
+  AvatarGroupList,
+  AvatarImage,
+  AvatarOverflowIndicator,
+} from "../ui/avatar";
 import { useUserStore } from "@/stores/userStore";
 import { useDashboardData } from "@/hooks/useDashboard";
 import { useParams } from "next/navigation";
@@ -11,8 +18,7 @@ import { PriorityIcon } from "../icons/priority-icon";
 import { TIssuePriorities } from "@/types";
 import { IssuesByStatePieChart } from "./pie-chart";
 import { API_BASE_URL } from "@/helpers/common.helper";
-import Image from "next/image";
-
+import Link from "next/link";
 export const DashBoardWorkspace = () => {
   const { data: user } = useUserStore();
 
@@ -98,22 +104,29 @@ export const DashBoardWorkspace = () => {
                             key={issue.id}
                             className="flex items-center justify-between rounded-lg border p-3"
                           >
-                            <div className="flex items-center gap-3">
-                              <span className="text-muted-foreground">
-                                {issue.project.token}-{issue.sequenceNumber}
-                              </span>
-                              <span>{issue.name}</span>
-                            </div>
+                            <Link
+                              href={`projects/${issue.project.id}/issues/${issue.id}`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className="text-muted-foreground">
+                                  {issue.project.token}-{issue.sequenceNumber}
+                                </span>
+                                <span>{issue.name}</span>
+                              </div>
+                            </Link>
+
                             <div className="flex items-center gap-4">
                               <PriorityIcon
                                 priority={
                                   issue?.priority?.toString() as TIssuePriorities
                                 }
                               />
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <CalendarIcon className="h-4 w-4" />
-                                {new Date(issue.dueDate).toLocaleDateString()}
-                              </div>
+                              {issue.dueDate && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <CalendarIcon className="h-4 w-4" />
+                                  {new Date(issue.dueDate).toLocaleDateString()}
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -209,12 +222,18 @@ export const DashBoardWorkspace = () => {
                                         <AvatarImage
                                           src={
                                             API_BASE_URL +
-                                            assignee.user?.avatarUrl
+                                            assignee.workspaceMember?.user
+                                              ?.avatarUrl
                                           }
-                                          alt={assignee.user?.email}
+                                          alt={
+                                            assignee.workspaceMember?.user
+                                              ?.email
+                                          }
                                         />
                                         <AvatarFallback>
-                                          {assignee.user?.email?.charAt(0) ?? "U"}
+                                          {assignee.workspaceMember?.user?.email?.charAt(
+                                            0,
+                                          ) ?? "U"}
                                         </AvatarFallback>
                                       </Avatar>
                                     ))}
@@ -262,12 +281,18 @@ export const DashBoardWorkspace = () => {
                                         <AvatarImage
                                           src={
                                             API_BASE_URL +
-                                            assignee.user?.avatarUrl
+                                            assignee.workspaceMember?.user
+                                              ?.avatarUrl
                                           }
-                                          alt={assignee.user?.email}
+                                          alt={
+                                            assignee.workspaceMember?.user
+                                              ?.email
+                                          }
                                         />
                                         <AvatarFallback>
-                                          {assignee.user?.email.charAt(0)}
+                                          {assignee.workspaceMember?.user?.email.charAt(
+                                            0,
+                                          )}
                                         </AvatarFallback>
                                       </Avatar>
                                     ))}

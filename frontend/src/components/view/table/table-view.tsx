@@ -122,7 +122,7 @@ export default function TableView({ issues, states, labels }: TableViewProps) {
                     size="sm"
                     projectId={projectId as string}
                     values={issue.assignees.map(
-                      (assignee) => assignee.user?.id,
+                      (assignee) => assignee.workspaceMember.user?.id,
                     )}
                     onChange={async (values) => {
                       await updateIssue(

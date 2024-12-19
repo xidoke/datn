@@ -27,17 +27,16 @@ export default function IssueDetail({
   const { getIssueById, updateIssue } = useIssueStore();
   const issue = getIssueById(issueId);
 
+  const [description, setDescription] = useState(issue?.description || "");
+  const [isEditing, setIsEditing] = useState(false);
+
   if (!issue) {
     return <div>Issue not found. Please ensure the data is loaded.</div>;
   }
 
-  const [description, setDescription] = useState(issue.description || "");
-  const [isEditing, setIsEditing] = useState(false);
-
   const handleUpdateIssue = async (updateData: Partial<typeof issue>) => {
     await updateIssue(workspaceSlug, projectId, issue.id, updateData);
   };
-
   return (
     <div className="space-y-6">
       {/* Issue header */}
@@ -127,9 +126,10 @@ export default function IssueDetail({
           <AssigneeDropdown
             size="icon"
             projectId={projectId}
-            values={issue.assignees.map((assignee) => assignee.user?.id)}
+            values={issue.assignees.map(
+              (assignee) => assignee.workspaceMember?.user?.id,
+            )}
             onChange={async (values) => {
-              const updatedAssignees = values.map((id) => ({ user: { id } }));
               await handleUpdateIssue({ assigneeIds: values });
             }}
           />

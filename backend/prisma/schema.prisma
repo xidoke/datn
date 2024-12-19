@@ -69,7 +69,6 @@ model User {
   createdAssets     FileAsset[]       @relation("CreatedAssets")
   userAssets        FileAsset[]       @relation("UserAssets")
   createdIssues     Issue[]           @relation("CreatedIssues")
-  assignedIssues    IssueAssignee[]
   comments          IssueComment[]
   lastWorkspaceSlug String?
   createdAt         DateTime          @default(now())
@@ -120,6 +119,7 @@ model WorkspaceMember {
   role        WorkspaceRole @default(MEMBER)
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
+  assignedIssues    IssueAssignee[]
   workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId String
   createdCycles Cycle[]
@@ -223,9 +223,9 @@ model IssueAssignee {
   id        String   @id @default(uuid())
   issue     Issue    @relation(fields: [issueId], references: [id])
   issueId   String
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  
+  workspaceMember WorkspaceMember @relation(fields: [memberId, workspaceId], references: [userId, workspaceId])
+  memberId       String
+  workspaceId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

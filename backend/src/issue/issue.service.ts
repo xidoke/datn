@@ -23,7 +23,12 @@ export class IssuesService {
     return this.prisma.$transaction(async (prisma) => {
       const project = await prisma.project.findFirst({
         where: { id: projectId, workspace: { slug: workspaceSlug } },
-        select: { id: true, lastIssueNumber: true, token: true },
+        select: {
+          id: true,
+          lastIssueNumber: true,
+          token: true,
+          workspaceId: true,
+        },
       });
 
       if (!project) {
@@ -52,6 +57,14 @@ export class IssuesService {
         select: { lastIssueNumber: true },
       });
 
+      // Find corresponding WorkspaceMembers for the assigneeIds
+      const workspaceMembers = await prisma.workspaceMember.findMany({
+        where: {
+          userId: { in: assigneeIds || [] },
+          workspaceId: project.workspaceId,
+        },
+      });
+
       const newIssue = await prisma.issue.create({
         data: {
           ...issueData,
@@ -60,7 +73,10 @@ export class IssuesService {
           stateId: effectiveStateId,
           sequenceNumber: updatedProject.lastIssueNumber,
           assignees: {
-            create: assigneeIds?.map((userId) => ({ userId })) || [],
+            create: workspaceMembers.map((member) => ({
+              memberId: member.userId,
+              workspaceId: member.workspaceId,
+            })),
           },
           labels: {
             connect: labelIds?.map((id) => ({ id })) || [],
@@ -72,7 +88,11 @@ export class IssuesService {
           creator: true,
           assignees: {
             include: {
-              user: true,
+              workspaceMember: {
+                include: {
+                  user: true,
+                },
+              },
             },
           },
           labels: true,
@@ -102,7 +122,11 @@ export class IssuesService {
         creator: true,
         assignees: {
           include: {
-            user: true,
+            workspaceMember: {
+              include: {
+                user: true,
+              },
+            },
           },
         },
         labels: true,
@@ -137,7 +161,11 @@ export class IssuesService {
         creator: true,
         assignees: {
           include: {
-            user: true,
+            workspaceMember: {
+              include: {
+                user: true,
+              },
+            },
           },
         },
         labels: true,
@@ -163,19 +191,27 @@ export class IssuesService {
     const { assigneeIds, labelIds, ...issueData } = updateIssueDto;
 
     // Validate that the issue exists
-    const existingIssue = await this.prisma.issue.findUnique({ where: { id } });
+    const existingIssue = await this.prisma.issue.findUnique({
+      where: { id },
+      include: { project: true },
+    });
     if (!existingIssue) {
       throw new NotFoundException(`Issue with ID ${id} not found`);
     }
 
     // Validate assignees
     if (assigneeIds && assigneeIds.length > 0) {
-      const validUserIds = await this.prisma.user.findMany({
-        where: { id: { in: assigneeIds } },
-        select: { id: true },
+      const validWorkspaceMembers = await this.prisma.workspaceMember.findMany({
+        where: {
+          userId: { in: assigneeIds },
+          workspaceId: existingIssue.project.workspaceId,
+        },
+        select: { userId: true },
       });
 
-      const validAssigneeIds = validUserIds.map((user) => user.id);
+      const validAssigneeIds = validWorkspaceMembers.map(
+        (member) => member.userId,
+      );
       const invalidAssigneeIds = assigneeIds.filter(
         (id) => !validAssigneeIds.includes(id),
       );
@@ -185,7 +221,7 @@ export class IssuesService {
           message: "Invalid assignee IDs detected",
           invalidIds: invalidAssigneeIds,
           details:
-            "These user IDs do not exist in the database or are not valid assignees for this project.",
+            "These user IDs do not exist in the workspace or are not valid assignees for this project.",
         });
       }
     }
@@ -195,7 +231,7 @@ export class IssuesService {
       const validLabelIds = await this.prisma.label.findMany({
         where: {
           id: { in: labelIds },
-          projectId: existingIssue.projectId, // Ensure labels belong to the same project
+          projectId: existingIssue.projectId,
         },
         select: { id: true },
       });
@@ -221,10 +257,13 @@ export class IssuesService {
           ...issueData,
           assignees: assigneeIds
             ? {
-                deleteMany: {}, // Xóa toàn bộ assignees cũ
-                create: assigneeIds.map((userId) => ({ userId })), // Thêm assignees mới
+                deleteMany: {}, // Delete all existing assignees
+                create: assigneeIds.map((userId) => ({
+                  memberId: userId,
+                  workspaceId: existingIssue.project.workspaceId,
+                })),
               }
-            : undefined, // Nếu không có `assigneeIds`, không thực hiện thay đổi
+            : undefined,
           labels: {
             set: labelIds?.map((id) => ({ id })) || [],
           },
@@ -235,7 +274,11 @@ export class IssuesService {
           creator: true,
           assignees: {
             include: {
-              user: true,
+              workspaceMember: {
+                include: {
+                  user: true,
+                },
+              },
             },
           },
           labels: true,
@@ -285,7 +328,11 @@ export class IssuesService {
         state: true,
         assignees: {
           include: {
-            user: true,
+            workspaceMember: {
+              include: {
+                user: true,
+              },
+            },
           },
         },
         labels: true,

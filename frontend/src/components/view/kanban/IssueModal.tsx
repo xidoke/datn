@@ -156,7 +156,7 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                       size="icon"
                       projectId={projectId as string}
                       values={localIssue.assignees.map(
-                        (assignee) => assignee.user?.id,
+                        (assignee) => assignee?.workspaceMember?.user?.id,
                       )}
                       onChange={async (values) => {
                         const updatedAssignees = values.map((id) => ({

@@ -6,7 +6,6 @@ import {
   IsNumber,
   Max,
   Min,
-  IsDate,
   IsDateString,
   MinLength,
 } from "class-validator";
@@ -49,7 +48,6 @@ export class CreateIssueDto {
   @IsOptional()
   startDate?: Date;
 
-  
   @IsOptional()
   @IsUUID()
   cycleId?: string;

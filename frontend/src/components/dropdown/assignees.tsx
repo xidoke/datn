@@ -108,7 +108,8 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
                   alt={assignee.user?.email}
                 />
                 <AvatarFallback>
-                  {assignee.user?.email.charAt(0)}
+                  {(assignee.user?.firstName?.charAt(0) || "") +
+                    (assignee.user?.lastName?.charAt(0) || "")}
                 </AvatarFallback>
               </Avatar>
             </Tooltip>
@@ -257,7 +258,8 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
                           alt={assignee.user?.email}
                         />
                         <AvatarFallback>
-                          {assignee.user?.email.charAt(0)}
+                          {(assignee.user?.firstName?.charAt(0) || "") +
+                            (assignee.user?.lastName?.charAt(0) || "")}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col">

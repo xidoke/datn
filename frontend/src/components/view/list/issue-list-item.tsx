@@ -140,7 +140,7 @@ export default function IssueListItem({ issue, onClick }: IssueListItemProps) {
         <AssigneeDropdown
           size="icon"
           projectId={projectId as string}
-          values={issue.assignees.map((assignee) => assignee.user?.id)}
+          values={issue.assignees.map((assignee) => assignee.workspaceMember.user?.id)}
           onChange={async (values) => {
             await updateIssue(
               workspaceSlug as string,

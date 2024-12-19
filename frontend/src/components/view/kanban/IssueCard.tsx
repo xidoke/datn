@@ -2,12 +2,7 @@
 
 import React, { useState } from "react";
 import { Draggable } from "react-beautiful-dnd";
-import {
-  Calendar,
-  CalendarCheck2,
-  CalendarClock,
-  MoreHorizontal,
-} from "lucide-react";
+import { CalendarCheck2, CalendarClock, MoreHorizontal } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import useIssueStore from "@/stores/issueStore";
@@ -102,7 +97,7 @@ export default function IssueCard({
               <div className="flex flex-wrap items-center gap-2 whitespace-nowrap pt-1.5"></div>
 
               <div
-                className="flex flex-wrap items-center gap-2 border border-muted py-2"
+                className="flex flex-wrap items-center gap-2 py-2"
                 onClick={handleInnerClick}
               >
                 <LabelDropdown
@@ -196,7 +191,9 @@ export default function IssueCard({
                 <AssigneeDropdown
                   size="icon"
                   projectId={projectId as string}
-                  values={assignees.map((assignee) => assignee.user?.id)}
+                  values={assignees.map(
+                    (assignee) => assignee?.workspaceMember?.user?.id,
+                  )}
                   onChange={async (values) => {
                     console.log(values);
                     await updateIssue(

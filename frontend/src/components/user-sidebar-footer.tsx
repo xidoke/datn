@@ -16,7 +16,7 @@ import { useLogout } from "@/hooks/useLogout";
 
 const UserSidebar = () => {
   const logout = useLogout();
-  const {data: user} = useUser();
+  const { data: user } = useUser();
   const router = useAppRouter();
 
   return (
@@ -30,7 +30,7 @@ const UserSidebar = () => {
                   src={`${API_BASE_URL}${user?.avatarUrl}` || "/image/user.jpg"}
                 />
                 <AvatarFallback>
-                  <Skeleton className="rounded-full" />
+                  {(user?.firstName?.at(0) || '') + (user?.lastName?.at(0) || '')}
                 </AvatarFallback>
               </Avatar>
               {`${user?.firstName} ${user?.lastName}`}
@@ -51,10 +51,12 @@ const UserSidebar = () => {
               <Settings className="mr-2" />
               <span>Setting</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={async () => {
-              await logout();
-              router.replace("/");
-            }}>
+            <DropdownMenuItem
+              onClick={async () => {
+                await logout();
+                router.replace("/");
+              }}
+            >
               <LogOut className="mr-2" />
               <span>Sign out</span>
             </DropdownMenuItem>
