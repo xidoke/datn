@@ -65,12 +65,12 @@ export const CyclesListItem: FC<TCyclesListItem> = (props) => {
   };
   const cycleDetails = getCycleById(cycleId);
 
-  if (!cycleDetails) return null;
 
   // Fetch cycle progress
   const { data } = useSWR("WORKSPACE_CYCLES_PROGRESS_" + cycleId, () =>
     fetchCycleProgress(workspaceSlug, projectId, cycleId),
   );
+  if (!cycleDetails) return null;
   const progress = data || 0;
   const handleItemClick = (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -146,12 +146,12 @@ export const CyclesListItem: FC<TCyclesListItem> = (props) => {
 
             <Avatar className="h-6 w-6">
               <AvatarImage
-                src={API_BASE_URL + cycleDetails.creator?.avatarUrl}
-                alt={cycleDetails.creator?.email}
-                title={"creator: " + cycleDetails.creator?.email}
+                src={API_BASE_URL + cycleDetails.creator?.user?.avatarUrl}
+                alt={cycleDetails.creator?.user?.email}
+                title={"creator: " + cycleDetails.creator?.user?.email}
               />
               <AvatarFallback>
-                {cycleDetails.creator?.email?.charAt(0)}
+                {cycleDetails.creator?.user?.email?.charAt(0)}
               </AvatarFallback>
             </Avatar>
             <DropdownMenu>

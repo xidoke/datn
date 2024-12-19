@@ -23,11 +23,8 @@ export class CycleController {
   constructor(private readonly cycleService: CycleService) {}
 
   @Get()
-  async getCycles(
-    @Param("workspaceSlug") workspaceSlug: string,
-    @Param("projectId") projectId: string,
-  ) {
-    return this.cycleService.getCycles(workspaceSlug, projectId);
+  async getCycles(@Param("projectId") projectId: string) {
+    return this.cycleService.getCycles(projectId);
   }
 
   @Post()

@@ -7,23 +7,23 @@ import { UpdateCycleDto } from "./dto/update-cycle.dto";
 export class CycleService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getCycles(
-    workspaceSlug: string,
-    projectId: string,
-    cycleType?: string,
-  ) {
+  async getCycles(projectId: string) {
     return this.prisma.cycle.findMany({
       where: {
         projectId,
       },
       include: {
         creator: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                avatarUrl: true,
+              },
+            },
           },
         },
       },
@@ -40,7 +40,30 @@ export class CycleService {
     userId: string,
   ) {
     const { title, description, startDate, dueDate } = createCycleDto;
-    // we must check no cycle has intersected date
+
+    const project = await this.prisma.project.findUnique({
+      where: { id: projectId },
+      include: { workspace: true },
+    });
+
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    const workspaceMember = await this.prisma.workspaceMember.findUnique({
+      where: {
+        userId_workspaceId: {
+          userId,
+          workspaceId: project.workspace.id,
+        },
+      },
+    });
+
+    if (!workspaceMember) {
+      throw new Error("User is not a member of this workspace");
+    }
+
+    // Check for overlapping cycles
     if (startDate && dueDate) {
       const overlappingCycles = await this.prisma.cycle.findMany({
         where: {
@@ -73,7 +96,10 @@ export class CycleService {
         dueDate,
         creator: {
           connect: {
-            id: userId,
+            userId_workspaceId: {
+              userId: workspaceMember.userId,
+              workspaceId: workspaceMember.workspaceId,
+            },
           },
         },
         project: {
@@ -81,15 +107,24 @@ export class CycleService {
             id: projectId,
           },
         },
+        workspace: {
+          connect: {
+            id: workspaceMember.workspaceId,
+          },
+        },
       },
       include: {
         creator: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                avatarUrl: true,
+              },
+            },
           },
         },
       },
@@ -148,12 +183,16 @@ export class CycleService {
       },
       include: {
         creator: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                avatarUrl: true,
+              },
+            },
           },
         },
       },
@@ -167,12 +206,16 @@ export class CycleService {
       },
       include: {
         creator: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            avatarUrl: true,
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                avatarUrl: true,
+              },
+            },
           },
         },
       },
@@ -225,5 +268,6 @@ export class CycleService {
     dateCheckData: any,
   ) {
     // Check cycle date
+    // Implementation remains the same
   }
 }

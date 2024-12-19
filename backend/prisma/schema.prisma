@@ -65,7 +65,7 @@ model User {
   avatarUrl         String?
   isActive          Boolean           @default(true)
   ownedWorkspaces   Workspace[]
-  workspaces        WorkspaceMember[]
+  workspaceMemberships    WorkspaceMember[]
   createdAssets     FileAsset[]       @relation("CreatedAssets")
   userAssets        FileAsset[]       @relation("UserAssets")
   createdIssues     Issue[]           @relation("CreatedIssues")
@@ -74,7 +74,6 @@ model User {
   lastWorkspaceSlug String?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
-  Cycle             Cycle[]
 
   @@map("users")
 }
@@ -88,6 +87,7 @@ model Workspace {
   logoUrl     String?
   FileAssets  FileAsset[]
   projects    Project[]
+  cycles      Cycle[]
   invitations WorkspaceInvitation[]
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
@@ -122,6 +122,8 @@ model WorkspaceMember {
   userId      String
   workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId String
+  createdCycles Cycle[]
+  
   joinedAt    DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -140,8 +142,10 @@ model Cycle {
   project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId   String
   issues      Issue[]
-  creator     User      @relation(fields: [creatorId], references: [id])
+  creator     WorkspaceMember @relation(fields: [creatorId, workspaceId], references: [userId, workspaceId])
   creatorId   String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -221,6 +225,7 @@ model IssueAssignee {
   issueId   String
   user      User     @relation(fields: [userId], references: [id])
   userId    String
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
