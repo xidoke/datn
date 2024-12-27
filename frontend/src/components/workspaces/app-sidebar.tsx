@@ -1,5 +1,5 @@
 "use client";
-import { Home, Projector, Settings2, StickyNote } from "lucide-react";
+import { Home, Settings, StickyNote } from "lucide-react";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import { WorkspaceSwitcher } from "@/components/workspaces/workspace-switcher";
@@ -8,7 +8,13 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
+  SidebarSeparator,
+  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import UserSidebar from "../user-sidebar-footer";
 import { NavProjects } from "../nav-projects";
@@ -36,26 +42,52 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     {
       title: "Settings",
       url: "settings",
-      icon: Settings2,
+      icon: Settings,
     },
   ];
+  const { state, isMobile } = useSidebar();
+  const sidebarCollapsed = !isMobile && state === "collapsed";
   return (
-    <Sidebar className="border-r-0" {...props}>
+    <Sidebar className="border-r-0" {...props} collapsible="icon">
       <SidebarHeader>
-        <div className="flex flex-row">
+        <div className="flex items-center justify-center gap-x-3 gap-y-2">
           <WorkspaceSwitcher />
-          <ModeToggle />
+          {!sidebarCollapsed && <ModeToggle />}
         </div>
 
-        <NavMain items={data.navMain}/>
+        <NavMain items={data.navMain} />
       </SidebarHeader>
+      <SidebarSeparator />
       <SidebarContent>
         <NavProjects />
-        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
+
       <SidebarRail />
       <SidebarFooter>
-        <UserSidebar />
+        <NavSecondary items={navSecondary} />
+        <SidebarSeparator />
+        <div className="flex items-center justify-center gap-x-3">
+          <UserSidebar />
+          {!sidebarCollapsed && (
+            <SidebarMenu className="w-fit">
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <SidebarTrigger />
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          )}
+        </div>
+
+        {sidebarCollapsed && (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild>
+                <SidebarTrigger />
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
       </SidebarFooter>
     </Sidebar>
   );

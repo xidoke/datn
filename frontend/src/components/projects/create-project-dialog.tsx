@@ -20,9 +20,10 @@ import { useToast } from "@/hooks/use-toast";
 
 interface CreateProjectDialogProps {
   children?: React.ReactNode;
+  className?: string
 }
 
-export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
+export function CreateProjectDialog({ children, className }: CreateProjectDialogProps) {
   const { workspaceSlug } = useParams();
   const [open, setOpen] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -75,7 +76,7 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
         <Tooltip>
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
-              <div>
+              <div className={className}>
                 {!children && (
                   <div className="cursor-pointer rounded-full p-1 transition-colors duration-200 hover:bg-gray-200">
                     <Plus className="h-4 w-4" />

@@ -9,7 +9,7 @@ const WorkspacePage = () => {
     <>
       <WorkspaceHeader />
       <ContentWrapper>
-        <DashBoardWorkspace/>
+        <DashBoardWorkspace />
       </ContentWrapper>
     </>
   );

@@ -14,7 +14,6 @@ import Link from "next/link"
 
 export function NavSecondary({
   items,
-  ...props
 }: {
   items: {
     title: string
@@ -25,8 +24,6 @@ export function NavSecondary({
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
   const params = useParams()
   return (
-    <SidebarGroup {...props}>
-      <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
@@ -40,7 +37,5 @@ export function NavSecondary({
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
   )
 }

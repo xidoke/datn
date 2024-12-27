@@ -14,16 +14,12 @@ export class CycleService {
       },
       include: {
         creator: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true,
-              },
-            },
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
           },
         },
       },
@@ -40,30 +36,7 @@ export class CycleService {
     userId: string,
   ) {
     const { title, description, startDate, dueDate } = createCycleDto;
-
-    const project = await this.prisma.project.findUnique({
-      where: { id: projectId },
-      include: { workspace: true },
-    });
-
-    if (!project) {
-      throw new Error("Project not found");
-    }
-
-    const workspaceMember = await this.prisma.workspaceMember.findUnique({
-      where: {
-        userId_workspaceId: {
-          userId,
-          workspaceId: project.workspace.id,
-        },
-      },
-    });
-
-    if (!workspaceMember) {
-      throw new Error("User is not a member of this workspace");
-    }
-
-    // Check for overlapping cycles
+    // we must check no cycle has intersected date
     if (startDate && dueDate) {
       const overlappingCycles = await this.prisma.cycle.findMany({
         where: {
@@ -96,10 +69,7 @@ export class CycleService {
         dueDate,
         creator: {
           connect: {
-            userId_workspaceId: {
-              userId: workspaceMember.userId,
-              workspaceId: workspaceMember.workspaceId,
-            },
+            id: userId,
           },
         },
         project: {
@@ -107,24 +77,15 @@ export class CycleService {
             id: projectId,
           },
         },
-        workspace: {
-          connect: {
-            id: workspaceMember.workspaceId,
-          },
-        },
       },
       include: {
         creator: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true,
-              },
-            },
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
           },
         },
       },
@@ -183,16 +144,12 @@ export class CycleService {
       },
       include: {
         creator: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true,
-              },
-            },
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
           },
         },
       },
@@ -206,16 +163,12 @@ export class CycleService {
       },
       include: {
         creator: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                avatarUrl: true,
-              },
-            },
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
           },
         },
       },
@@ -253,7 +206,7 @@ export class CycleService {
     });
 
     const unProgress =
-      totalIssues > 0 ? Math.floor((incompleteIssues / totalIssues) * 100) : 0;
+      totalIssues > 0 ? (incompleteIssues / totalIssues) * 100 : 0;
 
     return {
       totalIssues,
@@ -268,6 +221,5 @@ export class CycleService {
     dateCheckData: any,
   ) {
     // Check cycle date
-    // Implementation remains the same
   }
 }

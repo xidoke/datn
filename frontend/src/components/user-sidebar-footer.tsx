@@ -8,7 +8,6 @@ import {
 } from "./ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "./ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Skeleton } from "./ui/skeleton";
 import { useAppRouter } from "@/hooks/use-app-router";
 import { useUser } from "@/stores/userStore";
 import { API_BASE_URL } from "@/helpers/common.helper";
@@ -24,17 +23,17 @@ const UserSidebar = () => {
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton>
+            <SidebarMenuButton className="truncate">
               <Avatar className="h-6 w-6">
                 <AvatarImage
                   src={`${API_BASE_URL}${user?.avatarUrl}` || "/image/user.jpg"}
                 />
                 <AvatarFallback>
-                  {(user?.firstName?.at(0) || '') + (user?.lastName?.at(0) || '')}
+                  {(user?.firstName?.at(0) || "") +
+                    (user?.lastName?.at(0) || "")}
                 </AvatarFallback>
               </Avatar>
-              {`${user?.firstName} ${user?.lastName}`}
-              <ChevronUp className="ml-auto" />
+              <span>{`${user?.firstName} ${user?.lastName}`}</span>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent

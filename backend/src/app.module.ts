@@ -24,12 +24,12 @@ import { CommentModule } from "./comment/comment.module";
     PrismaModule,
     PermissionModule,
     AuthModule,
+    FileStorageModule,
     // feature modules
     UserModule,
     WorkspaceModule,
     ProjectModule,
     IssueModule,
-    FileStorageModule,
     FileAssetModule,
     WorkspaceInvitationsModule,
     StateModule,

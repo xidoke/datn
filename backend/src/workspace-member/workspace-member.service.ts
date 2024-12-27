@@ -249,6 +249,8 @@ export class WorkspaceMemberService {
       select: { email: true },
     });
     await this.prisma.workspaceMember.delete({ where: { id: memberId } });
+
+
     await this.prisma.workspaceInvitation.delete({
       where: {
         email_workspaceId: {

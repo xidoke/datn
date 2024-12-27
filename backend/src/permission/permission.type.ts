@@ -13,7 +13,7 @@ export enum WorkspacePermission {
   ADD_MEMBER = "ADD_MEMBER",
   UPDATE_MEMBER_ROLE = "UPDATE_MEMBER_ROLE",
   REMOVE_MEMBER = "REMOVE_MEMBER",
-  
+   
   //permissions for projects
   VIEW_PROJECT = "VIEW_PROJECT",
   CREATE_PROJECT = "CREATE_PROJECT",

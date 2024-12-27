@@ -16,7 +16,6 @@ import { useUser } from "@/stores/userStore";
 import { Project, Workspace, User } from "@/types";
 import { useProjectLabelStore } from "@/stores/projectLabelStore";
 import { useProjectStateStore } from "@/stores/projectStateStore";
-import { useCycle } from "framer-motion";
 import { useCycleStore } from "@/stores/cycleStore";
 import useIssueStore from "@/stores/issueStore";
 

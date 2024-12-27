@@ -149,7 +149,6 @@ export class UserController {
   @Roles(Role.ADMIN)
   @UseGuards(CognitoAuthGuard)
   async getChartData() {
-    console.log("get chart data");
     return this.userService.getChartData();
   }
 

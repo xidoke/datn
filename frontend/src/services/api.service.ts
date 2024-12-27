@@ -26,7 +26,6 @@ export abstract class APIService {
       (error) => {
         if (error.response && error.response.status === 401) {
           if (error.response.data.message === 'No refresh token available') {
-            console.log("hit here")
             localStorage.clear();
           }
 

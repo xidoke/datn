@@ -1,14 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  ChevronDown,
-  Plus,
-  Settings,
-  Briefcase,
-  Inbox,
-  MailPlus,
-} from "lucide-react";
+import { ChevronDown, Plus, Settings, MailPlus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +14,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -28,13 +22,17 @@ import { useAppRouter } from "@/hooks/use-app-router";
 import { useWorkspace } from "@/stores/workspaceStore";
 import Image from "next/image";
 import { API_BASE_URL } from "@/helpers/common.helper";
+import { cn } from "@/lib/utils";
 
 export function WorkspaceSwitcher() {
-  const { workspaces} = useWorkspace();
+  const { workspaces } = useWorkspace();
   const { workspaceSlug } = useParams();
   const currentWorkspace = workspaces?.find((w) => w.slug === workspaceSlug);
+
   const router = useAppRouter();
 
+  const { state, isMobile } = useSidebar();
+  const sidebarCollapsed = !isMobile && state === "collapsed" ;
   const handleAddWorkspace = React.useCallback(() => {
     router.push("/create-workspace");
   }, [router]);
@@ -49,30 +47,19 @@ export function WorkspaceSwitcher() {
   }) => {
     if (workspace.logoUrl) {
       return (
-        <div className="relative flex size-6 items-center justify-center overflow-hidden rounded-sm border">
+        <div className="relative h-6 w-6">
           <Image
             src={`${API_BASE_URL}${workspace.logoUrl}`}
             alt={workspace.name}
+            className="rounded object-cover"
             fill
-            className="object-cover"
-            sizes="24px"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = "none";
-              const nextElement = target.nextSibling as HTMLElement | null;
-
-              if (nextElement?.classList) {
-                nextElement.classList.remove("hidden");
-              }
-            }}
           />
-          <Briefcase className="hidden size-4" />
         </div>
       );
     }
     return (
-      <div className="flex size-6 items-center justify-center rounded-sm border">
-        <Briefcase className="size-4" />
+      <div className="flex size-6 items-center justify-center rounded border bg-primary text-primary-foreground">
+        {workspace.name[0].toUpperCase()}
       </div>
     );
   };
@@ -82,19 +69,34 @@ export function WorkspaceSwitcher() {
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton className="w-fit px-1.5">
-              {renderWorkspaceIcon(
-                currentWorkspace || {
-                  logoUrl: null,
-                  name: "Select Workspace",
-                },
+            <SidebarMenuButton
+              className={cn(
+                "group/menu-button roup-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:!p-0",
+                sidebarCollapsed && "flex items-center justify-center",
               )}
-              <span className="truncate font-semibold">
-                {currentWorkspace?.name || "Select Workspace"}
-              </span>
-              <ChevronDown className="opacity-50" />
+            >
+              <div className="flex items-center justify-center">
+                {renderWorkspaceIcon(
+                  currentWorkspace || {
+                    logoUrl: null,
+                    name: "Select Workspace",
+                  },
+                )}
+              </div>
+
+              {!sidebarCollapsed && (
+                <span className="truncate font-semibold">
+                  {currentWorkspace?.name || "Select Workspace"}
+                </span>
+              )}
+              {!sidebarCollapsed && (
+                <span>
+                  <ChevronDown className="mx-1 hidden size-4 flex-shrink-0 duration-300 group-hover/menu-button:block" />
+                </span>
+              )}
             </SidebarMenuButton>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent
             className="w-64 rounded-lg"
             align="start"

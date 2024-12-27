@@ -6,14 +6,12 @@ export interface ICycle {
   dueDate: string; // ISO date string
   creatorId: string; // User ID
   creator: {
-    user: {
     id: string; // User ID
     firstName: string; // User name
     lastName: string; // User name
     email: string;
     avatarUrl?: string;
   };
-  }
    //progress
   progress: {
     totalIssues : number,

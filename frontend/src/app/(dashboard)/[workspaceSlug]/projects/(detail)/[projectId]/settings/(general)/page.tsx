@@ -40,7 +40,11 @@ export default function ProjectSettingsPage() {
       const formData = new FormData(e.target as HTMLFormElement);
       const name = formData.get("name") as string;
 
-      await updateProject(params.workspaceSlug as string,params.projectId as string, { name });
+      await updateProject(
+        params.workspaceSlug as string,
+        params.projectId as string,
+        { name },
+      );
 
       toast({
         title: "Project updated",
@@ -108,11 +112,16 @@ export default function ProjectSettingsPage() {
               <Input
                 id="identifier"
                 name="identifier"
-                defaultValue={project.id}
+                defaultValue={project.token}
                 disabled
               />
             </div>
-            <Button type="submit" disabled={ !hasPermission(permissions, "UPDATE_PROJECT")|| isLoading}>
+            <Button
+              type="submit"
+              disabled={
+                !hasPermission(permissions, "UPDATE_PROJECT") || isLoading
+              }
+            >
               {isLoading ? "Saving..." : "Save changes"}
             </Button>
           </form>
@@ -129,7 +138,12 @@ export default function ProjectSettingsPage() {
             onOpenChange={setIsDeleteDialogOpen}
           >
             <DialogTrigger asChild>
-              <Button variant="destructive" disabled={!hasPermission(permissions, "DELETE_PROJECT")}>Delete Project</Button>
+              <Button
+                variant="destructive"
+                disabled={!hasPermission(permissions, "DELETE_PROJECT")}
+              >
+                Delete Project
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>

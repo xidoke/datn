@@ -146,12 +146,12 @@ export const CyclesListItem: FC<TCyclesListItem> = (props) => {
 
             <Avatar className="h-6 w-6">
               <AvatarImage
-                src={API_BASE_URL + cycleDetails.creator?.user?.avatarUrl}
-                alt={cycleDetails.creator?.user?.email}
-                title={"creator: " + cycleDetails.creator?.user?.email}
+                src={API_BASE_URL + cycleDetails?.creator?.avatarUrl}
+                alt={cycleDetails.creator?.email}
+                title={"creator: " + cycleDetails?.creator?.email}
               />
               <AvatarFallback>
-                {cycleDetails.creator?.user?.email?.charAt(0)}
+                {cycleDetails?.creator?.email?.charAt(0)}
               </AvatarFallback>
             </Avatar>
             <DropdownMenu>

@@ -14,8 +14,12 @@ type TAuthenticationWrapper = {
 };
 
 const isValidURL = (url: string): boolean => {
-  const disallowedSchemes = /^(https?|ftp):\/\//i;
-  return !disallowedSchemes.test(url);
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 export const AuthenticationWrapper: FC<TAuthenticationWrapper> = ({

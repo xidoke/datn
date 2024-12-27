@@ -26,7 +26,9 @@ export default function GeneralSettingsPage() {
   const router = useRouter();
   const { workspaces, updateWorkspace, updateWorkspaceLogo, deleteWorkspace } =
     useWorkspace();
-  const currentWorkspace = (workspaces ?? []).find((w) => w.slug === params.workspaceSlug);
+  const currentWorkspace = (workspaces ?? []).find(
+    (w) => w.slug === params.workspaceSlug,
+  );
   const permissions = currentWorkspace?.permissions || [];
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -47,11 +49,10 @@ export default function GeneralSettingsPage() {
         title: "Workspace updated",
         description: "Your workspace settings have been updated successfully.",
       });
-    } catch  {
+    } catch {
       toast({
         title: "Error",
-        description:
-          "Failed to update workspace. Please try again.",
+        description: "Failed to update workspace. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -60,7 +61,8 @@ export default function GeneralSettingsPage() {
   };
 
   const handleDeleteWorkspace = async () => {
-    if (!currentWorkspace || deleteConfirmation !== currentWorkspace.name) return;
+    if (!currentWorkspace || deleteConfirmation !== currentWorkspace.name)
+      return;
 
     setIsLoading(true);
     try {
@@ -96,8 +98,7 @@ export default function GeneralSettingsPage() {
     } catch {
       toast({
         title: "Error",
-        description:
-          "Failed to update logo. Please try again.",
+        description: "Failed to update logo. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -108,8 +109,20 @@ export default function GeneralSettingsPage() {
   if (!currentWorkspace) return null;
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">General Settings</h1>
+    <div className="w-full space-y-6 overflow-y-auto pr-4 md:pr-9">
+      <Card>
+        <CardHeader>
+          <CardTitle>Workspace Logo</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <WorkspaceLogo
+            logoUrl={currentWorkspace?.logoUrl || null}
+            onLogoChange={handleLogoChange}
+            isLoading={isLoading}
+            apiBaseUrl={API_BASE_URL}
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -140,24 +153,15 @@ export default function GeneralSettingsPage() {
                 />
               </div>
             </div>
-            <Button type="submit" disabled={!hasPermission(permissions, "UPDATE_WORKSPACE") ||  isLoading}>
+            <Button
+              type="submit"
+              disabled={
+                !hasPermission(permissions, "UPDATE_WORKSPACE") || isLoading
+              }
+            >
               {isLoading ? "Saving..." : "Save changes"}
             </Button>
           </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Workspace Logo</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <WorkspaceLogo
-            logoUrl={currentWorkspace?.logoUrl || null}
-            onLogoChange={handleLogoChange}
-            isLoading={isLoading}
-            apiBaseUrl={API_BASE_URL}
-          />
         </CardContent>
       </Card>
 
@@ -171,10 +175,12 @@ export default function GeneralSettingsPage() {
             onOpenChange={setIsDeleteDialogOpen}
           >
             <DialogTrigger asChild>
-              <Button variant="destructive"
-              disabled={!hasPermission(permissions, "DELETE_WORKSPACE")}
-              >Delete Workspace</Button>
-          
+              <Button
+                variant="destructive"
+                disabled={!hasPermission(permissions, "DELETE_WORKSPACE")}
+              >
+                Delete Workspace
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -186,7 +192,8 @@ export default function GeneralSettingsPage() {
               </DialogHeader>
               <div className="space-y-4">
                 <p>
-                  Please type <strong>{currentWorkspace.name}</strong> to confirm.
+                  Please type <strong>{currentWorkspace.name}</strong> to
+                  confirm.
                 </p>
                 <Input
                   value={deleteConfirmation}
@@ -204,7 +211,9 @@ export default function GeneralSettingsPage() {
                 <Button
                   variant="destructive"
                   onClick={handleDeleteWorkspace}
-                  disabled={deleteConfirmation !== currentWorkspace.name || isLoading}
+                  disabled={
+                    deleteConfirmation !== currentWorkspace.name || isLoading
+                  }
                 >
                   {isLoading ? "Deleting..." : "Delete Workspace"}
                 </Button>

@@ -73,8 +73,6 @@ export class FileStorageController {
     const filePath = this.fileStorageService.getFilePath(filename);
     const file = createReadStream(filePath);
     const stats = await this.fileStorageService.getFileStats(filename);
-    console.log("hit");
-    console.log(lookup("file.pdf"));
     const mimeType = lookup(filename) || "application/octet-stream";
 
     res.set({

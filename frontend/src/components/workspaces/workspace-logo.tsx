@@ -55,7 +55,7 @@ export default function WorkspaceLogo({
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         {logoUrl && (
-          <div className="relative h-16 w-16 overflow-hidden rounded-full border border-border">
+          <div className="relative h-16 w-16 overflow-hidden rounded border border-border">
             <Image
               src={`${apiBaseUrl}${logoUrl}`}
               alt="Workspace Logo"
@@ -72,7 +72,9 @@ export default function WorkspaceLogo({
         <Button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          disabled={!hasPermission(permissions, "UPDATE_WORKSPACE") || isLoading}
+          disabled={
+            !hasPermission(permissions, "UPDATE_WORKSPACE") || isLoading
+          }
           variant="secondary"
         >
           <Upload className="mr-2 h-4 w-4" />

@@ -71,6 +71,7 @@ model User {
   createdIssues     Issue[]           @relation("CreatedIssues")
   comments          IssueComment[]
   lastWorkspaceSlug String?
+  createdCycles Cycle[]
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -86,7 +87,6 @@ model Workspace {
   logoUrl     String?
   FileAssets  FileAsset[]
   projects    Project[]
-  cycles      Cycle[]
   invitations WorkspaceInvitation[]
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
@@ -122,7 +122,6 @@ model WorkspaceMember {
   assignedIssues    IssueAssignee[]
   workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId String
-  createdCycles Cycle[]
   
   joinedAt    DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -142,10 +141,8 @@ model Cycle {
   project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId   String
   issues      Issue[]
-  creator     WorkspaceMember @relation(fields: [creatorId, workspaceId], references: [userId, workspaceId])
+  creator     User      @relation(fields: [creatorId], references: [id])
   creatorId   String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -223,7 +220,7 @@ model IssueAssignee {
   id        String   @id @default(uuid())
   issue     Issue    @relation(fields: [issueId], references: [id])
   issueId   String
-  workspaceMember WorkspaceMember @relation(fields: [memberId, workspaceId], references: [userId, workspaceId])
+  workspaceMember WorkspaceMember @relation(fields: [memberId, workspaceId], references: [userId, workspaceId], onDelete: Cascade)
   memberId       String
   workspaceId    String
   createdAt DateTime @default(now())

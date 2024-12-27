@@ -13,7 +13,7 @@ import {
 } from "@aws-sdk/client-cognito-identity-provider";
 import { createHmac } from "crypto";
 import { AWS_CONFIG } from "../config/aws.config";
-import { CognitoServiceException } from "src/exceptions/cognito-service.exception";
+import { CognitoServiceException } from "src/common/exceptions/cognito-service.exception";
 @Injectable()
 export class CognitoService {
   private readonly cognitoClient: CognitoIdentityProviderClient;

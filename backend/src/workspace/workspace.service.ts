@@ -430,7 +430,7 @@ export class WorkspaceService {
       orderBy: {
         updatedAt: "desc",
       },
-      take: 5,
+      take: 10,
       select: {
         id: true,
         title: true,
@@ -464,7 +464,7 @@ export class WorkspaceService {
       orderBy: {
         createdAt: "desc",
       },
-      take: 5,
+      take: 10,
       select: {
         id: true,
         title: true,
@@ -561,7 +561,7 @@ export class WorkspaceService {
         completedCount,
       },
       recentAssignedIssues,
-    recentCreatedIssues: recentCreatedIssues,
+      recentCreatedIssues: recentCreatedIssues,
       issuesByStateGroup: issuesByStateGroupArray,
     };
   }

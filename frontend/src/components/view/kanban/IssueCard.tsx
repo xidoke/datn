@@ -34,7 +34,6 @@ export default function IssueCard({
   issue,
   index,
   onClick,
-  isSelected = false,
 }: IssueCardProps) {
   const { updateIssue } = useIssueStore();
 

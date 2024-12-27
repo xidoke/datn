@@ -1,4 +1,4 @@
-import { Project, ApiResponse } from "@/types";
+import { Project} from "@/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { ProjectService } from "@/services/project.service";
@@ -56,15 +56,15 @@ export const useProjectStore = create<ProjectStore>()(
       },
 
       fetchProjectDetails: async (workspaceSlug, projectId) => {
-        set({ isLoading: true, error: undefined });
+        set({ error: undefined });
         try {
           const result = await projectService.fetchProjectDetails(workspaceSlug, projectId);
           const project = result.data;
-          set({ currentProjectDetails: project, isLoading: false });
+          set({ currentProjectDetails: project});
           return project;
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : "Failed to fetch project details";
-          set({ error: errorMessage, isLoading: false });
+          set({ error: errorMessage });
           throw error;
         }
       },
