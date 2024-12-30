@@ -70,7 +70,7 @@ export const ProjectWrapper: FC<ProjectWrapperProps> = ({ children }) => {
   );
 
   //   fetch state of the project
- useSWR(
+  useSWR(
     workspaceSlug && projectId
       ? `PROJECT_STATE_${workspaceSlug}_${projectId}`
       : null,
@@ -84,10 +84,14 @@ export const ProjectWrapper: FC<ProjectWrapperProps> = ({ children }) => {
       : null,
     () => fetchCycles(workspaceSlug as string, projectId as string),
   );
-  
 
   if (projectError || workspaceError || userError) {
-    return <div>Error loading project data. Please try again.</div>;
+    return <div>Error loading project data. Please try again.
+      <br />
+      {projectError && <div>Project Error: {projectError+''}</div>}
+      {workspaceError && <div>Workspace Error: {workspaceError+''}</div>}
+      {userError && <div>User Error: {userError+''}</div>}
+    </div>;
   }
 
   if (!projectData || !workspaceData || !userData) {

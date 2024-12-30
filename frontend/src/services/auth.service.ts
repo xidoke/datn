@@ -10,7 +10,7 @@ export class AuthService extends APIService {
     return this.post<User>('/auth/register', data).then(
       (response) => response.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
   });
   }
 
@@ -18,7 +18,7 @@ export class AuthService extends APIService {
     return this.post<User>('/auth/login', data).then(
       (response) => response.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
   });
   }
 
@@ -26,7 +26,7 @@ export class AuthService extends APIService {
     return this.post('/auth/change-password', data).then(
       (response) => response.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
     });
   }
 
@@ -38,7 +38,7 @@ export class AuthService extends APIService {
     return this.post('/auth/forgot-password', { email }).then(
       (response) => response.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
     });
   }
 
@@ -46,7 +46,7 @@ export class AuthService extends APIService {
     return this.post('/auth/confirm-forgot-password', data).then(
       (response) => response.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
     });
   }
 }

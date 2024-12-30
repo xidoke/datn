@@ -26,59 +26,38 @@ export default function TableView({ issues, states, labels }: TableViewProps) {
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-x-auto">
         <table className="w-full min-w-max border-collapse">
-          <thead className="sticky top-0 z-20 bg-background">
-            <tr className="border-b">
+          <thead className="sticky top-0 z-20 bg-backdrop">
+            <tr className="border-b *:px-4 *:py-3 *:text-center">
               {/* Fixed columns */}
-              <th className="sticky left-0 z-30 bg-background px-4 py-3 text-left">
+              <th className="sticky left-0 z-30 px-4 py-3 text-left">
                 <div className="flex items-center gap-4">
                   <span className="text-sm font-medium">Issues</span>
                 </div>
               </th>
 
               {/* Scrollable columns */}
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">State</span>
-                </div>
-              </th>
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Priority</span>
-                </div>
-              </th>
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Assignees</span>
-                </div>
-              </th>
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Labels</span>
-                </div>
-              </th>
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Cycle</span>
-                </div>
-              </th>
-
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Start Date</span>
-                </div>
-              </th>
-              <th className="px-4 py-3 text-left">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Due Date</span>
-                </div>
-              </th>
+              {[
+                "State",
+                "Priority",
+                "Assignees",
+                "Labels",
+                "Cycle",
+                "Start Date",
+                "Due Date",
+              ].map((key) => (
+                <th className="" key={key}>
+                  <div className="flex items-center gap-2">
+                    <span className="mx-auto text-sm font-medium">{key}</span>
+                  </div>
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {issues.map((issue) => (
-              <tr key={issue.id} className="group border-b hover:bg-muted/50">
+              <tr key={issue.id} className="group border-b *:bg-background *:border">
                 {/* Fixed columns */}
-                <td className="sticky left-0 z-10 bg-background px-4 py-2 group-hover:bg-muted/50">
+                <td className="sticky left-0 z-10 border-r px-4 py-2">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">
                       {issue.fullIdentifier}

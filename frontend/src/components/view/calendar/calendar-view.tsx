@@ -458,17 +458,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 }) => {
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [search, setSearch] = useState("");
-  const {
-    statusIds,
-    assigneeIds,
-    cycleIds,
-    labelIds,
-    priorityIds,
-    startDate,
-    dueDate,
-    setFilter,
-    reset: resetFilter,
-  } = useFilterStore();
+  const { statusIds, labelIds, priorityIds, startDate, dueDate, setFilter } =
+    useFilterStore();
 
   const issueAfterFilter = issues.filter((issue) => {
     if (
@@ -529,7 +520,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     <CalendarProvider locale="en-US" className="flex h-screen flex-col">
       <div className="flex items-center justify-between px-4 py-2">
         <h1 className="text-2xl font-bold">Calendar View</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
@@ -557,14 +548,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           />
           <DatePicker
             date={startDate}
-            onDateChange={(date) => setFilter({ startDate: date })}
+            onDateChange={(date) => setFilter({ startDate: date ?? undefined })}
             placeholder="Start Date"
             Icon={CalendarCheck2}
             tooltipHeading="Filter Start Date"
           />
           <DatePicker
             date={dueDate}
-            onDateChange={(date) => setFilter({ dueDate: date })}
+            onDateChange={(date) => setFilter({ dueDate: date ?? undefined })}
             placeholder="Due Date"
             Icon={CalendarClock}
             tooltipHeading="Filter Due Date"
@@ -584,7 +575,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           <CalendarItem
             key={issue.id}
             issue={issue}
-            className="cursor-pointer"
+            className="cursor-pointer hover:bg-primary/10"
             onClick={() => setSelectedIssue(issue)}
           />
         )}

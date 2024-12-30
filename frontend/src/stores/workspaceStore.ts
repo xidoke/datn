@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Workspace } from "@/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -51,6 +52,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           return workspaces;
         } catch (error : any) {
           set({ loader: false, error: error.message });
+          console.log(error)
           throw error;
         }
       },
@@ -99,6 +101,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           });
           return updatedWorkspace;
         } catch (error) {
+          console.log(error)
           throw error;
         }
       },
@@ -130,6 +133,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             ),
           });
         } catch (error) {
+          console.log(error)
           throw error;
         }
       },

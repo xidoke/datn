@@ -1,4 +1,4 @@
-import { Project} from "@/types";
+import { Project } from "@/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { ProjectService } from "@/services/project.service";
@@ -56,15 +56,15 @@ export const useProjectStore = create<ProjectStore>()(
       },
 
       fetchProjectDetails: async (workspaceSlug, projectId) => {
-        set({ error: undefined });
+        set({ isLoading: true, error: undefined });
         try {
           const result = await projectService.fetchProjectDetails(workspaceSlug, projectId);
           const project = result.data;
-          set({ currentProjectDetails: project});
+          set({ currentProjectDetails: project, isLoading: false });
           return project;
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : "Failed to fetch project details";
-          set({ error: errorMessage });
+          set({ error: errorMessage, isLoading: false });
           throw error;
         }
       },
@@ -102,7 +102,7 @@ export const useProjectStore = create<ProjectStore>()(
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : "Failed to update project";
           set({ error: errorMessage, isLoading: false });
-          throw error;
+          throw new Error(errorMessage);
         }
       },
 

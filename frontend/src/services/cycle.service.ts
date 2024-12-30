@@ -12,7 +12,7 @@ export class CycleService extends APIService {
     return this.get<ICycle[]>(`workspaces/${workspaceSlug}/projects/${projectId}/cycles`).then(
       (response) => response.data.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
   });
   }
 
@@ -20,7 +20,7 @@ export class CycleService extends APIService {
     return this.post<ICycle>(`workspaces/${workspaceSlug}/projects/${projectId}/cycles`, data).then(
       (response) => response.data.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
   });
   }
 
@@ -28,7 +28,7 @@ export class CycleService extends APIService {
     return this.patch<ICycle>(`workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}`, data).then(
       (response) => response.data.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
   });
   }
 
@@ -36,7 +36,7 @@ export class CycleService extends APIService {
     return this.delete<null>(`workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}`).then(
       (response) => response.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
   });
   }
 
@@ -48,7 +48,7 @@ export class CycleService extends APIService {
     }>(`workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/progress`).then(
       (response) => response.data.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
   });
   }
 }

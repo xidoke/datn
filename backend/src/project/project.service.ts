@@ -6,6 +6,7 @@ import {
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateProjectDto } from "./dto/create-project.dto";
 import { Project } from "@prisma/client";
+import { UpdateProjectDto } from "./dto/update-project.dto";
 
 @Injectable()
 export class ProjectService {
@@ -188,7 +189,7 @@ export class ProjectService {
     workspaceSlug: string,
     projectId: string,
     userId: string,
-    data: { name?: string; description?: string },
+    data: UpdateProjectDto,
   ) {
     const project = await this.prisma.project.findFirst({
       where: {

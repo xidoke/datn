@@ -15,7 +15,7 @@ export const LayoutSelection = (props: Props) => {
     }
   };
   return (
-    <div className="flex items-center gap-1 rounded p-1">
+    <div className="flex items-center gap-1 rounded bg-backdrop p-1">
       {ISSUE_LAYOUTS.filter((l) => layouts.includes(l.key)).map((layout) => (
         <button
           key={layout.key}
@@ -29,9 +29,7 @@ export const LayoutSelection = (props: Props) => {
             size={14}
             strokeWidth={2}
             className={`h-3.5 w-3.5 ${
-              selectedLayout == layout.key
-                ? "text-primary-foreground"
-                : ""
+              selectedLayout == layout.key ? "text-primary-foreground" : ""
             }`}
           />
         </button>

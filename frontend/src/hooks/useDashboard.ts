@@ -49,6 +49,10 @@ interface DashboardData {
     group: string
     count: number
   }>
+  issuesByPriority: Array<{  // Add this type
+    priority: number
+    count: number
+  }>
 }
 
 const workspaceService = new WorkspaceService()

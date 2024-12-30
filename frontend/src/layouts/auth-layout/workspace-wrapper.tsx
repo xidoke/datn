@@ -33,7 +33,8 @@ const WorkspaceWrapper: React.FC<WorkspaceWrapperProps> = ({ children }) => {
   const currentWorkspace = workspaces.find((w) => w.slug === workspaceSlug);
   const { fetchProjects } = useProject();
 
-  const { fetchWorkspaceMembers } = useMemberStore();
+  const { fetchWorkspaceMembers, fetchWorkspaceMemberInvitations } =
+    useMemberStore();
   // fetching workspace projects
   useSWR(
     workspaceSlug && currentWorkspace
@@ -52,6 +53,17 @@ const WorkspaceWrapper: React.FC<WorkspaceWrapperProps> = ({ children }) => {
       : null,
     workspaceSlug && currentWorkspace
       ? () => fetchWorkspaceMembers(workspaceSlug.toString())
+      : null,
+    { revalidateIfStale: false, revalidateOnFocus: false },
+  );
+
+    // fetch Invitations
+  useSWR(
+    workspaceSlug && currentWorkspace
+      ? `WORKSPACE_INVITATIONS_${workspaceSlug}`
+      : null,
+    workspaceSlug && currentWorkspace
+      ? () => fetchWorkspaceMemberInvitations(workspaceSlug.toString())
       : null,
     { revalidateIfStale: false, revalidateOnFocus: false },
   );

@@ -3,7 +3,6 @@ import { Tooltip2 } from "@blueprintjs/popover2";
 import { cn } from "@/lib/utils";
 // helpers
 
-
 export type TPosition =
   | "top"
   | "right"
@@ -68,7 +67,7 @@ export const Tooltip: React.FC<ITooltipProps> = ({
 
   if (!shouldRender) {
     return (
-      <div ref={toolTipRef} className="h-full flex items-center">
+      <div ref={toolTipRef} className="flex h-full items-center">
         {children}
       </div>
     );
@@ -82,14 +81,18 @@ export const Tooltip: React.FC<ITooltipProps> = ({
       content={
         <div
           className={cn(
-            "relative block z-50 max-w-xs gap-1 overflow-hidden break-words rounded-md bg-custom-background-100 p-2 text-xs text-custom-text-200 shadow-md",
+            "text-custom-text-200 relative z-50 block max-w-xs gap-1 overflow-hidden break-words rounded-md bg-background p-2 text-xs shadow-md",
             {
               hidden: isMobile,
             },
-            className
+            className,
           )}
         >
-          {tooltipHeading && <h5 className="font-medium text-custom-text-100">{tooltipHeading}</h5>}
+          {tooltipHeading && (
+            <h5 className="text-custom-text-100 font-medium">
+              {tooltipHeading}
+            </h5>
+          )}
           {tooltipContent}
         </div>
       }

@@ -16,6 +16,7 @@ import { CreateProjectDto } from "./dto/create-project.dto";
 import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
 import { WorkspacePermission } from "src/permission/permission.type";
 import { Permissions } from "src/permission/permission.decorator";
+import { UpdateProjectDto } from "./dto/update-project.dto";
 
 @Controller("workspaces/:workspaceSlug/projects")
 @UseGuards(CognitoAuthGuard, WorkspacePermissionGuard)
@@ -62,7 +63,7 @@ export class ProjectController {
     @Param("workspaceSlug") workspaceSlug: string,
     @Param("id") id: string,
     @Req() req: RequestWithUser,
-    @Body() updateProjectDto: { name?: string; description?: string },
+    @Body() updateProjectDto: UpdateProjectDto,
   ) {
     return this.projectService.updateProject(
       workspaceSlug,

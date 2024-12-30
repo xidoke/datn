@@ -218,7 +218,7 @@ model IssueComment {
 
 model IssueAssignee {
   id        String   @id @default(uuid())
-  issue     Issue    @relation(fields: [issueId], references: [id])
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
   issueId   String
   workspaceMember WorkspaceMember @relation(fields: [memberId, workspaceId], references: [userId, workspaceId], onDelete: Cascade)
   memberId       String

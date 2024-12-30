@@ -11,7 +11,7 @@ import {
 interface TruncatedContentProps {
   content: string;
   maxLength?: number;
-  maxWidth?: number;
+  maxWidth?: string;
   className?: string;
 }
 

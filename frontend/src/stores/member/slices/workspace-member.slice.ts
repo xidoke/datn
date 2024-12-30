@@ -49,7 +49,7 @@ const initialState: WorkspaceMemberSliceState = {
   workspaceMemberMap: {},
   workspaceMemberInvitationsMap: {},
   workspaceMemberIds: [],
-  workspaceMemberInvitationIds: undefined,
+  workspaceMemberInvitationIds: [],
 };
 
 interface WorkspaceMemberSliceActions {

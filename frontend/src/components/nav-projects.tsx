@@ -47,7 +47,7 @@ const expandedSubItems = [
 ];
 
 // Reducer để quản lý trạng thái mở/đóng
-const projectReducer = (state, action) => {
+const projectReducer = (state: any, action: any) => {
   switch (action.type) {
     case "TOGGLE_PROJECT":
       return {
@@ -65,9 +65,9 @@ export function NavProjects() {
   const { workspaceSlug } = useParams();
   const { projects, isLoading } = useProjectStore();
   const pathname = usePathname();
-  
+
   const { state, isMobile } = useSidebar();
-  const sidebarCollapsed = !isMobile && state === "collapsed"; 
+  const sidebarCollapsed = !isMobile && state === "collapsed";
 
   // Sử dụng reducer để quản lý trạng thái
   const [openProjects, dispatch] = useReducer(projectReducer, {});
@@ -116,7 +116,7 @@ export function NavProjects() {
                       <SidebarMenuButton title={`${project.name}`}>
                         <Link
                           href={`/${workspaceSlug}/projects/${project.id}/issues`}
-                          className="flex w-full items-center"
+                          className="flex w-full max-w-[85%] items-center"
                           onClick={() => {
                             dispatch({
                               type: "RESET_PROJECTS",
@@ -130,7 +130,9 @@ export function NavProjects() {
                         >
                           <Folder className="h-4 w-4" />
                           {!sidebarCollapsed && (
-                            <span className="ml-2">{project.name}</span>
+                            <span className="ml-2 truncate">
+                              {project.name}
+                            </span>
                           )}
                         </Link>
                         {!sidebarCollapsed && (
@@ -172,7 +174,9 @@ export function NavProjects() {
                         <SidebarMenuItem key={item.href}>
                           <SidebarMenuButton
                             asChild
-                            isActive={pathname.includes(`${project.id}/${item.href}`)}
+                            isActive={pathname.includes(
+                              `${project.id}/${item.href}`,
+                            )}
                           >
                             <Link
                               href={`/${workspaceSlug}/projects/${project.id}/${item.href}`}

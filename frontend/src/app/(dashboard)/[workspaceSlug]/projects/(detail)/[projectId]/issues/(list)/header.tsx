@@ -11,27 +11,39 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/ui/header";
+import { useSidebar } from "@/components/ui/sidebar";
 import { useProject } from "@/stores/projectStore";
+import { Menu } from "lucide-react";
 import { useParams } from "next/navigation";
 
 const HeaderLeft = () => {
   const { workspaceSlug, projectId } = useParams();
   const { getProjectById } = useProject();
   const project = getProjectById(projectId as string);
+  const { isMobile, toggleSidebar } = useSidebar();
   return (
-    <Breadcrumb>
-      <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink href={`/${workspaceSlug}/projects`}>
-            {project?.name}
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbPage>Issues</BreadcrumbPage>
-        </BreadcrumbItem>
-      </BreadcrumbList>
-    </Breadcrumb>
+    <>
+      {isMobile && (
+        <Menu
+          onClick={() => {
+            toggleSidebar();
+          }}
+        />
+      )}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href={`/${workspaceSlug}/projects`}>
+              {project?.name}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Issues</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+    </>
   );
 };
 

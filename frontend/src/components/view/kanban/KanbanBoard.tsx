@@ -14,7 +14,6 @@ import { useParams } from "next/navigation";
 import { Issue, Label, State, TIssuePriorities } from "@/types";
 import FilterDropdown from "@/components/dropdown/filter";
 import { useFilterStore } from "@/stores/filterStore";
-import { useMemberStore } from "@/stores/member/memberStore";
 import PriorityMultiSelect from "@/components/dropdown/priority-multi-select";
 import { DatePicker } from "@/components/ui/date-picker";
 
@@ -40,18 +39,8 @@ export default function KanbanBoard({
   const { fetchIssues, updateIssue } = useIssueStore();
   const { fetchStates } = useProjectStateStore();
   const { fetchLabels } = useProjectLabelStore();
-  const { workspaceMemberIds, workspaceMemberMap } = useMemberStore();
-  const {
-    statusIds,
-    assigneeIds,
-    cycleIds,
-    labelIds,
-    priorityIds,
-    startDate,
-    dueDate,
-    setFilter,
-    reset: resetFilter,
-  } = useFilterStore();
+  const { statusIds, labelIds, priorityIds, startDate, dueDate, setFilter } =
+    useFilterStore();
   const [selectedIssue, setSelectedIssue] = React.useState<Issue | null>(null);
   const [search, setSearch] = React.useState("");
 
@@ -166,7 +155,8 @@ export default function KanbanBoard({
   return (
     <div className="flex h-screen flex-col">
       <div className="flex items-center justify-end px-4 py-2">
-        <div className="flex items-center gap-2">
+        {/* filter */}
+        <div className="flex items-center gap-2 overflow-x-auto">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input

@@ -89,7 +89,12 @@ export class IssuesController {
   @Permissions(WorkspacePermission.DELETE_ISSUE)
   @ResponseMessage("Issue deleted successfully")
   async remove(@Param("id") id: string) {
-    return this.issuesService.remove(id);
+    try {
+      return this.issuesService.remove(id);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   // @Get("list")

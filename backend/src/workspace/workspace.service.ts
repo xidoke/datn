@@ -176,6 +176,7 @@ export class WorkspaceService {
   }
 
   private formatWorkspaceResponse(workspace: any, memberRole: WorkspaceRole) {
+    console.log(workspace);
     return {
       id: workspace.id,
       name: workspace.name,
@@ -204,14 +205,10 @@ export class WorkspaceService {
     }
 
     // Check if user is owner or admin
-    const member = workspace.members.find((m) => m.userId === userId);
-    if (!member || (member.role !== "ADMIN" && workspace.ownerId !== userId)) {
-      throw new ForbiddenException(
-        "Only owners and admins can update the workspace",
-      );
-    }
+    console.log(workspace);
+    const member = workspace.members?.find((m) => m.userId === userId);
 
-    return this.prisma.workspace.update({
+    const w = await this.prisma.workspace.update({
       where: { slug },
       data,
       include: {
@@ -247,6 +244,8 @@ export class WorkspaceService {
         },
       },
     });
+
+    return this.formatWorkspaceResponse(w, member.role);
   }
 
   async deleteWorkspace(userId: string, slug: string) {
@@ -297,13 +296,22 @@ export class WorkspaceService {
     });
   }
 
-  async updateWorkspaceLogo(slug: string, logo: Express.Multer.File) {
+  async updateWorkspaceLogo(
+    userId: string,
+    slug: string,
+    logo: Express.Multer.File,
+  ) {
     const workspace = await this.prisma.workspace.findUnique({
       where: { slug },
+      include: {
+        members: true,
+      },
     });
     if (!workspace) {
       throw new NotFoundException("Workspace not found");
     }
+
+    const member = workspace.members.find((m) => m.userId === userId);
 
     // Delete old logo if it exists
     if (workspace.logoUrl) {
@@ -321,11 +329,25 @@ export class WorkspaceService {
     const logoUrl = this.fileStorageService.getFileUrl(savedFilename);
 
     // Update workspace with new logo URL
-    workspace.logoUrl = logoUrl;
-    return this.prisma.workspace.update({
+    const updatedWorkspace = await this.prisma.workspace.update({
       where: { slug },
       data: { logoUrl },
+      include: {
+        owner: {
+          select: {
+            id: true,
+          },
+        },
+        _count: {
+          select: {
+            members: true,
+            projects: true,
+          },
+        },
+      },
     });
+
+    return this.formatWorkspaceResponse(updatedWorkspace, member.role);
   }
 
   async getWorkspaceDashboard(slug: string, userId: string) {
@@ -453,6 +475,25 @@ export class WorkspaceService {
       },
     });
 
+    // Add this query after the issuesByState groupBy query
+    const issuesByPriority = await this.prisma.issue.groupBy({
+      by: ["priority"],
+      where: {
+        projectId: {
+          in: workspace.projects.map((p) => p.id),
+        },
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    // Convert the priority data to the expected format
+    const issuesByPriorityArray = issuesByPriority.map((item) => ({
+      priority: item.priority,
+      count: item._count._all,
+    }));
+
     // Get recent created issues
     const recentCreatedIssues = await this.prisma.issue.findMany({
       where: {
@@ -563,8 +604,10 @@ export class WorkspaceService {
       recentAssignedIssues,
       recentCreatedIssues: recentCreatedIssues,
       issuesByStateGroup: issuesByStateGroupArray,
+      issuesByPriority: issuesByPriorityArray,
     };
   }
+
   async leaveWorkspace(userId: string, slug: string) {
     const workspace = await this.findBySlug(slug);
     if (!workspace) {

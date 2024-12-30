@@ -238,7 +238,7 @@ export default function LabelSettingsPage() {
   return (
     <div className="flex h-full flex-col space-y-6 bg-background p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Labels</h1>
+        <h1 className="text-xl font-medium">Labels</h1>
         <Button onClick={handleStartAdd} size="sm" className="gap-2">
           <Plus className="h-4 w-4" /> Add label
         </Button>

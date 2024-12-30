@@ -1,8 +1,7 @@
 "use client";
 
-// import { useProjectFilter } from "@/hooks/store";
 import HeaderFilters from "./filters";
-import { Briefcase } from "lucide-react";
+import { Briefcase, Menu } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +12,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
+import { useSidebar } from "@/components/ui/sidebar";
 
 export const ProjectsBaseHeader = () => {
   // const { searchQuery, updateSearchQuery } = useProjectFilter();
@@ -22,11 +22,18 @@ export const ProjectsBaseHeader = () => {
       // updateSearchQuery("");
     }
   };
-
+  const { isMobile, toggleSidebar } = useSidebar();
   return (
     <>
-      <header className="flex flex-row justify-between p-2 bg-background">
-        <div className="flex items-center">
+      <header className="flex flex-row justify-between bg-background p-2">
+        <div className="flex items-center gap-x-2">
+          {isMobile && (
+            <Menu
+              onClick={() => {
+                toggleSidebar();
+              }}
+            />
+          )}
           <Breadcrumb>
             <BreadcrumbItem>
               <BreadcrumbLink href="#">

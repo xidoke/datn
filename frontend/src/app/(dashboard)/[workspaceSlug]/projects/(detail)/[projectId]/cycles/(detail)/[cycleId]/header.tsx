@@ -2,7 +2,7 @@
 
 import { FC } from "react";
 import { useParams } from "next/navigation";
-import { RefreshCcw } from "lucide-react";
+import { Menu, RefreshCcw } from "lucide-react";
 import { Header } from "@/components/ui/header";
 // shadcn components
 import { Button } from "@/components/ui/button";
@@ -21,19 +21,25 @@ import { useProject, useProjectStore } from "@/stores/projectStore";
 import { useCycleStore } from "@/stores/cycleStore";
 import HeaderFilters from "@/components/issues/filter";
 import { CreateIssueDialog } from "@/components/issues/create-issue-dialog";
-
+import { useSidebar } from "@/components/ui/sidebar";
 
 const HeaderLeft = () => {
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, cycleId, projectId } = useParams();
+  const { workspaceSlug, cycleId } = useParams();
 
-  const { currentProjectDetails, isLoading } = useProjectStore();
+  const { currentProjectDetails } = useProjectStore();
   const { getCycleById } = useCycleStore();
   const currentCycleDetails = getCycleById(cycleId as string);
-
+  const { isMobile, toggleSidebar } = useSidebar();
   return (
-    <div className="flex items-center space-x-4">
+    <>
+      {isMobile && (
+        <Menu
+          onClick={() => {
+            toggleSidebar();
+          }}
+        />
+      )}
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -58,27 +64,24 @@ const HeaderLeft = () => {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-    </div>
+    </>
   );
-}
+};
 
 const HeaderRight = () => {
-      const { projectId } = useParams();
-      const { getProjectById } = useProject();
-      const currentProjectDetails = getProjectById(projectId as string);
-      return (
-        <div className="flex gap-2">
-          <HeaderFilters currentProjectDetails={currentProjectDetails} />
-
-          <CreateIssueDialog>
-            <Button size={"sm"}>Add Issue</Button>
-          </CreateIssueDialog>
-        </div>
-      );
-}
-export const CycleLayoutHeader: FC = () => {
-
+  const { projectId } = useParams();
+  const { getProjectById } = useProject();
+  const currentProjectDetails = getProjectById(projectId as string);
   return (
-    <Header right={<HeaderRight/>} left={<HeaderLeft/>}/>
+    <div className="flex gap-2">
+      <HeaderFilters currentProjectDetails={currentProjectDetails} />
+
+      <CreateIssueDialog>
+        <Button size={"sm"}>Add Issue</Button>
+      </CreateIssueDialog>
+    </div>
   );
+};
+export const CycleLayoutHeader: FC = () => {
+  return <Header right={<HeaderRight />} left={<HeaderLeft />} />;
 };

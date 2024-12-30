@@ -232,84 +232,12 @@ export function CreateIssueDialog({
               />
             </div>
 
-            <div>
-              <DatePicker
-                date={formData.startDate}
-                Icon={CalendarCheck2}
-                onDateChange={(date) => {
-                  setFormData((prev) => ({ ...prev, startDate: date }));
-                }}
-                maxDate={formData.dueDate}
-                placeholder="Start date"
-              />
-            </div>
-            <div>
-              <DatePicker
-                date={formData.dueDate}
-                Icon={CalendarClock}
-                onDateChange={(date) => {
-                  setFormData((prev) => ({ ...prev, dueDate: date }));
-                }}
-                minDate={formData.startDate}
-                placeholder="Due date"
-              />
-            </div>
 
-            <div>
-              <AssigneeDropdown
-                projectId={projectId}
-                values={formData.assigneeIds ?? []}
-                onChange={(values) =>
-                  setFormData((prev) => ({ ...prev, assigneeIds: values }))
-                }
-              />
-            </div>
+
+
           </div>
 
-          {/* <div className="flex-1">
-              <Label htmlFor="priority">Priority</Label>
-              <Select
-                value={formData.priority.toString()}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    priority: parseInt(value),
-                  }))
-                }
-              >
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue placeholder="Select priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0">None</SelectItem>
-                  <SelectItem value="1">Low</SelectItem>
-                  <SelectItem value="2">Medium</SelectItem>
-                  <SelectItem value="3">High</SelectItem>
-                  <SelectItem value="4">Urgent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex-1">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={formData.stateId}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, stateId: value }))
-                }
-              >
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {states.map((state) => (
-                    <SelectItem key={state.id} value={state.id}>
-                      {state.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div> */}
+ 
           <div />
 
           <div className="flex justify-end space-x-2 pt-4">

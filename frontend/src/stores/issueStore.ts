@@ -17,8 +17,8 @@ export interface IssueUpdateDto {
   assigneeIds?: string[];
   labelIds?: string[];
   priority?: number;
-  dueDate?: string;
-  startDate?: string;
+  dueDate?: string | null;
+  startDate?: string | null;
   cycleId?: string;
 }
 interface IssueStore {

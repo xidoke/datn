@@ -31,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useProjectStateStore } from "@/stores/projectStateStore";
 import { useParams } from "next/navigation";
 import { State, StateGroup } from "@/types";
+import { Separator } from "@/components/ui/separator";
 
 const stateGroups = [
   { name: "backlog", label: "Backlog", icon: AlignLeft },
@@ -341,9 +342,9 @@ export default function StateSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">States</h1>
-
+    <div className="space-y-4">
+      <h1 className="text-xl font-medium">States</h1>
+      <Separator />
       <div className="space-y-4">
         {stateGroups.map((group) => {
           const groupStates = states.filter(

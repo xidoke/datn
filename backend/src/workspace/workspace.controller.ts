@@ -112,8 +112,13 @@ export class WorkspaceController {
       }),
     )
     logo: Express.Multer.File,
+    @Req() req: RequestWithUser,
   ) {
-    return this.workspaceService.updateWorkspaceLogo(slug, logo);
+    return this.workspaceService.updateWorkspaceLogo(
+      req.user.userId,
+      slug,
+      logo,
+    );
   }
 
   @Get(":slug/dashboard")

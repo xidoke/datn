@@ -25,7 +25,7 @@ export default function Column({ column, onIssueClick }: ColumnProps) {
     <Card
       className={cn(
         "flex h-full flex-col bg-muted/50 transition-all duration-200",
-        collapsed ? "w-10 min-w-[2.5rem]" : "w-[300px]",
+        collapsed ? "w-10 min-w-[2.5rem]" : "min-w-[300px]",
       )}
     >
       <div
@@ -87,7 +87,7 @@ export default function Column({ column, onIssueClick }: ColumnProps) {
             <div
               ref={provided.innerRef}
               {...provided.droppableProps}
-              className="scrollbar-thumb-primary-500 scrollbar-track-primary-200 flex-1 space-y-2 overflow-y-auto px-1 scrollbar-none"
+              className="scrollbar-thumb-current/30 flex-1 space-y-2 overflow-y-auto px-1 scrollbar-track-background"
             >
               {column.issues
                 .sort(

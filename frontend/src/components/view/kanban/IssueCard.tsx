@@ -29,12 +29,13 @@ interface IssueCardProps {
   onClick: () => void;
   isSelected?: boolean;
 }
+const isOverdue = (dueDate: string | undefined) => {
+  if (!dueDate) return false; // Nếu không có ngày kết thúc, không cần kiểm tra
+  const now = new Date();
+  return new Date(dueDate) < now; // Kiểm tra nếu quá hạn
+};
 
-export default function IssueCard({
-  issue,
-  index,
-  onClick,
-}: IssueCardProps) {
+export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
   const { updateIssue } = useIssueStore();
 
   const { workspaceSlug, projectId } = useParams();
@@ -142,6 +143,7 @@ export default function IssueCard({
                 <DatePicker
                   date={startDate}
                   Icon={CalendarCheck2}
+                  clearIconClassName="ml-1"
                   onDateChange={(date) => {
                     updateIssue(
                       workspaceSlug as string,
@@ -159,6 +161,7 @@ export default function IssueCard({
                 <DatePicker
                   date={dueDate}
                   Icon={CalendarClock}
+                  clearIconClassName="ml-1"
                   onDateChange={(date) => {
                     updateIssue(
                       workspaceSlug as string,
@@ -172,6 +175,11 @@ export default function IssueCard({
                   minDate={issue.startDate}
                   size="verySmall"
                   // placeholder="due date"
+                  className={
+                    isOverdue(dueDate) && issue.state.group !== "completed"
+                      ? "text-destructive"
+                      : ""
+                  }
                 />
                 {/* cycle */}
                 <CycleDropdown

@@ -109,7 +109,7 @@ export default function GeneralSettingsPage() {
   if (!currentWorkspace) return null;
 
   return (
-    <div className="w-full space-y-6 overflow-y-auto pr-4 md:pr-9">
+    <div className="w-full space-y-6 overflow-y-auto pr-4 *:min-w-[300px] md:pr-9">
       <Card>
         <CardHeader>
           <CardTitle>Workspace Logo</CardTitle>

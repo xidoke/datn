@@ -11,7 +11,7 @@ export class IssueService extends APIService {
     return this.get<{ issues: Issue[], pagination: any}>(`workspaces/${workspaceSlug}/projects/${projectId}/issues`, params).then(
       (response) => response.data.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
   });
   }
 
@@ -19,7 +19,7 @@ export class IssueService extends APIService {
     return this.post<Issue>(`workspaces/${workspaceSlug}/projects/${projectId}/issues`, issueData).then(
       (response) => response.data.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
     });
   }
 
@@ -27,7 +27,7 @@ export class IssueService extends APIService {
     return this.patch<Issue>(`workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`, issueData).then(
       (response) => response.data.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
     });
   }
 
@@ -35,7 +35,7 @@ export class IssueService extends APIService {
     return this.delete<void>(`workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`).then(
       (response) => response.data.data
     ).catch((error) => {
-      throw error?.response.data
+      throw error?.response?.data
     });
   }
 }
