@@ -11,12 +11,12 @@ const CreatedIssues = ({
 }: {
   isLoading: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any; // TODO: fix this
+  data: any;
 }) => {
   return (
     <Card className="p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Last created by you</h2>
+        <h2 className="text-xl font-semibold">Last issues created</h2>
       </div>
 
       <Tabs defaultValue="pending">

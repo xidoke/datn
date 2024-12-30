@@ -1,7 +1,7 @@
 "use client";
-import { Home, Settings, StickyNote } from "lucide-react";
-import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
+import { Briefcase, Home, Inbox, Settings, Users } from "lucide-react";
+import { NavMain } from "@/components/sidebar/nav-main";
+import { NavSecondary } from "@/components/sidebar/nav-secondary";
 import { WorkspaceSwitcher } from "@/components/workspaces/workspace-switcher";
 import {
   Sidebar,
@@ -16,8 +16,8 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import UserSidebar from "../user-sidebar-footer";
-import { NavProjects } from "../nav-projects";
+import UserSidebar from "./user-sidebar-footer";
+import { NavProjects } from "./nav-projects";
 import { ModeToggle } from "../mode-toggle";
 
 const data = {
@@ -26,13 +26,21 @@ const data = {
       title: "Home",
       url: "",
       icon: Home,
-      // isActive: true,
+    },
+    {
+      title: "Team",
+      url: "team",
+      icon: Users,
+    },
+    {
+      title: "Inbox",
+      url: "inbox",
+      icon: Inbox,
     },
     {
       title: "Projects",
       url: "projects",
-      icon: StickyNote,
-      // isActive: true,
+      icon: Briefcase,
     },
   ],
 };

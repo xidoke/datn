@@ -5,13 +5,15 @@ import Link from "next/link";
 import { Skeleton } from "../ui/skeleton";
 import { Card } from "../ui/card";
 import { CalendarIcon } from "lucide-react";
+import { Issue, TIssuePriorities } from "@/types";
 
 const AssignedIssues = ({
   isLoading,
   data,
 }: {
   isLoading: boolean;
-  data: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any; //TODO: fix this
 }) => {
   return (
     <Card className="p-6">
@@ -31,8 +33,8 @@ const AssignedIssues = ({
                   .fill(0)
                   .map((_, i) => <Skeleton key={i} className="h-16 w-full" />)
               : data?.recentAssignedIssues
-                  .filter((issue) => issue.state.group !== "completed")
-                  .map((issue) => (
+                  .filter((issue: Issue) => issue.state.group !== "completed")
+                  .map((issue: Issue) => (
                     <div
                       key={issue.id}
                       className="flex items-center justify-between rounded-lg border p-3"
@@ -44,12 +46,16 @@ const AssignedIssues = ({
                           <span className="text-muted-foreground">
                             {issue.project.token}-{issue.sequenceNumber}
                           </span>
-                          <span>{issue.name}</span>
+                          <span>{issue.title}</span>
                         </div>
                       </Link>
 
                       <div className="flex items-center gap-4">
-                        <PriorityIcon priority={issue?.priority?.toString()} />
+                        <PriorityIcon
+                          priority={
+                            issue?.priority?.toString() as TIssuePriorities
+                          }
+                        />
                         {issue.dueDate && (
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <CalendarIcon className="h-4 w-4" />

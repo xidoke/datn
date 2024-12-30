@@ -47,6 +47,14 @@ export class WorkspaceService extends APIService {
       });
   }
 
+  async getWorkspaceMemberDashboard(workspaceSlug: string, userId: string) {
+    return this.get(`/workspaces/${workspaceSlug}/dashboard/${userId}`)
+      .then((response) => response?.data.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
   async createWorkspace(data: Partial<Workspace>): Promise<Workspace> {
     return this.post<Workspace>("/workspaces", data)
       .then((response) => response?.data.data)

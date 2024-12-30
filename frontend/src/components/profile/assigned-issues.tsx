@@ -1,22 +1,24 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { PriorityIcon } from "../icons/priority-icon";
 import Link from "next/link";
 import { Skeleton } from "../ui/skeleton";
 import { Card } from "../ui/card";
+import { CalendarIcon } from "lucide-react";
 import { Issue, TIssuePriorities } from "@/types";
 
-const CreatedIssues = ({
+const AssignedIssues = ({
   isLoading,
   data,
 }: {
   isLoading: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any; // TODO: fix this
+  data: any;
 }) => {
   return (
     <Card className="p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Last created by you</h2>
+        <h2 className="text-xl font-semibold">Last issues assigned</h2>
       </div>
 
       <Tabs defaultValue="pending">
@@ -30,7 +32,7 @@ const CreatedIssues = ({
               ? Array(3)
                   .fill(0)
                   .map((_, i) => <Skeleton key={i} className="h-16 w-full" />)
-              : data?.recentCreatedIssues
+              : data?.recentAssignedIssues
                   .filter((issue: Issue) => issue.state.group !== "completed")
                   .map((issue: Issue) => (
                     <div
@@ -54,6 +56,12 @@ const CreatedIssues = ({
                             issue?.priority?.toString() as TIssuePriorities
                           }
                         />
+                        {issue.dueDate && (
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <CalendarIcon className="h-4 w-4" />
+                            {new Date(issue.dueDate).toLocaleDateString()}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -67,4 +75,4 @@ const CreatedIssues = ({
   );
 };
 
-export default CreatedIssues;
+export default AssignedIssues;

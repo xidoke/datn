@@ -1,4 +1,4 @@
-import { AppSidebar } from "@/components/workspaces/app-sidebar";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ReactNode } from "react";
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";

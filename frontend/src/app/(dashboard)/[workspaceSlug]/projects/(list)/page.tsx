@@ -1,29 +1,28 @@
-"use client";
+"use client"
+import ProjectCard from "@/components/projects/project-card";
 import { useProject } from "@/stores/projectStore";
-import { ProjectCard } from "@/components/projects/project-card";
 import { useParams } from "next/navigation";
-import { ContentWrapper } from "@/components/content-wrapper";
-
-const ListProjectPage = () => {
+import React from "react";
+ 
+const ProjectsList = () => {
   const { projects } = useProject();
   const params = useParams();
+
   return (
-    <>
-      <ContentWrapper>
-        <div className="ml-4 mt-4 flex flex-row flex-wrap gap-4">
-          {projects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              id={project.id}
-              name={project.name}
-              identifier={"HElLO"} // TODO: Fix this
-              createdAt={project.createdAt}
-              workspaceSlug={params.workspaceSlug as string}
-            />
-          ))}
-        </div>
-      </ContentWrapper>
-    </>
+    <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
+      {projects.map((project) => (
+        <ProjectCard
+          key={project.id}
+          id={project.id}
+          name={project.name}
+          token={project.token|| "N/A"}
+          description={project.description || "No description provided"}
+          createdAt={project.createdAt}
+          workspaceSlug={params.workspaceSlug as string}
+        />
+      ))}
+    </div>
   );
 };
-export default ListProjectPage;
+
+export default ProjectsList;

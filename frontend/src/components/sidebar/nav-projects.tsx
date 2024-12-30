@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import Link from "next/link";
@@ -35,7 +36,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useReducer } from "react";
-import { CreateProjectDialog } from "./projects/create-project-dialog";
+import { CreateProjectDialog } from "../projects/create-project-dialog";
 
 const projectSubItems = [
   { name: "Issues", icon: CheckSquare2, href: "issues" },
@@ -180,7 +181,7 @@ export function NavProjects() {
                           >
                             <Link
                               href={`/${workspaceSlug}/projects/${project.id}/${item.href}`}
-                              className="flex items-center gap-2"
+                              className="flex items-center gap-2 pl-4"
                             >
                               <item.icon className="h-4 w-4" />
                               <span>{item.name}</span>

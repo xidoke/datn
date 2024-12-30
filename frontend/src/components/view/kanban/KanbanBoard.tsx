@@ -184,14 +184,14 @@ export default function KanbanBoard({
           />
           <DatePicker
             date={startDate}
-            onDateChange={(date) => setFilter({ startDate: date })}
+            onDateChange={(date) => setFilter({ startDate: date || undefined })}
             placeholder="Start Date"
             Icon={CalendarCheck2}
             tooltipHeading="Filter Start Date"
           />
           <DatePicker
             date={dueDate}
-            onDateChange={(date) => setFilter({ dueDate: date })}
+            onDateChange={(date) => setFilter({ dueDate: date || undefined })}
             placeholder="Due Date"
             Icon={CalendarClock}
             tooltipHeading="Filter Due Date"

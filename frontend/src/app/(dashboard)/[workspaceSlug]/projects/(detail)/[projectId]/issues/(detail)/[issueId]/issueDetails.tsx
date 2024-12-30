@@ -153,7 +153,7 @@ export default function IssueDetail({
           <DatePicker
             date={issue.startDate}
             Icon={CalendarCheck2}
-            onDateChange={(date) => handleUpdateIssue({ startDate: date })}
+            onDateChange={(date) => handleUpdateIssue({ startDate: date || undefined })}
             maxDate={issue.dueDate}
           />
         </div>
@@ -163,7 +163,7 @@ export default function IssueDetail({
           <DatePicker
             date={issue.dueDate}
             Icon={CalendarClock}
-            onDateChange={(date) => handleUpdateIssue({ dueDate: date })}
+            onDateChange={(date) => handleUpdateIssue({ dueDate: date || undefined })}
             minDate={issue.startDate}
           />
         </div>
