@@ -9,10 +9,9 @@ const nextConfig = {
         protocol: "https",
         hostname: "xidoke.id.vn",
         port: "443",
-        pathname: "**",
+        pathname: "/uploads/**",
       },
     ],
-
   },
 
   redirects: async () => {
