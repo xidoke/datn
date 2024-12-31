@@ -17,10 +17,10 @@ import { Tooltip } from "./tooltip-plane";
 interface DatePickerProps {
   className?: string;
   clearIconClassName?: string;
-  date: string | undefined;
+  date: string | undefined | null;
   onDateChange: (date: string | undefined | null) => void;
-  minDate?: string;
-  maxDate?: string;
+  minDate?: string | null;
+  maxDate?: string | null;
   isClearable?: boolean;
   disabled?: boolean;
   placeholder?: string;

@@ -119,7 +119,7 @@ const UserInvitationsPage = () => {
         ) : invitations ? (
           invitations.length > 0 ? (
             <div className="space-y-8">
-              <h1 className="text-2xl font-semibold">Join a workspace</h1>
+              <h1 className="text-2xl font-semibold">Invitations</h1>
               <div className="space-y-4">
                 {invitations.map((invitation) => (
                   <div

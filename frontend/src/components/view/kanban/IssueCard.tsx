@@ -154,6 +154,7 @@ export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
                       },
                     );
                   }}
+                  className="h-5"
                   maxDate={issue.dueDate}
                   size="verySmall"
                   // placeholder="start date"
@@ -177,8 +178,8 @@ export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
                   // placeholder="due date"
                   className={
                     isOverdue(dueDate) && issue.state.group !== "completed"
-                      ? "text-destructive"
-                      : ""
+                      ? "h-5 text-destructive"
+                      : "h-5"
                   }
                 />
                 {/* cycle */}
@@ -193,7 +194,7 @@ export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
                       { cycleId: value },
                     );
                   }}
-                  size="sm"
+                  size="icon"
                 />
                 <AssigneeDropdown
                   size="icon"

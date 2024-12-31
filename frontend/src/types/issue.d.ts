@@ -38,11 +38,11 @@ interface Issue {
   labelIds: string[];
   labels: Label[];
   priority: number;
-  startDate?: string;
-  dueDate?: string;
+  startDate?: string | null;
+  dueDate?: stringv | null;
   createdAt: string;
   updatedAt: string;
-  cycleId: string;
+  cycleId?: string | null;
   cycle: ICycle;
 }
 

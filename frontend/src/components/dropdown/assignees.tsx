@@ -125,7 +125,7 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
       case "icon":
         return (
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
             className={cn(
               "h-5 w-5 p-1",
@@ -160,7 +160,7 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
       case "sm":
         return (
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             className={cn(
               "h-auto min-h-[28px] p-1 hover:bg-background",
@@ -189,7 +189,7 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
       default:
         return (
           <Button
-            variant="outline"
+            variant="ghost"
             size="default"
             className={cn(
               "h-auto min-h-[32px] p-1 hover:bg-background",

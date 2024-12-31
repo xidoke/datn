@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, MouseEvent, useEffect } from "react";
+import { FC, MouseEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, MoreHorizontal } from "lucide-react";
 import { generateQueryParams } from "@/helpers/router.helper";
@@ -55,6 +55,7 @@ export const CyclesListItem: FC<TCyclesListItem> = (props) => {
         description: "Cycle date range updated successfully",
         variant: "default",
       });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({
         title: "Error",
@@ -64,7 +65,6 @@ export const CyclesListItem: FC<TCyclesListItem> = (props) => {
     }
   };
   const cycleDetails = getCycleById(cycleId);
-
 
   // Fetch cycle progress
   const { data } = useSWR("WORKSPACE_CYCLES_PROGRESS_" + cycleId, () =>
@@ -90,7 +90,7 @@ export const CyclesListItem: FC<TCyclesListItem> = (props) => {
           <span className="flex flex-shrink-0 items-center">
             <CircularProgressIndicator
               size={30}
-              percentage={progress}
+              percentage={Math.round(progress)}
               strokeWidth={3}
             >
               {isCompleted ? (
@@ -102,7 +102,7 @@ export const CyclesListItem: FC<TCyclesListItem> = (props) => {
               ) : progress === 100 ? (
                 <Check className="h-3 w-3 stroke-[2] text-primary" />
               ) : (
-                <span className="text-[9px] text-destructive">{`${progress}%`}</span>
+                <span className="text-[9px] text-destructive">{`${Math.round(progress)}%`}</span>
               )}
             </CircularProgressIndicator>
           </span>

@@ -19,7 +19,7 @@ export interface IssueUpdateDto {
   priority?: number;
   dueDate?: string | null;
   startDate?: string | null;
-  cycleId?: string;
+  cycleId?: string | null;
 }
 interface IssueStore {
   issues: Issue[];

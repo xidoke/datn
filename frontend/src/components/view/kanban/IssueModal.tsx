@@ -52,8 +52,6 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
       setLocalIssue({
         ...localIssue,
         ...updateData,
-        startDate: updateData.startDate ?? localIssue.startDate,
-        dueDate: updateData.dueDate ?? localIssue.dueDate,
       });
     };
 

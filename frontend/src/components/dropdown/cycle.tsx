@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, RefreshCcw } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -19,11 +19,11 @@ export interface CycleDropdownProps {
   button?: ReactNode;
   dropdownArrow?: boolean;
   dropdownArrowClassName?: string;
-  onChange: (val: string) => void;
+  onChange: (val: string | null) => void;
   projectId: string | undefined;
-  value?: string;
+  value?: string | null;
   className?: string;
-  size?: "sm" | "default" | "lg";
+  size?: "sm" | "default" | "lg" | "icon";
 }
 
 const CycleDropdown = ({
@@ -34,7 +34,7 @@ const CycleDropdown = ({
   projectId,
   value,
   className,
-  size = "sm",
+  size = "default",
 }: CycleDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -58,31 +58,95 @@ const CycleDropdown = ({
     if (projectId) fetchData();
   }, [projectId, workspaceSlug, fetchCycles, cycles]);
 
-  const handleSelect = (currentValue: string) => {
+  const handleSelect = (currentValue: string | null) => {
     onChange(currentValue);
     setIsOpen(false);
   };
 
   const renderButton = () => {
-    return (
-      <Button variant="outline" size={size} className={cn("p-1", className)}>
-        {selectedCycle ? (
-          <span className="flex items-center gap-1">
-            <span className="flex-grow truncate">{selectedCycle.title}</span>
-          </span>
-        ) : (
-          "Select a cycle..."
-        )}
-        {dropdownArrow && (
-          <ChevronsUpDown
-            className={cn(
-              "ml-2 h-4 w-4 shrink-0 opacity-50",
-              dropdownArrowClassName,
+    switch (size) {
+      case "default":
+        return (
+          <Button
+            variant="outline"
+            size={size}
+            className={cn("p-1", className)}
+          >
+            {selectedCycle ? (
+              <span className="flex items-center gap-1">
+                <span className="flex-grow truncate">
+                  {selectedCycle.title}
+                </span>
+              </span>
+            ) : (
+              "Select a cycle..."
             )}
-          />
-        )}
-      </Button>
-    );
+            {dropdownArrow && (
+              <ChevronsUpDown
+                className={cn(
+                  "ml-2 h-4 w-4 shrink-0 opacity-50",
+                  dropdownArrowClassName,
+                )}
+              />
+            )}
+          </Button>
+        );
+      case "sm":
+        return (
+          <Button
+            variant="outline"
+            size={size}
+            className={cn("p-1", className)}
+          >
+            {selectedCycle ? (
+              <span className="flex items-center gap-1">
+                <span className="flex-grow truncate">
+                  {selectedCycle.title}
+                </span>
+              </span>
+            ) : (
+              "Select a cycle..."
+            )}
+            {dropdownArrow && (
+              <ChevronsUpDown
+                className={cn(
+                  "ml-2 h-4 w-4 shrink-0 opacity-50",
+                  dropdownArrowClassName,
+                )}
+              />
+            )}
+          </Button>
+        );
+      case "icon":
+        return (
+          <Button
+            variant="outline"
+            size="icon"
+            className={cn("h-5 w-fit p-1", className)}
+          >
+            <div className="flex items-center">
+              <RefreshCcw className="h-3 w-3" />
+            </div>
+            {selectedCycle ? (
+              <span className="ml-1 flex items-center gap-1 text-xs font-light">
+                <span className="max-w-28 flex-grow truncate">
+                  {selectedCycle.title}
+                </span>
+              </span>
+            ) : (
+              ""
+            )}
+            {dropdownArrow && (
+              <ChevronsUpDown
+                className={cn(
+                  "ml-2 h-4 w-4 shrink-0 opacity-50",
+                  dropdownArrowClassName,
+                )}
+              />
+            )}
+          </Button>
+        );
+    }
   };
 
   return (
@@ -99,6 +163,19 @@ const CycleDropdown = ({
             <CommandList>
               <CommandEmpty>No cycle found.</CommandEmpty>
               <CommandGroup>
+                <CommandItem
+                  key="no_cycle"
+                  value="no_cycle"
+                  onSelect={() => handleSelect(null)}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-3 w-3",
+                      value === null ? "opacity-100" : "opacity-0",
+                    )}
+                  />
+                  <span className="flex-grow truncate text-xs">No cycle</span>
+                </CommandItem>
                 {cyclesList?.map((cycle) => (
                   <CommandItem
                     key={cycle.id}
