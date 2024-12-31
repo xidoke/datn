@@ -8,7 +8,7 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "xidoke.id.vn",
-        port: "443",
+        port: "",
         pathname: "/uploads/**",
       },
     ],
