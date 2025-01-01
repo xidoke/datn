@@ -129,6 +129,10 @@ export const useProjectStore = create<ProjectStore>()(
     }),
     {
       name: "project-storage",
+      partialize: (state) => ({
+        projects: state.projects,
+        currentProjectDetails: state.currentProjectDetails,
+      }),
     }
   )
 );

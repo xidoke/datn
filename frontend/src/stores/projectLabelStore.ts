@@ -93,6 +93,7 @@ export const useProjectLabelStore = create<ProjectLabelStore>()(
 
       {
         name: "project-label-storage",
+        partialize: (state) => ({ labels: state.labels }),
       }
     )
   )

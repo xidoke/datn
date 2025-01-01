@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/breadcrumb";
 
 // hooks
-import { useAppRouter } from "@/hooks/use-app-router";
 import { useProject, useProjectStore } from "@/stores/projectStore";
 import { useCycleStore } from "@/stores/cycleStore";
 import HeaderFilters from "@/components/issues/filter";

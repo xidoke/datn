@@ -29,14 +29,6 @@ interface CycleState {
   reset: () => void;
 }
 
-// Helper function to simulate API calls
-const simulateApiCall = <T>(data: T): Promise<T> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(data);
-    }, 100);
-  });
-};
 const cycleService = new CycleService();
 export const useCycleStore = create<CycleState>()(
   devtools(persist(
@@ -108,6 +100,7 @@ export const useCycleStore = create<CycleState>()(
           });
         } catch (error) {
           set({ error: 'Failed to fetch cycles', isLoading: false });
+          throw error;
         }
       },
 
@@ -120,7 +113,7 @@ export const useCycleStore = create<CycleState>()(
           return cycleProgress.progress;
         } catch (error) {
           set({ error: 'Failed to fetch cycle progress' });
-          return 0;
+          throw error;
         }
       },
 
@@ -173,6 +166,7 @@ export const useCycleStore = create<CycleState>()(
           });
         } catch (error) {
           set({ error: 'Failed to delete cycle', isLoading: false });
+          throw error;
         }
       },
 
@@ -193,7 +187,14 @@ export const useCycleStore = create<CycleState>()(
         return Object.values(get().cycles).filter(filter);
       },
     })),
-    { name: 'cycle-store' }
+    { name: 'cycle-store',
+      partialize: (state) => ({
+          cycles: state.cycles,
+          activeCycleId: state.activeCycleId,
+          completedCycleIds: state.compeletedCycleIds,
+          upcomingCycleIds: state.upcomingCycleIds,
+        }),
+     }
   ), 
   )
 );

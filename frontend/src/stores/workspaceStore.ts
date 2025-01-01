@@ -143,6 +143,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
     }),
     {
       name: "workspace-storage",
+      partialize: (state) => ({
+        workspaces: state.workspaces,
+        totalCount: state.totalCount,
+      }),
     },
   ),
 );

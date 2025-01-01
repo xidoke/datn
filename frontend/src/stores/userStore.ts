@@ -116,6 +116,10 @@ export const useUserStore = create<UserStore>()(
     }),
     {
       name: "user-storage",
+      partialize: (state) => ({
+        data: state.data,
+        lastWorkspaceSlug: state.lastWorkspaceSlug,
+      }),
     },
   ),
 );

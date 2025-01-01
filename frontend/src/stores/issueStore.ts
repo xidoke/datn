@@ -45,8 +45,6 @@ const initialState  = {
     totalCount: 0,
     totalPages: 0,
   },
-  filters: {
-  },
   groupBy: null,
   subGroupBy: null,
 };
@@ -63,6 +61,7 @@ const useIssueStore = create<IssueStore>()(
       fetchIssues: async (workspaceSlug, projectId, page = 1, pageSize = 100) => {
         set({ isLoading: true, error: null });
         try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const issues : { issues: Issue[], pagination: any} = await issueService.fetchIssues(workspaceSlug, projectId, {
               page,
               pageSize,
@@ -74,6 +73,7 @@ const useIssueStore = create<IssueStore>()(
           });
         } catch (error) {
           set({ error: 'Failed to fetch issues', isLoading: false });
+          throw error;
         }
       },
 
@@ -122,7 +122,12 @@ const useIssueStore = create<IssueStore>()(
         }
       },
     }),
-    { name: 'issue-store' } 
+    { name: 'issue-store',
+      partialize: (state) => ({
+        issues: state.issues,
+        pagination: state.pagination,
+      }),
+     } 
   ))
 );
 
