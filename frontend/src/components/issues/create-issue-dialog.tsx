@@ -24,6 +24,7 @@ import { TIssuePriorities } from "@/types";
 import { LabelDropdown } from "../dropdown/label";
 import { AssigneeDropdown } from "../dropdown/assignees";
 import { DatePicker } from "../ui/date-picker";
+import { AIDescriptionPopover } from "../view/kanban/ai-description-popover";
 
 interface CreateIssueDialogProps {
   children?: React.ReactNode;
@@ -180,18 +181,27 @@ export function CreateIssueDialog({
 
           <div>
             <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-              placeholder="Enter issue description"
-              className="mt-1.5 h-32 resize-none"
-            />
+            <div className="relative">
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                placeholder="Enter issue description"
+                className="mt-1.5 h-32 resize-none pr-10"
+              />
+              <div className="absolute right-2 top-2">
+                <AIDescriptionPopover
+                  onDescriptionGenerated={(description) =>
+                    setFormData((prev) => ({ ...prev, description }))
+                  }
+                />
+              </div>
+            </div>
           </div>
 
           <hr />
@@ -231,13 +241,8 @@ export function CreateIssueDialog({
                 }
               />
             </div>
-
-
-
-
           </div>
 
- 
           <div />
 
           <div className="flex justify-end space-x-2 pt-4">

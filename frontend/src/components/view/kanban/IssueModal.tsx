@@ -1,11 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import {
-  Link2,
-  CalendarCheck2,
-  CalendarClock,
-} from "lucide-react";
+import { Link2, CalendarCheck2, CalendarClock } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -43,17 +39,17 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
   }, [issue]);
 
   const handleUpdateIssue = async (updateData: Partial<IssueUpdateDto>) => {
-      await updateIssue(
-        workspaceSlug as string,
-        projectId as string,
-        localIssue.id,
-        updateData,
-      );
-      setLocalIssue({
-        ...localIssue,
-        ...updateData,
-      });
-    };
+    await updateIssue(
+      workspaceSlug as string,
+      projectId as string,
+      localIssue.id,
+      updateData,
+    );
+    setLocalIssue({
+      ...localIssue,
+      ...updateData,
+    });
+  };
 
   return (
     <Sheet open={true} onOpenChange={onClose}>
