@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { Link2, CalendarCheck2, CalendarClock } from "lucide-react";
+import { CalendarCheck2, CalendarClock, Maximize2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -61,7 +61,7 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
               href={`/${workspaceSlug}/projects/${projectId}/issues/${issue.id}`}
             >
               <div className="flex items-center gap-2">
-                <Link2 size={16} />
+                <Maximize2 size={16}/>
                 <span className="text-xs text-muted-foreground">
                   {localIssue.fullIdentifier}
                 </span>
