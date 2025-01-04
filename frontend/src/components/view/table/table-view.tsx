@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { Issue, Label, State, TIssuePriorities } from "@/types";
 import { PriorityDropdown } from "@/components/dropdown/priority";
 import { StateDropdown } from "@/components/dropdown/state";
@@ -10,7 +10,12 @@ import useIssueStore from "@/stores/issueStore";
 import { useParams } from "next/navigation";
 import { CycleDropdown } from "@/components/dropdown/cycle";
 import { DatePicker } from "@/components/ui/date-picker";
-import { CalendarCheck2, CalendarClock } from "lucide-react";
+import { CalendarCheck2, CalendarClock, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import FilterDropdown from "@/components/dropdown/filter";
+import { useFilterStore } from "@/stores/filterStore";
+import PriorityMultiSelect from "@/components/dropdown/priority-multi-select";
+import IssueModal from "../kanban/IssueModal";
 
 interface TableViewProps {
   issues: Issue[];
@@ -21,9 +26,103 @@ interface TableViewProps {
 export default function TableView({ issues, states, labels }: TableViewProps) {
   const { updateIssue } = useIssueStore();
   const { workspaceSlug, projectId } = useParams();
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [search, setSearch] = useState("");
+  const { statusIds, labelIds, priorityIds, startDate, dueDate, setFilter } =
+    useFilterStore();
+
+  const filteredIssues = useMemo(() => {
+    return issues.filter((issue) => {
+      if (
+        statusIds.length > 0 &&
+        !statusIds.includes(issue.state?.id as string)
+      ) {
+        return false;
+      }
+      if (
+        labelIds.length > 0 &&
+        !issue.labels.some((label) => labelIds.includes(label.id))
+      ) {
+        return false;
+      }
+      if (
+        priorityIds.length > 0 &&
+        !priorityIds.includes(issue.priority.toString() as TIssuePriorities)
+      ) {
+        return false;
+      }
+      if (
+        startDate &&
+        issue.startDate &&
+        new Date(issue.startDate) < new Date(startDate)
+      ) {
+        return false;
+      }
+      if (
+        dueDate &&
+        issue.dueDate &&
+        new Date(issue.dueDate) > new Date(dueDate)
+      ) {
+        return false;
+      }
+      if (search && !issue.title.toLowerCase().includes(search.toLowerCase())) {
+        return false;
+      }
+      return true;
+    });
+  }, [issues, statusIds, labelIds, priorityIds, startDate, dueDate, search]);
+
+  const handleIssueClick = (issue: Issue) => {
+    setSelectedIssue(issue);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedIssue(null);
+  };
 
   return (
     <div className="flex h-full flex-col">
+      <div className="flex items-center justify-end gap-2 p-4">
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Input
+            className="w-64 pl-8 text-sm"
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <FilterDropdown
+          label="Status"
+          options={states}
+          selectedIds={statusIds}
+          onChange={(selected) => setFilter({ statusIds: selected })}
+        />
+        <FilterDropdown
+          label="Labels"
+          options={labels}
+          selectedIds={labelIds}
+          onChange={(selected) => setFilter({ labelIds: selected })}
+        />
+        <PriorityMultiSelect
+          selectedPriorities={priorityIds}
+          onChange={(selected) => setFilter({ priorityIds: selected })}
+        />
+        <DatePicker
+          date={startDate}
+          onDateChange={(date) => setFilter({ startDate: date || undefined })}
+          placeholder="Start Date"
+          Icon={CalendarCheck2}
+          tooltipHeading="Filter Start Date"
+        />
+        <DatePicker
+          date={dueDate}
+          onDateChange={(date) => setFilter({ dueDate: date || undefined })}
+          placeholder="Due Date"
+          Icon={CalendarClock}
+          tooltipHeading="Filter Due Date"
+        />
+      </div>
       <div className="flex-1 overflow-x-auto">
         <table className="w-full min-w-max border-collapse">
           <thead className="sticky top-0 z-20 bg-backdrop">
@@ -54,10 +153,16 @@ export default function TableView({ issues, states, labels }: TableViewProps) {
             </tr>
           </thead>
           <tbody>
-            {issues.map((issue) => (
-              <tr key={issue.id} className="group border-b *:bg-background *:border">
+            {filteredIssues.map((issue) => (
+              <tr
+                key={issue.id}
+                className="group cursor-pointer border-b *:border *:bg-background"
+              >
                 {/* Fixed columns */}
-                <td className="sticky left-0 z-10 border-r px-4 py-2">
+                <td
+                  className="sticky left-0 z-10 border-r px-4 py-2"
+                  onClick={() => handleIssueClick(issue)}
+                >
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">
                       {issue.fullIdentifier}
@@ -162,7 +267,6 @@ export default function TableView({ issues, states, labels }: TableViewProps) {
                     }}
                     maxDate={issue.dueDate}
                     size="verySmall"
-                    // placeholder="start date"
                   />
                 </td>
 
@@ -182,7 +286,6 @@ export default function TableView({ issues, states, labels }: TableViewProps) {
                     }}
                     minDate={issue.startDate}
                     size="verySmall"
-                    // placeholder="due date"
                   />
                 </td>
               </tr>
@@ -190,6 +293,9 @@ export default function TableView({ issues, states, labels }: TableViewProps) {
           </tbody>
         </table>
       </div>
+      {selectedIssue && (
+        <IssueModal issue={selectedIssue} onClose={handleCloseModal} />
+      )}
     </div>
   );
 }
