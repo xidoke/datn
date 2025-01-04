@@ -29,10 +29,11 @@ interface IssueCardProps {
   onClick: () => void;
   isSelected?: boolean;
 }
+
 const isOverdue = (dueDate: string | undefined) => {
-  if (!dueDate) return false; // Nếu không có ngày kết thúc, không cần kiểm tra
+  if (!dueDate) return false;
   const now = new Date();
-  return new Date(dueDate) < now; // Kiểm tra nếu quá hạn
+  return new Date(dueDate) < now;
 };
 
 export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
@@ -40,6 +41,7 @@ export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
 
   const { workspaceSlug, projectId } = useParams();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
+  const [isOpenEditDialog, setIsOpenEditDialog] = useState(false);
 
   const { id, fullIdentifier, title, assignees, labels, dueDate, startDate } =
     issue;
@@ -76,15 +78,13 @@ export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" onClick={handleInnerClick}>
-                    <DropdownMenuItem>
-                      <EditIssueDialog issue={issue} />
+                    <DropdownMenuItem
+                      onSelect={() => setIsOpenEditDialog(true)}
+                    >
+                      Edit
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setIsOpenDeleteDialog(true);
-                      }}
+                      onSelect={() => setIsOpenDeleteDialog(true)}
                     >
                       Delete
                     </DropdownMenuItem>
@@ -157,7 +157,6 @@ export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
                   className="h-5"
                   maxDate={issue.dueDate}
                   size="verySmall"
-                  // placeholder="start date"
                 />
                 <DatePicker
                   date={dueDate}
@@ -175,14 +174,12 @@ export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
                   }}
                   minDate={issue.startDate}
                   size="verySmall"
-                  // placeholder="due date"
                   className={
                     isOverdue(dueDate) && issue.state.group !== "completed"
                       ? "h-5 text-destructive"
                       : "h-5"
                   }
                 />
-                {/* cycle */}
                 <CycleDropdown
                   projectId={projectId as string}
                   value={issue.cycleId}
@@ -203,7 +200,6 @@ export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
                     (assignee) => assignee?.workspaceMember?.user?.id,
                   )}
                   onChange={async (values) => {
-                    console.log(values);
                     await updateIssue(
                       workspaceSlug as string,
                       projectId as string,
@@ -225,6 +221,11 @@ export default function IssueCard({ issue, index, onClick }: IssueCardProps) {
         projectId={projectId as string}
         isOpen={isOpenDeleteDialog}
         handleClose={() => setIsOpenDeleteDialog(false)}
+      />
+      <EditIssueDialog
+        issue={issue}
+        isOpen={isOpenEditDialog}
+        handleClose={() => setIsOpenEditDialog(false)}
       />
     </div>
   );
