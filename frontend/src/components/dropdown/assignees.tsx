@@ -160,7 +160,7 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
       case "sm":
         return (
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             className={cn(
               "h-auto min-h-[28px] p-1 hover:bg-background",

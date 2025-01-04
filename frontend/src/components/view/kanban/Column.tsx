@@ -25,7 +25,7 @@ export default function Column({ column, onIssueClick }: ColumnProps) {
     <Card
       className={cn(
         "flex h-full flex-col bg-muted/50 transition-all duration-200",
-        collapsed ? "w-10 min-w-[2.5rem]" : "min-w-[300px]",
+        collapsed ? "w-10 min-w-[2.5rem]" : "min-w-[300px] max-w-[350px]",
       )}
     >
       <div

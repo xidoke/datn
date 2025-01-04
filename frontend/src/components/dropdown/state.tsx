@@ -25,7 +25,7 @@ export interface StateDropdownProps extends TDropdownProps {
   projectId: string | undefined;
   showDefaultState?: boolean;
   value?: string;
-  size?: "icon" | "sm" | "md" | "lg";
+  size?: "icon" | "sm" | "default" | "lg";
 }
 
 const StateDropdown = (props: StateDropdownProps) => {
@@ -38,7 +38,7 @@ const StateDropdown = (props: StateDropdownProps) => {
     showDefaultState = false,
     value,
     className,
-    size = "sm",
+    size = "default",
   } = props;
 
   //   const [query, setQuery] = useState("");

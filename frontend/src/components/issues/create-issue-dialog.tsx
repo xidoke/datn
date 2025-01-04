@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { CalendarCheck2, CalendarClock, Plus } from "lucide-react";
+import { CalendarCheck2, CalendarClock, Plus } from 'lucide-react';
 import useIssueStore from "@/stores/issueStore";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import { LabelDropdown } from "../dropdown/label";
 import { AssigneeDropdown } from "../dropdown/assignees";
 import { DatePicker } from "../ui/date-picker";
 import { AIDescriptionPopover } from "../view/kanban/ai-description-popover";
+import { CycleDropdown } from "../dropdown/cycle";
 
 interface CreateIssueDialogProps {
   children?: React.ReactNode;
@@ -40,6 +41,7 @@ interface FormData {
   labelIds?: string[];
   assigneeIds?: string[];
   startDate?: string;
+  cycleId?: string;
 }
 
 export function CreateIssueDialog({
@@ -67,6 +69,7 @@ export function CreateIssueDialog({
     assigneeIds: [],
     startDate: undefined,
     dueDate: undefined,
+    cycleId: cycleId as string,
   });
 
   // Reset form data when dialog opens
@@ -81,9 +84,10 @@ export function CreateIssueDialog({
         assigneeIds: [],
         startDate: undefined,
         dueDate: undefined,
+        cycleId: cycleId as string,
       });
     }
-  }, [open, stateId, defaultState]);
+  }, [open, stateId, defaultState, cycleId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,6 +104,7 @@ export function CreateIssueDialog({
         assigneeIds,
         startDate,
         dueDate,
+        cycleId,
       } = formData;
 
       await createIssue(workspaceSlug, projectId, {
@@ -111,7 +116,7 @@ export function CreateIssueDialog({
         assigneeIds,
         startDate,
         dueDate,
-        cycleId: cycleId as string,
+        cycleId,
       });
       setOpen(false);
       setFormData({
@@ -123,8 +128,8 @@ export function CreateIssueDialog({
         assigneeIds: [],
         startDate: undefined,
         dueDate: undefined,
+        cycleId: cycleId as string,
       });
-      // toast hook
       toast({
         title: "Issue created",
         description: "Your issue has been created successfully.",
@@ -164,7 +169,7 @@ export function CreateIssueDialog({
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[650px]">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="title">Issue title</Label>
@@ -205,45 +210,86 @@ export function CreateIssueDialog({
           </div>
 
           <hr />
-          <div className="flex flex-wrap space-x-4">
-            <div>
-              <StateDropdown
-                value={formData.stateId}
-                projectId={projectId}
-                onChange={(value) =>
-                  setFormData((prev) => ({ ...prev, stateId: value }))
-                }
-              />
-            </div>
-            <div>
-              <PriorityDropdown
-                size="sm"
-                placeholder="Select priority"
-                value={formData.priority.toString() as TIssuePriorities}
-                onChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    priority: parseInt(value),
-                  }))
-                }
-              />
-            </div>
-            <div>
-              <LabelDropdown
-                placeHolder="Select labels"
-                projectId={projectId}
-                showCount={false}
-                maxDisplayedLabels={2}
-                size="default"
-                values={formData.labelIds ?? []}
-                onChange={(values) =>
-                  setFormData((prev) => ({ ...prev, labelIds: values }))
-                }
-              />
-            </div>
-          </div>
+          <div className="flex flex-wrap gap-4">
+            <StateDropdown
+              value={formData.stateId}
+              projectId={projectId}
+              onChange={(value) =>
+                setFormData((prev) => ({ ...prev, stateId: value }))
+              }
+              size="sm"
+            />
+            <PriorityDropdown
+              size="sm"
+              placeholder="Select priority"
+              value={formData.priority.toString() as TIssuePriorities}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  priority: parseInt(value),
+                }))
+              }
+            />
+            <LabelDropdown
+              placeHolder="Select labels"
+              projectId={projectId}
+              showCount={false}
+              maxDisplayedLabels={2}
+              size="sm"
+              values={formData.labelIds ?? []}
+              onChange={(values) =>
+                setFormData((prev) => ({ ...prev, labelIds: values }))
+              }
+            />
+            <AssigneeDropdown
+              size="sm"
+              projectId={projectId}
+              values={formData.assigneeIds ?? []}
+              onChange={(values) =>
+                setFormData((prev) => ({ ...prev, assigneeIds: values }))
+              }
+            />
+            <CycleDropdown
+              projectId={projectId}
+              value={formData.cycleId}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  cycleId: value || undefined,
+                }))
+              }
+              size="sm"
+            />
 
-          <div />
+            <DatePicker
+              date={formData.startDate}
+              Icon={CalendarCheck2}
+              clearIconClassName="ml-1"
+              onDateChange={(date) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  startDate: date || undefined,
+                }));
+              }}
+              maxDate={formData.dueDate}
+              size="sm"
+              placeholder="Start date"
+            />
+            <DatePicker
+              date={formData.dueDate}
+              Icon={CalendarClock}
+              clearIconClassName="ml-1"
+              onDateChange={(date) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  dueDate: date || undefined,
+                }));
+              }}
+              minDate={formData.startDate}
+              size="sm"
+              placeholder="Due date"
+            />
+          </div>
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button
@@ -262,3 +308,4 @@ export function CreateIssueDialog({
     </Dialog>
   );
 }
+

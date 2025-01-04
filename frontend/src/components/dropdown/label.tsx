@@ -42,7 +42,7 @@ const LabelDropdown = (props: LabelDropdownProps) => {
     values,
     showCount = false,
     maxDisplayedLabels = Infinity,
-    size = "sm",
+    size = "default",
     placeHolder = "Select labels",
   } = props;
 
