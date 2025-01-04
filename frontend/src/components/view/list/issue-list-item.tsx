@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Issue, TIssuePriorities } from "@/types";
@@ -20,6 +20,7 @@ import { StateDropdown } from "@/components/dropdown/state";
 import { CycleDropdown } from "@/components/dropdown/cycle";
 import useIssueStore from "@/stores/issueStore";
 import { CalendarCheck2, CalendarClock } from "lucide-react";
+import { DeleteIssueDialog } from "@/components/issues/delete-issue-dialog";
 
 interface IssueListItemProps {
   issue: Issue;
@@ -29,7 +30,8 @@ interface IssueListItemProps {
 export default function IssueListItem({ issue, onClick }: IssueListItemProps) {
   const { updateIssue } = useIssueStore();
   const { workspaceSlug, projectId } = useParams();
-
+  const [isOpenEditDialog, setIsOpenEditDialog] = useState(false);
+  const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
   const handleInnerClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
@@ -135,12 +137,14 @@ export default function IssueListItem({ issue, onClick }: IssueListItemProps) {
               },
             );
           }}
-          size="sm"
+          size="icon"
         />
         <AssigneeDropdown
           size="icon"
           projectId={projectId as string}
-          values={issue.assignees.map((assignee) => assignee.workspaceMember.user?.id)}
+          values={issue.assignees.map(
+            (assignee) => assignee.workspaceMember.user?.id,
+          )}
           onChange={async (values) => {
             await updateIssue(
               workspaceSlug as string,
@@ -162,12 +166,29 @@ export default function IssueListItem({ issue, onClick }: IssueListItemProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <EditIssueDialog issue={issue} />
+            <DropdownMenuItem onSelect={() => setIsOpenEditDialog(true)}>
+              Edit
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onSelect={() => setIsOpenDeleteDialog(true)}>
+              Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <DeleteIssueDialog
+        issue={issue}
+        workspaceSlug={workspaceSlug as string}
+        projectId={projectId as string}
+        isOpen={isOpenDeleteDialog}
+        handleClose={() => setIsOpenDeleteDialog(false)}
+      />
+      <EditIssueDialog
+        issue={issue}
+        isOpen={isOpenEditDialog}
+        handleClose={() => setIsOpenEditDialog(false)}
+      />
     </div>
   );
 }

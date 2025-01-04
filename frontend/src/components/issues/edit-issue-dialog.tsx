@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { CalendarCheck2, CalendarClock } from "lucide-react";
 import useIssueStore from "@/stores/issueStore";
 
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
