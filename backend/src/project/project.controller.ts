@@ -7,11 +7,9 @@ import {
   Param,
   Delete,
   UseGuards,
-  Req,
 } from "@nestjs/common";
 import { ProjectService } from "./project.service";
 import { CognitoAuthGuard } from "../auth/guards/cognito.guard";
-import { RequestWithUser } from "../user/interfaces/request.interface";
 import { CreateProjectDto } from "./dto/create-project.dto";
 import { WorkspacePermissionGuard } from "src/permission/workspace-permission.guard";
 import { WorkspacePermission } from "src/permission/permission.type";
@@ -27,24 +25,15 @@ export class ProjectController {
   @Permissions(WorkspacePermission.CREATE_PROJECT)
   create(
     @Param("workspaceSlug") workspaceSlug: string,
-    @Req() req: RequestWithUser,
     @Body() createProjectDto: CreateProjectDto,
   ) {
-    try {
-      return this.projectService.createProject(workspaceSlug, createProjectDto);
-    } catch (error) {
-      console.error("Failed to create project:", error);
-      throw error;
-    }
+    return this.projectService.createProject(workspaceSlug, createProjectDto);
   }
 
   @Get()
   @Permissions(WorkspacePermission.VIEW_PROJECT)
-  findAll(
-    @Param("workspaceSlug") workspaceSlug: string,
-    @Req() req: RequestWithUser,
-  ) {
-    return this.projectService.getProjects(workspaceSlug, req.user.userId);
+  findAll(@Param("workspaceSlug") workspaceSlug: string) {
+    return this.projectService.getProjects(workspaceSlug);
   }
 
   @Get(":id")
@@ -52,9 +41,8 @@ export class ProjectController {
   findOne(
     @Param("workspaceSlug") workspaceSlug: string,
     @Param("id") id: string,
-    @Req() req: RequestWithUser,
   ) {
-    return this.projectService.getProject(workspaceSlug, id, req.user.userId);
+    return this.projectService.getProject(workspaceSlug, id);
   }
 
   @Patch(":id")
@@ -62,13 +50,11 @@ export class ProjectController {
   update(
     @Param("workspaceSlug") workspaceSlug: string,
     @Param("id") id: string,
-    @Req() req: RequestWithUser,
     @Body() updateProjectDto: UpdateProjectDto,
   ) {
     return this.projectService.updateProject(
       workspaceSlug,
       id,
-      req.user.userId,
       updateProjectDto,
     );
   }
@@ -78,12 +64,7 @@ export class ProjectController {
   remove(
     @Param("workspaceSlug") workspaceSlug: string,
     @Param("id") id: string,
-    @Req() req: RequestWithUser,
   ) {
-    return this.projectService.deleteProject(
-      workspaceSlug,
-      id,
-      req.user.userId,
-    );
+    return this.projectService.deleteProject(id);
   }
 }

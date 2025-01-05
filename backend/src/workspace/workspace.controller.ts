@@ -66,16 +66,16 @@ export class WorkspaceController {
     return workspaceCreated;
   }
 
-  // Chỉ cho phép thành viên trong workspace mới có thể xem thông tin workspace
+  @Permissions(WorkspacePermission.VIEW_WORKSPACE)
   @Get(":slug")
   async getWorkspaceBySlug(
     @Param("slug") slug: string,
     @Req() req: RequestWithUser,
   ) {
+    // lấy user id để trả permission về
     return this.workspaceService.getWorkspace(slug, req.user.userId);
   }
 
-  // TODO: Hiện tại chỉ cho phép sửa name
   @Patch(":slug")
   @Permissions(WorkspacePermission.UPDATE_WORKSPACE)
   async updateWorkspace(
@@ -92,11 +92,8 @@ export class WorkspaceController {
 
   @Delete(":slug")
   @Permissions(WorkspacePermission.DELETE_WORKSPACE)
-  async deleteWorkspace(
-    @Param("slug") slug: string,
-    @Req() req: RequestWithUser,
-  ) {
-    return this.workspaceService.deleteWorkspace(req.user.userId, slug);
+  async deleteWorkspace(@Param("slug") slug: string) {
+    return this.workspaceService.deleteWorkspace(slug);
   }
 
   @Patch(":slug/logo")
@@ -122,6 +119,7 @@ export class WorkspaceController {
   }
 
   @Get(":slug/dashboard")
+  @Permissions(WorkspacePermission.VIEW_WORKSPACE)
   async getWorkspaceDashboard(
     @Param("slug") slug: string,
     @Req() req: RequestWithUser,
@@ -130,6 +128,7 @@ export class WorkspaceController {
   }
 
   @Get(":slug/dashboard/:userId")
+  @Permissions(WorkspacePermission.VIEW_WORKSPACE)
   async getWorkspaceMemberDashboard(
     @Param("slug") slug: string,
     @Param("userId") userId: string,

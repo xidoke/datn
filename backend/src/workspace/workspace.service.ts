@@ -160,17 +160,10 @@ export class WorkspaceService {
 
   async getWorkspace(slug: string, userId: string) {
     const workspace = await this.findBySlug(slug);
-    if (!workspace) {
-      throw new NotFoundException("Workspace not found");
-    }
 
     const member = await this.prisma.workspaceMember.findFirst({
-      where: { workspaceId: workspace.id, userId: userId },
+      where: { workspace: workspace, userId: userId },
     });
-
-    if (!member) {
-      throw new ForbiddenException("You don't have access to this workspace");
-    }
 
     return this.formatWorkspaceResponse(workspace, member.role);
   }
@@ -193,20 +186,9 @@ export class WorkspaceService {
   }
 
   async updateWorkspace(slug: string, userId: string, data: { name?: string }) {
-    const workspace = await this.prisma.workspace.findUnique({
-      where: { slug },
-      include: {
-        members: true,
-      },
+    const member = await this.prisma.workspaceMember.findFirst({
+      where: { workspace: { slug: slug }, userId },
     });
-
-    if (!workspace) {
-      throw new NotFoundException("Workspace not found");
-    }
-
-    // Check if user is owner or admin
-    console.log(workspace);
-    const member = workspace.members?.find((m) => m.userId === userId);
 
     const w = await this.prisma.workspace.update({
       where: { slug },
@@ -248,51 +230,9 @@ export class WorkspaceService {
     return this.formatWorkspaceResponse(w, member.role);
   }
 
-  async deleteWorkspace(userId: string, slug: string) {
-    const workspace = await this.prisma.workspace.findUnique({
-      where: { slug },
-    });
-
-    if (!workspace) {
-      throw new NotFoundException("Workspace not found");
-    }
-
-    // Only the owner can delete the workspace
-    if (workspace.ownerId !== userId) {
-      throw new BadRequestException(
-        "Only the workspace owner can delete the workspace",
-      );
-    }
-
-    // Use a transaction to ensure all operations are performed or none
-    return this.prisma.$transaction(async (prisma) => {
-      // Delete all workspace members
-      await prisma.workspaceMember.deleteMany({
-        where: { workspaceId: workspace.id },
-      });
-
-      // Get all project IDs associated with this workspace
-      const projectIds = await prisma.project.findMany({
-        where: { workspaceId: workspace.id },
-        select: { id: true },
-      });
-
-      // Delete all issues associated with this workspace's projects
-      await prisma.issue.deleteMany({
-        where: { projectId: { in: projectIds.map((p) => p.id) } },
-      });
-
-      // Delete all projects associated with this workspace
-      await prisma.project.deleteMany({
-        where: { workspaceId: workspace.id },
-      });
-
-      // Delete any other related records here...
-
-      // Finally, delete the workspace
-      return prisma.workspace.delete({
-        where: { id: workspace.id },
-      });
+  async deleteWorkspace(slug: string) {
+    return this.prisma.workspace.delete({
+      where: { slug: slug },
     });
   }
 
@@ -303,15 +243,11 @@ export class WorkspaceService {
   ) {
     const workspace = await this.prisma.workspace.findUnique({
       where: { slug },
-      include: {
-        members: true,
-      },
     });
-    if (!workspace) {
-      throw new NotFoundException("Workspace not found");
-    }
 
-    const member = workspace.members.find((m) => m.userId === userId);
+    const member = await this.prisma.workspaceMember.findFirst({
+      where: { workspace: { slug: slug }, userId: userId },
+    });
 
     // Delete old logo if it exists
     if (workspace.logoUrl) {
@@ -610,17 +546,6 @@ export class WorkspaceService {
 
   async leaveWorkspace(userId: string, slug: string) {
     const workspace = await this.findBySlug(slug);
-    if (!workspace) {
-      throw new NotFoundException("Workspace not found");
-    }
-
-    const member = await this.prisma.workspaceMember.findFirst({
-      where: { workspaceId: workspace.id, userId },
-    });
-
-    if (!member) {
-      throw new NotFoundException("You are not a member of this workspace");
-    }
 
     // Check if the user is the owner
     if (workspace.ownerId === userId) {
@@ -633,7 +558,14 @@ export class WorkspaceService {
       where: { id: userId },
       select: { email: true },
     });
-    await this.prisma.workspaceMember.delete({ where: { id: member.id } });
+    await this.prisma.workspaceMember.delete({
+      where: {
+        userId_workspaceId: {
+          workspaceId: workspace.id,
+          userId,
+        },
+      },
+    });
     await this.prisma.workspaceInvitation.delete({
       where: {
         email_workspaceId: {

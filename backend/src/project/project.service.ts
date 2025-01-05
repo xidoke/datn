@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateProjectDto } from "./dto/create-project.dto";
 import { Project } from "@prisma/client";
@@ -99,21 +95,7 @@ export class ProjectService {
     });
   }
 
-  async getProjects(workspaceSlug: string, userId: string) {
-    const workspace = await this.prisma.workspace.findUnique({
-      where: { slug: workspaceSlug },
-      include: { members: true },
-    });
-
-    if (!workspace) {
-      throw new NotFoundException("Workspace not found");
-    }
-
-    const member = workspace.members.find((m) => m.userId === userId);
-    if (!member) {
-      throw new BadRequestException("User is not a member of this workspace");
-    }
-
+  async getProjects(workspaceSlug: string) {
     return this.prisma.project.findMany({
       where: {
         workspace: { slug: workspaceSlug },
@@ -137,22 +119,7 @@ export class ProjectService {
     });
   }
 
-  async getProject(workspaceSlug: string, projectId: string, userId: string) {
-    const workspace = await this.prisma.workspace.findUnique({
-      where: { slug: workspaceSlug },
-      include: { members: true },
-    });
-
-    if (!workspace) {
-      throw new NotFoundException("Workspace not found");
-    }
-
-    const member = workspace.members.find((m) => m.userId === userId);
-
-    if (!member) {
-      throw new BadRequestException("User is not a member of this workspace");
-    }
-
+  async getProject(workspaceSlug: string, projectId: string) {
     const project = await this.prisma.project.findFirst({
       where: {
         id: projectId,
@@ -188,7 +155,6 @@ export class ProjectService {
   async updateProject(
     workspaceSlug: string,
     projectId: string,
-    userId: string,
     data: UpdateProjectDto,
   ) {
     const project = await this.prisma.project.findFirst({
@@ -227,36 +193,18 @@ export class ProjectService {
     });
   }
 
-  async deleteProject(
-    workspaceSlug: string,
-    projectId: string,
-    userId: string,
-  ) {
-    const project = await this.prisma.project.findFirst({
-      where: {
-        id: projectId,
-        workspace: { slug: workspaceSlug },
-      },
-      include: { workspace: true },
-    });
-
-    if (!project) {
-      throw new NotFoundException("Project not found");
+  async deleteProject(projectId: string) {
+    try {
+      return await this.prisma.project.delete({
+        where: {
+          id: projectId,
+        },
+      });
+    } catch (error) {
+      if (error.code === "P2025") {
+        throw new NotFoundException("Project not found");
+      }
+      throw error; // Re-throw các lỗi khác
     }
-
-    if (project.workspace.ownerId !== userId) {
-      throw new BadRequestException(
-        "Only workspace owners can delete projects",
-      );
-    }
-
-    // Delete associated states
-    await this.prisma.state.deleteMany({
-      where: { projectId: projectId },
-    });
-
-    return this.prisma.project.delete({
-      where: { id: projectId },
-    });
   }
 }

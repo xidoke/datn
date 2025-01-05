@@ -28,7 +28,7 @@ model FileAsset {
   deletedAt DateTime?
 
   workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   createdById String
   createdBy   User   @relation("CreatedAssets", fields: [createdById], references: [id])
@@ -81,7 +81,7 @@ model Workspace {
   ownerId     String
   logoUrl     String?
   FileAssets  FileAsset[]
-  projects    Project[]
+  projects    Project[]             
   invitations WorkspaceInvitation[]
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
@@ -96,7 +96,7 @@ model WorkspaceInvitation {
   role        WorkspaceRole @default(MEMBER) // You might want to use an enum here
   status      String // e.g., "PENDING", "ACCEPTED", "REJECTED"
   workspaceId String
-  workspace   Workspace     @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -150,7 +150,7 @@ model Project {
   name            String
   description     String?
   token           String      @db.VarChar(5)
-  workspace       Workspace   @relation(fields: [workspaceId], references: [id])
+  workspace       Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId     String
   issues          Issue[]
   states          State[]
