@@ -32,6 +32,7 @@ async function bootstrap() {
   const allowedOrigins = [
     "https://xidok.vercel.app", // Production
     "http://localhost:3000",  // Development
+    /^https:\/\/.*\.ngrok-free\.app$/, // Cho phép tất cả subdomain của ngrok-free.app
   ];
 
   app.enableCors({
