@@ -167,7 +167,7 @@ export class CognitoAuthGuard implements CanActivate {
     } catch {
       //  (refreshError)
       // console.error("Token refresh error:", refreshError);
-      // this.clearTokenCookies(response);
+      this.clearTokenCookies(response);
       throw new UnauthorizedException("Failed to refresh token");
     } finally {
       this.refreshTokenPromise = null;

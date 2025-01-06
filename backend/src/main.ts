@@ -1,5 +1,6 @@
 import { NestFactory, Reflector } from "@nestjs/core";
 import { AppModule } from "./app.module";
+import * as fs from "fs";
 import * as cookieParser from "cookie-parser";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { join } from "path";
@@ -7,14 +8,30 @@ import { BadRequestException, ValidationPipe } from "@nestjs/common";
 import { ResponseInterceptor } from "./common/response.interceptor";
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Đường dẫn tới chứng chỉ SSL
+
+  // const httpsOptions = {
+  //   key: fs.readFileSync("/home/ec2-user/certs/xidoke.id.vn/privkey.pem"), // Private key
+  //   cert: fs.readFileSync("/home/ec2-user/certs/xidoke.id.vn/fullchain.pem"), // Full chain certificate
+  // };
+
+  // Khởi tạo ứng dụng với HTTPS
+  const app = await NestFactory.create<NestExpressApplication>(AppModule
+  //   ,
+  //    {
+  //   httpsOptions,
+  // }
+);
+
+  // Cấu hình static assets
   app.useStaticAssets(join(__dirname, "../../uploads"), {
     prefix: "/uploads/",
   });
+
+  // CORS configuration
   const allowedOrigins = [
-    "https://xidok.vercel.app",
-    "http://localhost:3000",
-    /^https:\/\/.*\.ngrok-free\.app$/, // Cho phép tất cả subdomain của ngrok-free.app
+    "https://xidok.vercel.app", // Production
+    "http://localhost:3000",  // Development
   ];
 
   app.enableCors({
@@ -36,12 +53,14 @@ async function bootstrap() {
       "Content-Type",
       "Authorization",
       "X-Requested-With",
-      "ngrok-skip-browser-warning",
+      // "ngrok-skip-browser-warning",
     ],
   });
 
+  // Global Interceptor
   app.useGlobalInterceptors(new ResponseInterceptor(new Reflector()));
 
+  // Global Validation Pipe
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -61,8 +80,14 @@ async function bootstrap() {
     }),
   );
 
+  // Cookie Parser
   app.use(cookieParser());
+
+  // Lắng nghe trên HTTPS, cổng 443
+  // await app.listen(443);
+
   await app.listen(8000);
-  console.log("Server is running");
+  // console.log("HTTPS Server is running on port 443");
 }
+
 bootstrap();

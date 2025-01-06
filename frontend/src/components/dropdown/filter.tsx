@@ -46,7 +46,7 @@ const FilterDropdown: React.FC<FilterDropdownProps> = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[150px] justify-between"
+          className="w-[150px] justify-between text-muted-foreground font-normal"
         >
           {selectedIds.length > 0
             ? `${label}: ${selectedIds.length} selected`

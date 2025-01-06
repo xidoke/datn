@@ -31,7 +31,7 @@ export const DashBoardWorkspace = () => {
   const isLoading = !data && !error;
 
   return (
-    <div className="min-h-screen bg-background p-6 text-foreground">
+    <div className="min-h-screen bg-backdrop p-6 text-foreground">
       <Header formattedDate={formattedDate} />
       <Stats data={data} isLoading={isLoading} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

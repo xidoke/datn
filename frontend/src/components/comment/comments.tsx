@@ -94,7 +94,7 @@ export default function Comments({
         </span>
       </div>
 
-      <ScrollArea className="h-[500px] pr-4">
+      <ScrollArea className="h-full max-h-[500px] pr-4">
         <div className="flex flex-col gap-4">
           {comments.map((comment) => (
             <Card key={comment.id} className="relative">
