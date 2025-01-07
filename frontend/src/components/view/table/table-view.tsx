@@ -128,7 +128,7 @@ export default function TableView({ issues, states, labels }: TableViewProps) {
           <thead className="sticky top-0 z-20 bg-backdrop">
             <tr className="border-b *:px-4 *:py-3 *:text-center">
               {/* Fixed columns */}
-              <th className="sticky left-0 z-30 px-4 py-3 text-left">
+              <th className="sticky left-0 z-30 bg-backdrop px-4 py-3 text-left">
                 <div className="flex items-center gap-4">
                   <span className="text-sm font-medium">Issues</span>
                 </div>
