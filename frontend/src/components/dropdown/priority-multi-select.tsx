@@ -68,7 +68,7 @@ const PriorityMultiSelect: React.FC<PriorityMultiSelectProps> = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[150px] justify-between"
+          className="w-[150px] justify-between font-normal text-muted-foreground"
         >
           {selectedPriorities.length > 0
             ? `Priority: ${selectedPriorities.length} selected`

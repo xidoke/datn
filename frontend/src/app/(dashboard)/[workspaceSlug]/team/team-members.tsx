@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,12 +12,8 @@ export function TeamMembers({ workspaceSlug }: { workspaceSlug: string }) {
   const [searchQuery, setSearchQuery] = useState("");
   const {
     workspaceMemberMap,
-    fetchWorkspaceMembers,
   } = useMemberStore();
 
-  useEffect(() => {
-    fetchWorkspaceMembers(workspaceSlug);
-  }, [fetchWorkspaceMembers, workspaceSlug]);
 
   const members = Object.values(workspaceMemberMap[workspaceSlug] || {});
   const filteredMembers = members.filter(

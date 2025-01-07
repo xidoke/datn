@@ -59,7 +59,7 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
   const [assigneeLoader, setAssigneeLoader] = useState(false);
   const [assignees, setAssignees] = useState<WorkspaceMember[]>([]);
 
-  const { fetchWorkspaceMembers } = useMemberStore();
+  const { fetchWorkspaceMembers,  } = useMemberStore();
   const { workspaceSlug } = useParams();
 
   const onOpen = async () => {

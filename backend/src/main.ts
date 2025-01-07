@@ -16,12 +16,13 @@ async function bootstrap() {
   // };
 
   // Khởi tạo ứng dụng với HTTPS
-  const app = await NestFactory.create<NestExpressApplication>(AppModule
-  //   ,
-  //    {
-  //   httpsOptions,
-  // }
-);
+  const app = await NestFactory.create<NestExpressApplication>(
+    AppModule,
+    //   ,
+    //    {
+    //   httpsOptions,
+    // }
+  );
 
   // Cấu hình static assets
   app.useStaticAssets(join(__dirname, "../../uploads"), {
@@ -31,7 +32,7 @@ async function bootstrap() {
   // CORS configuration
   const allowedOrigins = [
     "https://xidok.vercel.app", // Production
-    "http://localhost:3000",  // Development
+    "http://localhost:3000", // Development
     /^https:\/\/.*\.ngrok-free\.app$/, // Cho phép tất cả subdomain của ngrok-free.app
   ];
 
@@ -54,7 +55,7 @@ async function bootstrap() {
       "Content-Type",
       "Authorization",
       "X-Requested-With",
-      // "ngrok-skip-browser-warning",
+      "ngrok-skip-browser-warning",
     ],
   });
 

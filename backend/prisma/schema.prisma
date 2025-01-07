@@ -185,6 +185,9 @@ model Issue {
   priority       Int             @default(0) // 0: None, 1: Low, 2: Medium, 3: High, 4: Urgent
   startDate      DateTime?
   dueDate        DateTime?
+  parent         Issue?          @relation("ParentChildIssues", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId       String?
+  subIssues      Issue[]         @relation("ParentChildIssues")
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
