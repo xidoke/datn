@@ -6,7 +6,7 @@ import { Search, CalendarCheck2, CalendarClock } from "lucide-react";
 import { AlignLeft, Clock, Circle, CheckCircle2, XCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Column from "./Column";
-import IssueModal from "./IssueModal";
+import IssueModal from "../IssueModal";
 import useIssueStore from "@/stores/issueStore";
 import { useProjectLabelStore } from "@/stores/projectLabelStore";
 import { useProjectStateStore } from "@/stores/projectStateStore";

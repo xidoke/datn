@@ -31,7 +31,7 @@ import { useFilterStore } from "@/stores/filterStore";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import FilterDropdown from "@/components/dropdown/filter";
-import IssueModal from "../kanban/IssueModal";
+import IssueModal from "../IssueModal";
 import { DatePicker } from "@/components/ui/date-picker";
 import PriorityMultiSelect from "@/components/dropdown/priority-multi-select";
 

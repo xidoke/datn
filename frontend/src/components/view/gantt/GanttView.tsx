@@ -20,7 +20,7 @@ import FilterDropdown from "@/components/dropdown/filter";
 import { useFilterStore } from "@/stores/filterStore";
 import PriorityMultiSelect from "@/components/dropdown/priority-multi-select";
 import { DatePicker } from "@/components/ui/date-picker";
-import IssueModal from "../kanban/IssueModal";
+import IssueModal from "../IssueModal";
 
 interface GanttViewProps {
   issues: Issue[];

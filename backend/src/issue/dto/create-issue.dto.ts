@@ -51,4 +51,8 @@ export class CreateIssueDto {
   @IsOptional()
   @IsUUID()
   cycleId?: string;
+
+  @IsUUID()
+  @IsOptional()
+  parentId?: string;
 }

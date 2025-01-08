@@ -59,13 +59,15 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
   const [assigneeLoader, setAssigneeLoader] = useState(false);
   const [assignees, setAssignees] = useState<WorkspaceMember[]>([]);
 
-  const { fetchWorkspaceMembers,  } = useMemberStore();
+  const { workspaceMemberMap, workspaceMemberIds } =
+    useMemberStore();
   const { workspaceSlug } = useParams();
 
   const onOpen = async () => {
     if (!assignees.length && workspaceSlug && projectId) {
       setAssigneeLoader(true);
-      const members = await fetchWorkspaceMembers(workspaceSlug as string);
+      const membersRecord = workspaceMemberMap[workspaceSlug as string];
+      const members = workspaceMemberIds.map((id) => membersRecord[id]);
       setAssignees(members);
       setAssigneeLoader(false);
     }

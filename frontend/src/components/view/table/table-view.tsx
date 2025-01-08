@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import FilterDropdown from "@/components/dropdown/filter";
 import { useFilterStore } from "@/stores/filterStore";
 import PriorityMultiSelect from "@/components/dropdown/priority-multi-select";
-import IssueModal from "../kanban/IssueModal";
+import IssueModal from "../IssueModal";
 
 interface TableViewProps {
   issues: Issue[];

@@ -25,6 +25,7 @@ interface Issue {
     name: string;
     token: string;
   };
+  parentId?: string | null;
   stateId: string;
   state: {
     id: string;

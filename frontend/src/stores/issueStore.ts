@@ -20,6 +20,7 @@ export interface IssueUpdateDto {
   dueDate?: string | null;
   startDate?: string | null;
   cycleId?: string | null;
+  parentId?: string | null;
 }
 interface IssueStore {
   issues: Issue[];
@@ -112,10 +113,16 @@ const useIssueStore = create<IssueStore>()(
         set({ isLoading: true, error: null });
         try {
           await issueService.deleteIssue(workspaceSlug, projectId, issueId);
-          set(state => ({
-            issues: state.issues.filter(issue => issue.id !== issueId),
-            isLoading: false
-          }));
+        set(state => {
+        const updatedIssues = state.issues?.filter(issue => 
+          issue.id !== issueId && issue.parentId !== issueId
+        ) || []; // Handle case where issues is null
+        return {
+          issues: updatedIssues,
+          isLoading: false
+        };
+        });
+
         } catch (error) {
           set({ error: 'Failed to delete issue', isLoading: false });
           throw error;

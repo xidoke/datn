@@ -20,6 +20,13 @@ import { LabelDropdown } from "@/components/dropdown/label";
 import { AssigneeDropdown } from "@/components/dropdown/assignees";
 import Link from "next/link";
 import Comments from "@/components/comment/comments";
+import { IssueDropdown } from "../dropdown/issue";
+import {
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+} from "@headlessui/react";
+import { SubIssuesList } from "./sub-issue-list";
 
 interface IssueModalProps {
   issue: Issue;
@@ -53,7 +60,7 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
 
   return (
     <Sheet open={true} onOpenChange={onClose}>
-      <SheetContent className="w-full sm:max-w-none md:w-[50%]">
+      <SheetContent className="z-50 w-full sm:max-w-none md:w-[50%]">
         <div className="flex h-full flex-col">
           <SheetHeader className="border-b px-6 py-4">
             {/* link to detail page */}
@@ -61,7 +68,7 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
               href={`/${workspaceSlug}/projects/${projectId}/issues/${issue.id}`}
             >
               <div className="flex items-center gap-2">
-                <Maximize2 size={16}/>
+                <Maximize2 size={16} />
                 <span className="text-xs text-muted-foreground">
                   {localIssue.fullIdentifier}
                 </span>
@@ -121,6 +128,10 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                 )}
               </div>
 
+              {/* Sub-issues */}
+              <div>
+                <SubIssuesList parentIssueId={localIssue.id} />
+              </div>
               {/* Properties */}
               <div className="space-y-4">
                 <h3 className="text-sm font-medium text-muted-foreground">
@@ -238,6 +249,22 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                       }}
                       values={localIssue.labels.map((label) => label.id)}
                       maxDisplayedLabels={2}
+                    />
+                  </div>
+
+                  {/* Parent */}
+                  <div className="flex items-center gap-4 overflow-y-auto">
+                    <span className="w-24 text-sm text-muted-foreground">
+                      Parent issue
+                    </span>
+
+                    <IssueDropdown
+                      size="sm"
+                      projectId={projectId as string}
+                      value={localIssue.parentId}
+                      onChange={async (value) => {
+                        await handleUpdateIssue({ parentId: value });
+                      }}
                     />
                   </div>
                 </div>
