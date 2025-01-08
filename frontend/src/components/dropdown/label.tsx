@@ -80,8 +80,10 @@ const LabelDropdown = (props: LabelDropdownProps) => {
     if (selectedLabels.length === 0) {
       return (
         <>
-          <Tag className="h-3 w-3" />
-          {placeHolder?? null}
+          <span className="text-xs text-muted-foreground">
+            <Tag className="mr-1 inline-block h-3 w-3" />
+            {placeHolder ?? null}
+          </span>
         </>
       );
     }
@@ -99,10 +101,7 @@ const LabelDropdown = (props: LabelDropdownProps) => {
     }
 
     return (
-      <div
-        className="flex flex-wrap items-center gap-1"
-        
-      >
+      <div className="flex flex-wrap items-center gap-1">
         {selectedLabels.map((label) => (
           <Badge
             key={label?.id}
@@ -131,7 +130,8 @@ const LabelDropdown = (props: LabelDropdownProps) => {
               "h-5 w-5 min-w-fit",
               // hide button ,just show badge when label is selected
               {
-                "w-fit h-fit border-none hover:bg-transparent": selectedLabels.length > 0,
+                "h-fit w-fit border-none hover:bg-transparent":
+                  selectedLabels.length > 0,
               },
             )}
           >

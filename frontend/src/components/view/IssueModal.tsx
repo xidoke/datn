@@ -204,6 +204,7 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                       Start date
                     </span>
                     <DatePicker
+                      size="sm"
                       date={localIssue.startDate}
                       Icon={CalendarCheck2}
                       onDateChange={(date) => {
@@ -218,6 +219,7 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                       Due date
                     </span>
                     <DatePicker
+                      size="sm"
                       date={localIssue.dueDate}
                       Icon={CalendarClock}
                       onDateChange={(date) => {
@@ -233,6 +235,7 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                       Labels
                     </span>
                     <LabelDropdown
+                      size="sm"
                       projectId={projectId as string}
                       placeHolder="Add labels"
                       onChange={async (values) => {

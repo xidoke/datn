@@ -20,12 +20,11 @@ export interface IssueDropdownProps extends TDropdownProps {
   button?: ReactNode;
   dropdownArrow?: boolean;
   dropdownArrowClassName?: string;
-  onChange: (val: string) => void;
+  onChange: (val: string|null) => void;
   projectId: string | undefined;
   value?: string | null;
   size?: "sm" | "default" | "lg";
 }
-
 const IssueDropdown = (props: IssueDropdownProps) => {
   const {
     button,
@@ -62,7 +61,7 @@ const IssueDropdown = (props: IssueDropdownProps) => {
   }, [projectId]);
 
   const handleSelect = (currentValue: string) => {
-    onChange(currentValue);
+    onChange(currentValue === "none" ? null : currentValue); // Xử lý "None"
     setIsOpen(false);
   };
 
@@ -132,6 +131,19 @@ const IssueDropdown = (props: IssueDropdownProps) => {
               <CommandList className="max-h-[250px]">
                 <CommandEmpty>No issue found.</CommandEmpty>
                 <CommandGroup>
+                  {/* Tùy chọn None */}
+                  <CommandItem value="none" onSelect={handleSelect}>
+                    <Check
+                      className={cn(
+                        "mr-2 h-3 w-3",
+                        value === null ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                    <div className="flex items-center gap-2">
+                      <span className="flex-grow truncate text-xs">None</span>
+                    </div>
+                  </CommandItem>
+                  {/* Hiển thị danh sách issues */}
                   {issues?.map((issue) => (
                     <CommandItem
                       key={issue.id}

@@ -34,39 +34,46 @@ export default function Column({ column, onIssueClick }: ColumnProps) {
           collapsed && "flex-col gap-4",
         )}
       >
-        <div className={cn("flex items-center gap-2", collapsed && "flex-col")}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 hover:bg-transparent"
-            onClick={() => toggleColumn(column.id)}
-          >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </Button>
-          {Icon && (
-            <Icon
-              className={cn("h-4 w-4", collapsed && "h-5 w-5")}
-              style={{ color: column.state.color }}
-            />
-          )}
-          {!collapsed && (
-            <>
-              <h2
-                className="text-sm font-medium"
-                style={{ color: column.state.color }}
+          {
+            <div
+              className={cn("flex items-center gap-2", collapsed && "flex-col")}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 hover:bg-transparent"
+                onClick={() => toggleColumn(column.id)}
               >
-                {column.state.name}
-              </h2>
-              <span className="text-xs font-medium text-gray-500">
-                {column.issues.length}
-              </span>
-            </>
-          )}
-        </div>
+                {collapsed ? (
+                  <ChevronRight className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+              <div
+                className={cn(
+                  "flex items-center gap-1",
+                  collapsed && "translate-y-8 rotate-90 whitespace-nowrap",
+                )}
+              >
+                {Icon && (
+                  <Icon
+                    className={cn("h-4 w-4", collapsed && "h-5 w-5")}
+                    style={{ color: column.state.color }}
+                  />
+                )}
+                <h2
+                  className="truncate text-sm font-medium"
+                  style={{ color: column.state.color }}
+                >
+                  {column.state.name}
+                </h2>
+                <span className="shrink-0 text-xs font-medium text-gray-500">
+                  {column.issues.length}
+                </span>
+              </div>
+            </div>
+          }
         {!collapsed && (
           <div className="flex items-center gap-1">
             <CreateIssueDialog stateId={column.state.id}>

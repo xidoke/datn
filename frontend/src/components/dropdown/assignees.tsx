@@ -59,8 +59,7 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
   const [assigneeLoader, setAssigneeLoader] = useState(false);
   const [assignees, setAssignees] = useState<WorkspaceMember[]>([]);
 
-  const { workspaceMemberMap, workspaceMemberIds } =
-    useMemberStore();
+  const { workspaceMemberMap, workspaceMemberIds } = useMemberStore();
   const { workspaceSlug } = useParams();
 
   const onOpen = async () => {
@@ -127,13 +126,13 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
       case "icon":
         return (
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             className={cn(
               "h-5 w-5 p-1",
               className,
               {
-                "ml-1": selectedAssignees.length > 0,
+                "ml-1 border-none": selectedAssignees.length > 0,
               },
               {
                 "ml-3": selectedAssignees.length > 1,
