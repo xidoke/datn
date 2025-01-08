@@ -156,7 +156,7 @@ export default function KanbanBoard({
     <div className="flex h-screen flex-col">
       <div className="flex items-center justify-end px-4 py-2">
         {/* filter */}
-        <div className="flex items-center gap-2 overflow-x-auto">
+        <div className="flex items-center gap-2 overflow-x-auto p-1">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
