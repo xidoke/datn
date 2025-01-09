@@ -6,7 +6,11 @@ import { useParams } from "next/navigation";
 
 const CycleListPage = () => {
   const { workspaceSlug, projectId } = useParams();
-  const { cycles, compeletedCycleIds, upcomingCycleIds } = useCycleStore();
+  const {
+    cycles,
+    completedCycleIds: compeletedCycleIds,
+    upcomingCycleIds,
+  } = useCycleStore();
   const cycleIds = Object.keys(cycles);
 
   return (

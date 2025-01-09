@@ -30,6 +30,7 @@ export default function TableView({ issues, states, labels }: TableViewProps) {
     priorityIds,
     startDate,
     dueDate,
+    cycleIds,
     setFilter,
     search,
   } = useFilterStore();
@@ -42,6 +43,11 @@ export default function TableView({ issues, states, labels }: TableViewProps) {
       ) {
         return false;
       }
+
+      if (cycleIds.length > 0 && !cycleIds.includes(issue.cycleId as string)) {
+        return false;
+      }
+
       if (
         labelIds.length > 0 &&
         !issue.labels.some((label) => labelIds.includes(label.id))
@@ -73,7 +79,7 @@ export default function TableView({ issues, states, labels }: TableViewProps) {
       }
       return true;
     });
-  }, [issues, statusIds, labelIds, priorityIds, startDate, dueDate, search]);
+  }, [issues, statusIds, labelIds, priorityIds, startDate, dueDate, search, cycleIds]);
 
   const handleIssueClick = (issue: Issue) => {
     setSelectedIssue(issue);

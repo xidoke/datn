@@ -31,6 +31,7 @@ export default function GanttView({ issues, states, labels }: GanttViewProps) {
     startDate,
     dueDate,
     search,
+    cycleIds,
     setFilter,
   } = useFilterStore();
 
@@ -48,6 +49,11 @@ export default function GanttView({ issues, states, labels }: GanttViewProps) {
       ) {
         return false;
       }
+
+      if (cycleIds.length > 0 && !cycleIds.includes(issue.cycleId as string)) {
+        return false;
+      }
+
       if (
         labelIds.length > 0 &&
         !issue.labels.some((label) => labelIds.includes(label.id))
@@ -79,7 +85,16 @@ export default function GanttView({ issues, states, labels }: GanttViewProps) {
       }
       return true;
     });
-  }, [issues, statusIds, labelIds, priorityIds, startDate, dueDate, search]);
+  }, [
+    issues,
+    statusIds,
+    labelIds,
+    priorityIds,
+    startDate,
+    dueDate,
+    search,
+    cycleIds,
+  ]);
 
   const handleFullscreen = () => {
     if (!document.fullscreenElement) {

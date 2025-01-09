@@ -16,10 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { getDay, getDaysInMonth, isSameDay } from "date-fns";
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { type ReactNode, createContext, useContext, useState } from "react";
 import { create } from "zustand";
@@ -450,14 +447,26 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   labels,
 }) => {
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
-  const { statusIds, labelIds, priorityIds, startDate, dueDate, setFilter, search } =
-    useFilterStore();
+  const {
+    statusIds,
+    labelIds,
+    priorityIds,
+    startDate,
+    dueDate,
+    setFilter,
+    search,
+    cycleIds,
+  } = useFilterStore();
 
   const issueAfterFilter = issues.filter((issue) => {
     if (
       statusIds.length > 0 &&
       !statusIds.includes(issue.state?.id as string)
     ) {
+      return false;
+    }
+
+    if (cycleIds.length > 0 && !cycleIds.includes(issue.cycleId as string)) {
       return false;
     }
 
@@ -491,10 +500,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       return false;
     }
 
-    return true;
-  });
-
-  const issueAfterSearchandFilter = issueAfterFilter.filter((issue) => {
     if (
       search.length > 0 &&
       !issue.title.toLowerCase().includes(search.toLowerCase())
@@ -512,8 +517,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     <CalendarProvider locale="en-US" className="flex h-screen flex-col">
       <div className="flex items-center justify-between px-4 py-2">
         <h1 className="text-2xl font-bold">Calendar View</h1>
-        <div className="flex items-center gap-2 overflow-x-auto">
-        </div>
+        <div className="flex items-center gap-2 overflow-x-auto"></div>
       </div>
       <CalendarDate>
         <CalendarDatePicker>
@@ -523,7 +527,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         <CalendarDatePagination />
       </CalendarDate>
       <CalendarHeader />
-      <CalendarBody issues={issueAfterSearchandFilter}>
+      <CalendarBody issues={issueAfterFilter}>
         {({ issue }) => (
           <CalendarItem
             key={issue.id}

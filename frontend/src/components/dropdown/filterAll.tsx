@@ -24,29 +24,47 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { useFilterStore } from "@/stores/filterStore";
-import { TIssuePriorities } from "@/types";
+import { Label, State, TIssuePriorities } from "@/types";
 import { ISSUE_PRIORITIES } from "@/helpers/constants/issue";
-import { PriorityIcon, StateGroupIcon } from "../icons";
+import { CycleGroupIcon, PriorityIcon, StateGroupIcon } from "../icons";
 import { useProjectStateStore } from "@/stores/projectStateStore";
 import { useProjectLabelStore } from "@/stores/projectLabelStore";
 import { TStateGroups } from "../icons/state/helper";
 import { DatePicker } from "../ui/date-picker";
+import { useCycleStore } from "@/stores/cycleStore";
+import { ICycle } from "@/types/cycle";
 
 interface FilterDropdownProps {}
 
 const FilterAllDropdown: React.FC<FilterDropdownProps> = () => {
-  const { priorityIds, statusIds, labelIds, startDate, dueDate, setFilter } =
-    useFilterStore();
+  const {
+    priorityIds,
+    statusIds,
+    labelIds,
+    cycleIds,
+    startDate,
+    dueDate,
+    setFilter,
+  } = useFilterStore();
   const { states } = useProjectStateStore();
   const { labels } = useProjectLabelStore();
+  const {
+    cycles,
+    activeCycleId,
+    completedCycleIds: compeletedCycleIds,
+    upcomingCycleIds,
+  } = useCycleStore();
+  // convert cycles from object to array
+  const cyclesArray = Object.values(cycles);
 
   const [open, setOpen] = useState(false);
   const [isPriorityOpen, setIsPriorityOpen] = useState(true);
   const [isStatusOpen, setIsStatusOpen] = useState(true);
   const [isLabelOpen, setIsLabelOpen] = useState(true);
+  const [isCycleOpen, setIsCycleOpen] = useState(true);
 
   const handleSelect = (
-    key: "priorityIds" | "statusIds" | "labelIds",
+    key: "priorityIds" | "statusIds" | "labelIds" | "cycleIds",
     id: string,
   ) => {
     const currentIds = useFilterStore.getState()[key] as string[];
@@ -61,9 +79,13 @@ const FilterAllDropdown: React.FC<FilterDropdownProps> = () => {
     title: string,
     isOpen: boolean,
     setIsOpen: React.Dispatch<React.SetStateAction<boolean>>,
-    items: { id: string; name: string; color?: string; group?: string }[],
+    items:
+      | ICycle[]
+      | State[]
+      | Label[]
+      | { id: string; name: string; color?: string; group?: string }[],
     selectedIds: string[],
-    storeKey: "priorityIds" | "statusIds" | "labelIds",
+    storeKey: "priorityIds" | "statusIds" | "labelIds" | "cycleIds",
   ) => {
     const [showAll, setShowAll] = useState(false); // Trạng thái để theo dõi "View all"
     return (
@@ -86,11 +108,11 @@ const FilterAllDropdown: React.FC<FilterDropdownProps> = () => {
             </div>
           }
         >
-          <div className={cn("pl-4 *:", !isOpen && "hidden")}>
+          <div className={cn("*: pl-4", !isOpen && "hidden")}>
             {items.map((item, index) => (
               <CommandItem
                 key={item.id}
-                value={item.name}
+                value={"name" in item ? item.name : item.title}
                 onSelect={() => handleSelect(storeKey, item.id)}
               >
                 <Check
@@ -106,19 +128,47 @@ const FilterAllDropdown: React.FC<FilterDropdownProps> = () => {
                   {storeKey === "labelIds" && (
                     <div
                       className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: item.color }}
+                      style={{
+                        backgroundColor:
+                          "color" in item ? item.color : "transparent",
+                      }}
                     />
                   )}
                   {storeKey === "statusIds" && (
                     <StateGroupIcon
-                      stateGroup={item.group as TStateGroups}
-                      color={item.color}
+                      stateGroup={
+                        "group" in item
+                          ? (item.group as TStateGroups)
+                          : "backlog"
+                      }
+                      color={"color" in item ? item.color : undefined}
                       className="h-3 w-3"
                     />
                   )}
-                  <span>
-                    {index} {item.name}
-                  </span>
+                  {storeKey === "cycleIds" && (
+                    <>
+                      {upcomingCycleIds.includes(item.id) && (
+                        <CycleGroupIcon
+                          cycleGroup={"upcoming"}
+                          className="h-5 w-5"
+                        />
+                      )}
+                      {activeCycleId === item.id && (
+                        <CycleGroupIcon
+                          cycleGroup={"current"}
+                          className="h-5 w-5"
+                        />
+                      )}
+
+                      {compeletedCycleIds.includes(item.id) && (
+                        <CycleGroupIcon
+                          cycleGroup={"completed"}
+                          className="h-5 w-5"
+                        />
+                      )}
+                    </>
+                  )}
+                  <span>{"name" in item ? item.name : item.title}</span>
                 </div>
               </CommandItem>
             ))}
@@ -173,6 +223,14 @@ const FilterAllDropdown: React.FC<FilterDropdownProps> = () => {
               labels,
               labelIds,
               "labelIds",
+            )}
+            {renderFilterGroup(
+              "Cycles",
+              isCycleOpen,
+              setIsCycleOpen,
+              cyclesArray,
+              cycleIds || [],
+              "cycleIds",
             )}
 
             <div className="space-between flex w-full flex-grow">

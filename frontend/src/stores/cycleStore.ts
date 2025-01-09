@@ -9,7 +9,7 @@ import { mutate } from 'swr';
 interface CycleState {
   cycles: Record<string, ICycle>;
   activeCycleId: string | null;
-  compeletedCycleIds: string[];
+  completedCycleIds: string[];
   upcomingCycleIds: string[];
   isLoading: boolean;
   error: string | null;
@@ -35,13 +35,13 @@ export const useCycleStore = create<CycleState>()(
     immer((set, get) => ({
       cycles: {},
       activeCycleId: null,
-      compeletedCycleIds: [],
+      completedCycleIds: [],
       upcomingCycleIds: [],
       isLoading: false,
       error: null,
 
       reset: () => {
-        set({ cycles: {}, activeCycleId: null, compeletedCycleIds: [], upcomingCycleIds: [], isLoading: false, error: null });
+        set({ cycles: {}, activeCycleId: null, completedCycleIds: [], upcomingCycleIds: [], isLoading: false, error: null });
     },
 
       fetchCycles: async (workspaceSlug: string, projectId: string) => {
@@ -94,7 +94,7 @@ export const useCycleStore = create<CycleState>()(
             }, {});
             state.activeCycleId = activeCycle?.id || null;
             state.isLoading = false;
-            state.compeletedCycleIds = completedCycleIds;
+            state.completedCycleIds = completedCycleIds;
             state.upcomingCycleIds = upcomingCycleIds;
 
           });
@@ -191,7 +191,7 @@ export const useCycleStore = create<CycleState>()(
       partialize: (state) => ({
           cycles: state.cycles,
           activeCycleId: state.activeCycleId,
-          completedCycleIds: state.compeletedCycleIds,
+          completedCycleIds: state.completedCycleIds,
           upcomingCycleIds: state.upcomingCycleIds,
         }),
      }

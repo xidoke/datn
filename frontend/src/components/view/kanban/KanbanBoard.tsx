@@ -27,7 +27,7 @@ export default function KanbanBoard({
   const { fetchIssues, updateIssue } = useIssueStore();
   const { fetchStates } = useProjectStateStore();
   const { fetchLabels } = useProjectLabelStore();
-  const { statusIds, labelIds, priorityIds, startDate, dueDate, search } =
+  const { statusIds, labelIds, priorityIds, startDate, dueDate, search, cycleIds } =
     useFilterStore();
   const [selectedIssue, setSelectedIssue] = React.useState<Issue | null>(null);
 
@@ -35,6 +35,13 @@ export default function KanbanBoard({
     if (
       statusIds.length > 0 &&
       !statusIds.includes(issue.state?.id as string)
+    ) {
+      return false;
+    }
+
+    if (
+      cycleIds.length > 0 &&
+      !cycleIds.includes(issue.cycleId as string)
     ) {
       return false;
     }
