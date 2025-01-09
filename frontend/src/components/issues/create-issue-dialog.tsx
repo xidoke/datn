@@ -72,7 +72,7 @@ export function CreateIssueDialog({
     startDate: undefined,
     dueDate: undefined,
     cycleId: cycleId as string,
-    parentId: "",
+    parentId: undefined,
   });
 
   // Reset form data when dialog opens
@@ -88,7 +88,7 @@ export function CreateIssueDialog({
         startDate: undefined,
         dueDate: undefined,
         cycleId: cycleId as string,
-        parentId: "",
+        parentId: undefined,
       });
     }
   }, [open, stateId, defaultState, cycleId]);
@@ -135,7 +135,7 @@ export function CreateIssueDialog({
         startDate: undefined,
         dueDate: undefined,
         cycleId: cycleId as string,
-        parentId: "",
+        parentId: undefined,
       });
       toast({
         title: "Issue created",
