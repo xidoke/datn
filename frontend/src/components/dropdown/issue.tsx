@@ -35,6 +35,7 @@ const IssueDropdown = (props: IssueDropdownProps) => {
     value,
     className,
     size = "default",
+    placeholder = "Select parent issue...",
   } = props;
 
   const [isOpen, setIsOpen] = useState(false);
@@ -77,7 +78,7 @@ const IssueDropdown = (props: IssueDropdownProps) => {
                 </span>
               </div>
             ) : (
-              "Select parent issue..."
+              placeholder
             )}
             {dropdownArrow && (
               <ChevronsUpDown

@@ -14,15 +14,15 @@ import {
 import { Spinner } from "../ui/spinner";
 import { useCycleStore } from "@/stores/cycleStore"; // Assume this is a store for managing cycles
 import { cn } from "@/lib/utils";
+import { TDropdownProps } from "./type";
 
-export interface CycleDropdownProps {
+export interface CycleDropdownProps extends TDropdownProps {
   button?: ReactNode;
   dropdownArrow?: boolean;
   dropdownArrowClassName?: string;
   onChange: (val: string | null) => void;
   projectId: string | undefined;
   value?: string | null;
-  className?: string;
   size?: "sm" | "default" | "lg" | "icon";
 }
 
@@ -35,6 +35,7 @@ const CycleDropdown = ({
   value,
   className,
   size = "default",
+  placeholder = "Cycle",
 }: CycleDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -70,7 +71,7 @@ const CycleDropdown = ({
           <Button
             variant="outline"
             size={size}
-            className={cn("p-1", className)}
+            className={cn("p-1 text-muted-foreground", className)}
           >
             {selectedCycle ? (
               <span className="flex items-center gap-1">
@@ -79,7 +80,7 @@ const CycleDropdown = ({
                 </span>
               </span>
             ) : (
-              "Select a cycle..."
+              placeholder
             )}
             {dropdownArrow && (
               <ChevronsUpDown
@@ -96,7 +97,7 @@ const CycleDropdown = ({
           <Button
             variant="outline"
             size={size}
-            className={cn("p-1", className)}
+            className={cn("p-1 text-muted-foreground", className)}
           >
             {selectedCycle ? (
               <span className="flex items-center gap-1">
@@ -105,7 +106,7 @@ const CycleDropdown = ({
                 </span>
               </span>
             ) : (
-              "Select a cycle..."
+              placeholder
             )}
             {dropdownArrow && (
               <ChevronsUpDown

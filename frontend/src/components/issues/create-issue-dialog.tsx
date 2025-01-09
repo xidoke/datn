@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { CalendarCheck2, CalendarClock, Plus } from 'lucide-react';
+import { CalendarCheck2, CalendarClock, Plus } from "lucide-react";
 import useIssueStore from "@/stores/issueStore";
 
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import { AssigneeDropdown } from "../dropdown/assignees";
 import { DatePicker } from "../ui/date-picker";
 import { AIDescriptionPopover } from "../view/kanban/ai-description-popover";
 import { CycleDropdown } from "../dropdown/cycle";
+import { IssueDropdown } from "../dropdown/issue";
 
 interface CreateIssueDialogProps {
   children?: React.ReactNode;
@@ -42,6 +43,7 @@ interface FormData {
   assigneeIds?: string[];
   startDate?: string;
   cycleId?: string;
+  parentId?: string;
 }
 
 export function CreateIssueDialog({
@@ -70,6 +72,7 @@ export function CreateIssueDialog({
     startDate: undefined,
     dueDate: undefined,
     cycleId: cycleId as string,
+    parentId: "",
   });
 
   // Reset form data when dialog opens
@@ -85,6 +88,7 @@ export function CreateIssueDialog({
         startDate: undefined,
         dueDate: undefined,
         cycleId: cycleId as string,
+        parentId: "",
       });
     }
   }, [open, stateId, defaultState, cycleId]);
@@ -105,6 +109,7 @@ export function CreateIssueDialog({
         startDate,
         dueDate,
         cycleId,
+        parentId,
       } = formData;
 
       await createIssue(workspaceSlug, projectId, {
@@ -117,6 +122,7 @@ export function CreateIssueDialog({
         startDate,
         dueDate,
         cycleId,
+        parentId,
       });
       setOpen(false);
       setFormData({
@@ -129,6 +135,7 @@ export function CreateIssueDialog({
         startDate: undefined,
         dueDate: undefined,
         cycleId: cycleId as string,
+        parentId: "",
       });
       toast({
         title: "Issue created",
@@ -231,7 +238,7 @@ export function CreateIssueDialog({
               }
             />
             <LabelDropdown
-              placeHolder="Select labels"
+              placeHolder="Labels"
               projectId={projectId}
               showCount={false}
               maxDisplayedLabels={2}
@@ -259,6 +266,20 @@ export function CreateIssueDialog({
                 }))
               }
               size="sm"
+            />
+
+            <IssueDropdown
+              size="sm"
+              projectId={projectId}
+              value={formData.parentId}
+              className="text-muted-foreground"
+              placeholder="Add parent"
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  parentId: value || undefined,
+                }))
+              }
             />
 
             <DatePicker
@@ -308,4 +329,3 @@ export function CreateIssueDialog({
     </Dialog>
   );
 }
-

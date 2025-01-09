@@ -21,11 +21,6 @@ import { AssigneeDropdown } from "@/components/dropdown/assignees";
 import Link from "next/link";
 import Comments from "@/components/comment/comments";
 import { IssueDropdown } from "../dropdown/issue";
-import {
-  Disclosure,
-  DisclosureButton,
-  DisclosurePanel,
-} from "@headlessui/react";
 import { SubIssuesList } from "./sub-issue-list";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { API_BASE_URL } from "@/helpers/common.helper";
