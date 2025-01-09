@@ -52,7 +52,7 @@ export interface IssueAssignee {
   workspaceMember: {
     user: User;
   };
-  userId: string;
+  memberId: string;
   issueId: string;
 }
 

@@ -10,10 +10,7 @@ import { Search } from "lucide-react";
 
 export function TeamMembers({ workspaceSlug }: { workspaceSlug: string }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const {
-    workspaceMemberMap,
-  } = useMemberStore();
-
+  const { workspacesMemberMap: workspaceMemberMap } = useMemberStore();
 
   const members = Object.values(workspaceMemberMap[workspaceSlug] || {});
   const filteredMembers = members.filter(
@@ -44,8 +41,10 @@ export function TeamMembers({ workspaceSlug }: { workspaceSlug: string }) {
                 <Avatar>
                   <AvatarImage src={API_BASE_URL + member.user.avatarUrl} />
                   <AvatarFallback>
-                    {member.user.firstName?.[0]}
-                    {member.user.lastName?.[0]}
+                    {(member.user.firstName?.charAt(0).toUpperCase() ??
+                      "" + member.user.lastName?.charAt(0).toUpperCase() ??
+                      "") ||
+                      member.user.email.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>

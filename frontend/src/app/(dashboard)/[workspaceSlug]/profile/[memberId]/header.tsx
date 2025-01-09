@@ -12,7 +12,7 @@ import { useParams } from "next/navigation";
 
 const HeaderLeft = () => {
   const { isMobile, toggleSidebar } = useSidebar();
-  const { workspaceMemberMap } = useMemberStore();
+  const { workspacesMemberMap: workspaceMemberMap } = useMemberStore();
   const { memberId, workspaceSlug } = useParams();
   const member =
     workspaceMemberMap[workspaceSlug as string]?.[memberId as string];

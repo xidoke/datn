@@ -55,7 +55,7 @@ export const CyclesListItem: FC<TCyclesListItem> = (props) => {
         description: "Cycle date range updated successfully",
         variant: "default",
       });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast({
         title: "Error",
@@ -151,7 +151,11 @@ export const CyclesListItem: FC<TCyclesListItem> = (props) => {
                 title={"creator: " + cycleDetails?.creator?.email}
               />
               <AvatarFallback>
-                {cycleDetails?.creator?.email?.charAt(0)}
+                {(cycleDetails?.creator?.firstName?.charAt(0).toUpperCase() ??
+                  "" +
+                    cycleDetails?.creator?.lastName?.charAt(0).toUpperCase() ??
+                  "") ||
+                  cycleDetails?.creator?.email.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <DropdownMenu>

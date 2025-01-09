@@ -33,6 +33,10 @@ import { TStateGroups } from "../icons/state/helper";
 import { DatePicker } from "../ui/date-picker";
 import { useCycleStore } from "@/stores/cycleStore";
 import { ICycle } from "@/types/cycle";
+import { useMemberStore } from "@/stores/member/memberStore";
+import { useParams } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { API_BASE_URL } from "@/helpers/common.helper";
 
 interface FilterDropdownProps {}
 
@@ -44,8 +48,10 @@ const FilterAllDropdown: React.FC<FilterDropdownProps> = () => {
     cycleIds,
     startDate,
     dueDate,
+    usersId,
     setFilter,
   } = useFilterStore();
+    console.log("🚀 ~ usersId:", usersId)
   const { states } = useProjectStateStore();
   const { labels } = useProjectLabelStore();
   const {
@@ -62,9 +68,16 @@ const FilterAllDropdown: React.FC<FilterDropdownProps> = () => {
   const [isStatusOpen, setIsStatusOpen] = useState(true);
   const [isLabelOpen, setIsLabelOpen] = useState(true);
   const [isCycleOpen, setIsCycleOpen] = useState(true);
+  const [isAssigneeOpen, setIsAssigneeOpen] = useState(true);
+
+  const { workspaceSlug } = useParams();
+  const { workspacesMemberMap: workspaceMemberMap, workspaceMemberIds } =
+    useMemberStore();
+  const workspaceMembers = workspaceMemberMap[workspaceSlug as string];
+  const members = Object.values(workspaceMembers);
 
   const handleSelect = (
-    key: "priorityIds" | "statusIds" | "labelIds" | "cycleIds",
+    key: "priorityIds" | "statusIds" | "labelIds" | "cycleIds" | "usersId",
     id: string,
   ) => {
     const currentIds = useFilterStore.getState()[key] as string[];
@@ -179,7 +192,74 @@ const FilterAllDropdown: React.FC<FilterDropdownProps> = () => {
     );
   };
 
-  const totalFilters = priorityIds.length + statusIds.length + labelIds.length;
+  const renderAssigneeGroup = () => {
+    return (
+      <>
+        <CommandGroup
+          heading={
+            <div
+              className="flex cursor-pointer items-center justify-between p-2 text-sm font-medium"
+              onClick={() => setIsAssigneeOpen(!isAssigneeOpen)}
+            >
+              <span>Assignees ({usersId.length})</span>
+              <ChevronRight
+                className={cn(
+                  "h-4 w-4 transition-transform",
+                  isAssigneeOpen && "rotate-90",
+                )}
+              />
+            </div>
+          }
+        >
+          <div className={cn("*: pl-4", !isAssigneeOpen && "hidden")}>
+            {members.map((member) => (
+              <CommandItem
+                key={member.id}
+                value={
+                  (member.user.firstName ?? "" + member.user.lastName ?? "") ||
+                  member.user.email
+                }
+                onSelect={() => handleSelect("usersId", member.user.id)}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    usersId.includes(member.userId)
+                      ? "opacity-100"
+                      : "opacity-0",
+                  )}
+                />
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-5 w-5">
+                    <AvatarImage
+                      src={API_BASE_URL + member.user.avatarUrl}
+                      alt={member.user.email}
+                    />
+                    <AvatarFallback>
+                      {(member.user.firstName?.charAt(0).toUpperCase() ??
+                        "" + member.user.lastName?.charAt(0).toUpperCase() ??
+                        "") ||
+                        member.user.email.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span>
+                    {(member.user.firstName ??
+                      "" + member.user.lastName ??
+                      "") ||
+                      member.user.email}
+                  </span>
+                </div>
+              </CommandItem>
+            ))}
+          </div>
+        </CommandGroup>
+        <CommandSeparator />
+      </>
+    );
+  };
+
+  const totalFilters =
+    priorityIds.length + statusIds.length + labelIds.length + cycleIds?.length;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -232,6 +312,8 @@ const FilterAllDropdown: React.FC<FilterDropdownProps> = () => {
               cycleIds || [],
               "cycleIds",
             )}
+
+            {renderAssigneeGroup()}
 
             <div className="space-between flex w-full flex-grow">
               <DatePicker

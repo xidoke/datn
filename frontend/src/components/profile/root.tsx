@@ -11,9 +11,10 @@ import { useMemberStore } from "@/stores/member/memberStore";
 
 export const WorkspaceMemberDashboard = () => {
   const { workspaceSlug, memberId } = useParams();
-  const { workspaceMemberMap } = useMemberStore();
-  const member = workspaceMemberMap[workspaceSlug as string]?.[memberId as string];
-  const userId = member.userId
+  const { workspacesMemberMap: workspaceMemberMap } = useMemberStore();
+  const member =
+    workspaceMemberMap[workspaceSlug as string]?.[memberId as string];
+  const userId = member.userId;
   const { data, error } = useProfile(workspaceSlug as string, userId as string);
 
   if (error) {

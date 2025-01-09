@@ -79,7 +79,7 @@ export default function MembersPage() {
   } = useMemberStore();
   const userPermission = currentWorkspace ? currentWorkspace.permissions : [];
   const {
-    workspaceMemberMap,
+    workspacesMemberMap: workspaceMemberMap,
     workspaceMemberIds,
     workspaceMemberInvitationsMap,
     workspaceMemberInvitationIds,
@@ -297,7 +297,12 @@ export default function MembersPage() {
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={API_BASE_URL + member.user.avatarUrl} />
-                    <AvatarFallback></AvatarFallback>
+                    <AvatarFallback>
+                      {(member.user.firstName?.charAt(0).toUpperCase() ??
+                        "" + member.user.lastName?.charAt(0).toUpperCase() ??
+                        "") ||
+                        member.user.email.charAt(0).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                   {member.user.firstName + " " + member.user.lastName}
                 </div>

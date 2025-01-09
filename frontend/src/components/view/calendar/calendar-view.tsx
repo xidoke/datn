@@ -454,6 +454,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     startDate,
     dueDate,
     setFilter,
+    usersId,
     search,
     cycleIds,
   } = useFilterStore();
@@ -462,6 +463,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     if (
       statusIds.length > 0 &&
       !statusIds.includes(issue.state?.id as string)
+    ) {
+      return false;
+    }
+
+    if (
+      usersId.length > 0 &&
+      !issue.assignees?.some((assignee) =>
+        usersId.includes(assignee.workspaceMember.user.id),
+      )
     ) {
       return false;
     }

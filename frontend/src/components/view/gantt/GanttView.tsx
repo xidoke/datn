@@ -33,6 +33,7 @@ export default function GanttView({ issues, states, labels }: GanttViewProps) {
     search,
     cycleIds,
     setFilter,
+    usersId,
   } = useFilterStore();
 
   const dateRange = useMemo(() => {
@@ -46,6 +47,15 @@ export default function GanttView({ issues, states, labels }: GanttViewProps) {
       if (
         statusIds.length > 0 &&
         !statusIds.includes(issue.state?.id as string)
+      ) {
+        return false;
+      }
+
+      if (
+        usersId.length > 0 &&
+        !issue.assignees?.some((assignee) =>
+          usersId.includes(assignee.workspaceMember.user.id),
+        )
       ) {
         return false;
       }
@@ -94,6 +104,7 @@ export default function GanttView({ issues, states, labels }: GanttViewProps) {
     dueDate,
     search,
     cycleIds,
+    usersId,
   ]);
 
   const handleFullscreen = () => {

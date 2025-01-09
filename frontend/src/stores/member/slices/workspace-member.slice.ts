@@ -11,15 +11,6 @@ export enum EWorkspaceRole {
   ADMIN = "ADMIN",
   MEMBER = "MEMBER",
 }
-
-export interface UserLite {
-  id: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  avatarUrl?: string;
-}
-
 export type WorkspaceRole = EWorkspaceRole.ADMIN | EWorkspaceRole.MEMBER;
 
 export interface IWorkspaceMemberInvitation {
@@ -39,14 +30,14 @@ export interface IWorkspaceMemberInvitation {
 }
 
 interface WorkspaceMemberSliceState {
-  workspaceMemberMap: Record<string, Record<string, WorkspaceMember>>;
+  workspacesMemberMap: Record<string, Record<string, WorkspaceMember>>;
   workspaceMemberInvitationsMap: Record<string, Record<string,Invitation>>;
   workspaceMemberIds: string[];
   workspaceMemberInvitationIds: string[] | undefined;
 }
 
 const initialState: WorkspaceMemberSliceState = {
-  workspaceMemberMap: {},
+  workspacesMemberMap: {},
   workspaceMemberInvitationsMap: {},
   workspaceMemberIds: [],
   workspaceMemberInvitationIds: [],
@@ -82,7 +73,7 @@ export const workspaceMemberSlice: StateCreator<
       const response = await memberService.fetchWorkspaceMembers(workspaceSlug);
       const { members: workspaceMembers } = response;
       set((state) => {
-        const newWorkspaceMemberMap = { ...state.workspaceMemberMap };
+        const newWorkspaceMemberMap = { ...state.workspacesMemberMap };
         const memberMap: Record<string, WorkspaceMember> = {};
 
         workspaceMembers.forEach((member) => {
@@ -92,7 +83,7 @@ export const workspaceMemberSlice: StateCreator<
         newWorkspaceMemberMap[workspaceSlug] = memberMap;
 
         return {
-          workspaceMemberMap: newWorkspaceMemberMap,
+          workspacesMemberMap: newWorkspaceMemberMap,
           workspaceMemberIds: workspaceMembers.map((member) => member.id),
         };
       })
@@ -179,14 +170,14 @@ export const workspaceMemberSlice: StateCreator<
     try {
       const response : any= await memberService.updateMemberRole(workspaceSlug, memberId, role);
       set((state) => {
-        const newWorkspaceMemberMap = { ...state.workspaceMemberMap };
+        const newWorkspaceMemberMap = { ...state.workspacesMemberMap };
         if (newWorkspaceMemberMap[workspaceSlug] && newWorkspaceMemberMap[workspaceSlug][memberId]) {
           newWorkspaceMemberMap[workspaceSlug][memberId] = {
             ...newWorkspaceMemberMap[workspaceSlug][memberId],
             role,
           };
         }
-        return { workspaceMemberMap: newWorkspaceMemberMap };
+        return { workspacesMemberMap: newWorkspaceMemberMap };
       });
       return response.data;
     } catch (error) {
@@ -198,12 +189,12 @@ export const workspaceMemberSlice: StateCreator<
     try {
       await memberService.removeMember(workspaceSlug, memberId);
       set((state) => {
-        const newWorkspaceMemberMap = { ...state.workspaceMemberMap };
+        const newWorkspaceMemberMap = { ...state.workspacesMemberMap };
         if (newWorkspaceMemberMap[workspaceSlug]) {
           delete newWorkspaceMemberMap[workspaceSlug][memberId];
         }
         return {
-          workspaceMemberMap: newWorkspaceMemberMap,
+          workspacesMemberMap: newWorkspaceMemberMap,
           workspaceMemberIds: state.workspaceMemberIds.filter((id) => id !== memberId),
         };
       });

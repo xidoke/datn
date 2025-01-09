@@ -29,6 +29,7 @@ export default function ListView({ issues, states, labels }: ListViewProps) {
     dueDate,
     cycleIds,
     setFilter,
+    usersId,
     search,
   } = useFilterStore();
 
@@ -53,6 +54,15 @@ export default function ListView({ issues, states, labels }: ListViewProps) {
       if (
         statusIds.length > 0 &&
         !statusIds.includes(issue.state?.id as string)
+      ) {
+        return false;
+      }
+
+      if (
+        usersId.length > 0 &&
+        !issue.assignees?.some((assignee) =>
+          usersId.includes(assignee.workspaceMember.user.id),
+        )
       ) {
         return false;
       }
@@ -92,7 +102,17 @@ export default function ListView({ issues, states, labels }: ListViewProps) {
       }
       return true;
     });
-  }, [issues, statusIds, labelIds, priorityIds, startDate, dueDate, search, cycleIds]);
+  }, [
+    issues,
+    statusIds,
+    labelIds,
+    priorityIds,
+    startDate,
+    dueDate,
+    search,
+    cycleIds,
+    usersId,
+  ]);
 
   const groupedStates = useMemo(() => {
     return stateGroups.map((group) => ({

@@ -14,6 +14,7 @@ export interface Comment {
     firstName: string;
     lastName: string;
     avatarUrl: string;
+    email: string;
   };
 }
 

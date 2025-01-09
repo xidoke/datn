@@ -29,8 +29,10 @@ const UserSidebar = () => {
                   src={`${API_BASE_URL}${user?.avatarUrl}` || "/image/user.jpg"}
                 />
                 <AvatarFallback>
-                  {(user?.firstName?.at(0) || "") +
-                    (user?.lastName?.at(0) || "")}
+                  {(user?.firstName?.charAt(0).toUpperCase() ??
+                    "" + user?.lastName?.charAt(0).toUpperCase() ??
+                    "") ||
+                    user?.email.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <span>{`${user?.firstName} ${user?.lastName}`}</span>

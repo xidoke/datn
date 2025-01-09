@@ -4,7 +4,7 @@ import { TIssuePriorities } from "@/types";
 interface FilterStoreState {
     priorityIds: TIssuePriorities[];
     statusIds: string[];
-    assigneeIds: string[];
+    usersId: string[];
     cycleIds: string[];
     labelIds: string[];
     startDate: string | undefined;
@@ -15,7 +15,7 @@ interface FilterStoreState {
 const initialState: FilterStoreState = {
     priorityIds: [],
     statusIds: [],
-    assigneeIds: [],
+    usersId: [],
     cycleIds: [],
     labelIds: [],
     startDate: undefined,

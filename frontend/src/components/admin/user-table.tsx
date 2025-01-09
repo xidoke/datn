@@ -88,7 +88,13 @@ export function UserTable() {
                       src={API_BASE_URL + user?.avatarUrl}
                       alt={`${user.firstName} ${user.lastName}`}
                     />
-                    <AvatarFallback>U</AvatarFallback>
+                    <AvatarFallback>
+                      {" "}
+                      {(user.firstName?.charAt(0).toUpperCase() ??
+                        "" + user.lastName?.charAt(0).toUpperCase() ??
+                        "") ||
+                        user.email.charAt(0).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                   {user.firstName} {user.lastName}
                 </div>

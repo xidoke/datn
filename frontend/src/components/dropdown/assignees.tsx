@@ -59,7 +59,8 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
   const [assigneeLoader, setAssigneeLoader] = useState(false);
   const [assignees, setAssignees] = useState<WorkspaceMember[]>([]);
 
-  const { workspaceMemberMap, workspaceMemberIds } = useMemberStore();
+  const { workspacesMemberMap: workspaceMemberMap, workspaceMemberIds } =
+    useMemberStore();
   const { workspaceSlug } = useParams();
 
   const onOpen = async () => {
@@ -109,8 +110,10 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
                   alt={assignee.user?.email}
                 />
                 <AvatarFallback>
-                  {(assignee.user?.firstName?.charAt(0) || "") +
-                    (assignee.user?.lastName?.charAt(0) || "")}
+                  {(assignee.user.firstName?.charAt(0).toUpperCase() ??
+                    "" + assignee.user.lastName?.charAt(0).toUpperCase() ??
+                    "") ||
+                    assignee.user.email.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </Tooltip>
@@ -259,8 +262,11 @@ const AssigneeDropdown = (props: AssigneeDropdownProps) => {
                           alt={assignee.user?.email}
                         />
                         <AvatarFallback>
-                          {(assignee.user?.firstName?.charAt(0) || "") +
-                            (assignee.user?.lastName?.charAt(0) || "")}
+                          {(assignee.user.firstName?.charAt(0).toUpperCase() ??
+                            "" +
+                              assignee.user.lastName?.charAt(0).toUpperCase() ??
+                            "") ||
+                            assignee.user.email.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col">
