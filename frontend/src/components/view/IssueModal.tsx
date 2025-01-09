@@ -27,6 +27,8 @@ import {
   DisclosurePanel,
 } from "@headlessui/react";
 import { SubIssuesList } from "./sub-issue-list";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { API_BASE_URL } from "@/helpers/common.helper";
 
 interface IssueModalProps {
   issue: Issue;
@@ -34,28 +36,34 @@ interface IssueModalProps {
 }
 
 export default function IssueModal({ issue, onClose }: IssueModalProps) {
-  const [localIssue, setLocalIssue] = useState(issue);
-  const [description, setDescription] = useState(issue.description || "");
+  const issueId = issue.id;
+  const { issues } = useIssueStore();
+  const issueModal = issues.find((i) => i.id === issueId);
+
+
+
+  if (!issueModal) {
+    return null;
+  }
+
+  const [description, setDescription] = useState(issueModal?.description || "");
   const [isEditing, setIsEditing] = useState(false);
+
   const { updateIssue } = useIssueStore();
   const { workspaceSlug, projectId } = useParams();
 
-  useEffect(() => {
-    setLocalIssue(issue);
-    setDescription(issue.description || "");
-  }, [issue]);
+  // useEffect(() => {
+  //   setLocalIssue(issue);
+  //   setDescription(issue.description || "");
+  // }, [issue]);
 
   const handleUpdateIssue = async (updateData: Partial<IssueUpdateDto>) => {
     await updateIssue(
       workspaceSlug as string,
       projectId as string,
-      localIssue.id,
+      issueModal.id,
       updateData,
     );
-    setLocalIssue({
-      ...localIssue,
-      ...updateData,
-    });
   };
 
   return (
@@ -70,13 +78,13 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
               <div className="flex items-center gap-2">
                 <Maximize2 size={16} />
                 <span className="text-xs text-muted-foreground">
-                  {localIssue.fullIdentifier}
+                  {issueModal.fullIdentifier}
                 </span>
               </div>
             </Link>
             <div className="flex items-center justify-between">
               <SheetTitle className="text-base font-medium">
-                {localIssue.fullIdentifier}: {localIssue.title}
+                {issueModal.fullIdentifier}: {issueModal.title}
               </SheetTitle>
             </div>
           </SheetHeader>
@@ -101,7 +109,7 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setDescription(localIssue.description || "");
+                          setDescription(issueModal.description || "");
                           setIsEditing(false);
                         }}
                       >
@@ -130,7 +138,7 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
 
               {/* Sub-issues */}
               <div>
-                <SubIssuesList parentIssueId={localIssue.id} />
+                <SubIssuesList parentIssueId={issueModal.id} />
               </div>
               {/* Properties */}
               <div className="space-y-4">
@@ -147,7 +155,7 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                     <StateDropdown
                       size="sm"
                       projectId={projectId as string}
-                      value={localIssue.stateId}
+                      value={issueModal.stateId}
                       onChange={async (value) => {
                         await handleUpdateIssue({ stateId: value });
                       }}
@@ -160,9 +168,9 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                       Assignees
                     </span>
                     <AssigneeDropdown
-                      size="icon"
+                      size="sm"
                       projectId={projectId as string}
-                      values={localIssue.assignees.map(
+                      values={issueModal.assignees.map(
                         (assignee) => assignee?.workspaceMember?.user?.id,
                       )}
                       onChange={async (values) => {
@@ -175,11 +183,6 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                           issue.id,
                           { assigneeIds: values },
                         );
-                        setLocalIssue((prev) => ({
-                          ...prev,
-                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                          assignees: updatedAssignees as any, //TODO: Fix this
-                        }));
                       }}
                     />
                   </div>
@@ -194,7 +197,7 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                       onChange={async (newPriority) => {
                         await handleUpdateIssue({ priority: +newPriority });
                       }}
-                      value={localIssue.priority.toString() as TIssuePriorities}
+                      value={issueModal.priority.toString() as TIssuePriorities}
                     />
                   </div>
 
@@ -205,12 +208,12 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                     </span>
                     <DatePicker
                       size="sm"
-                      date={localIssue.startDate}
+                      date={issueModal.startDate}
                       Icon={CalendarCheck2}
                       onDateChange={(date) => {
                         handleUpdateIssue({ startDate: date });
                       }}
-                      maxDate={localIssue.dueDate}
+                      maxDate={issueModal.dueDate}
                     />
                   </div>
 
@@ -220,12 +223,12 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                     </span>
                     <DatePicker
                       size="sm"
-                      date={localIssue.dueDate}
+                      date={issueModal.dueDate}
                       Icon={CalendarClock}
                       onDateChange={(date) => {
                         handleUpdateIssue({ dueDate: date });
                       }}
-                      minDate={localIssue.startDate}
+                      minDate={issueModal.startDate}
                     />
                   </div>
 
@@ -241,16 +244,8 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                       onChange={async (values) => {
                         await handleUpdateIssue({ labelIds: values });
 
-                        setLocalIssue((prev) => ({
-                          ...prev,
-                          labels: values.map((id) => ({
-                            id,
-                            name: "",
-                            color: "", //TODO: Fix this
-                          })),
-                        }));
                       }}
-                      values={localIssue.labels.map((label) => label.id)}
+                      values={issueModal.labels.map((label) => label.id)}
                       maxDisplayedLabels={2}
                     />
                   </div>
@@ -264,11 +259,36 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                     <IssueDropdown
                       size="sm"
                       projectId={projectId as string}
-                      value={localIssue.parentId}
+                      value={issueModal.parentId}
                       onChange={async (value) => {
                         await handleUpdateIssue({ parentId: value });
                       }}
                     />
+                  </div>
+
+                  {/* Creator */}
+                  <div className="flex items-center gap-4 overflow-y-auto">
+                    <span className="w-24 text-sm text-muted-foreground">
+                      Creator
+                    </span>
+
+                    <Avatar>
+                      <AvatarImage
+                        className="h-8 w-8"
+                        src={API_BASE_URL + issueModal.creator?.avatarUrl}
+                      />
+                      <AvatarFallback>
+                        {(issueModal.creator.firstName
+                          ?.charAt(0)
+                          .toUpperCase() ??
+                          "" +
+                            issueModal.creator.lastName
+                              ?.charAt(0)
+                              .toUpperCase() ??
+                          "") ||
+                          issueModal.creator.email.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
                 </div>
               </div>

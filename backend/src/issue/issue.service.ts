@@ -264,9 +264,12 @@ export class IssuesService {
                 })),
               }
             : undefined,
-          labels: {
-            set: labelIds?.map((id) => ({ id })) || [],
-          },
+          // Xử lý labels
+          labels: labelIds === undefined
+            ? undefined // Không thay đổi
+            : labelIds === null
+              ? { set: [] } // Xóa tất cả labels
+              : { set: labelIds.map((id) => ({ id })) }, // Cập nhật labels
         },
         include: {
           state: true,
