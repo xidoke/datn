@@ -10,11 +10,8 @@ import useIssueStore from "@/stores/issueStore";
 import { useParams } from "next/navigation";
 import { CycleDropdown } from "@/components/dropdown/cycle";
 import { DatePicker } from "@/components/ui/date-picker";
-import { CalendarCheck2, CalendarClock, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import FilterDropdown from "@/components/dropdown/filter";
+import { CalendarCheck2, CalendarClock } from "lucide-react";
 import { useFilterStore } from "@/stores/filterStore";
-import PriorityMultiSelect from "@/components/dropdown/priority-multi-select";
 import IssueModal from "../IssueModal";
 
 interface TableViewProps {
@@ -27,9 +24,15 @@ export default function TableView({ issues, states, labels }: TableViewProps) {
   const { updateIssue } = useIssueStore();
   const { workspaceSlug, projectId } = useParams();
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
-  const [search, setSearch] = useState("");
-  const { statusIds, labelIds, priorityIds, startDate, dueDate, setFilter } =
-    useFilterStore();
+  const {
+    statusIds,
+    labelIds,
+    priorityIds,
+    startDate,
+    dueDate,
+    setFilter,
+    search,
+  } = useFilterStore();
 
   const filteredIssues = useMemo(() => {
     return issues.filter((issue) => {
@@ -82,47 +85,6 @@ export default function TableView({ issues, states, labels }: TableViewProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-end gap-2 p-4">
-        <div className="relative">
-          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input
-            className="w-64 pl-8 text-sm"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <FilterDropdown
-          label="Status"
-          options={states}
-          selectedIds={statusIds}
-          onChange={(selected) => setFilter({ statusIds: selected })}
-        />
-        <FilterDropdown
-          label="Labels"
-          options={labels}
-          selectedIds={labelIds}
-          onChange={(selected) => setFilter({ labelIds: selected })}
-        />
-        <PriorityMultiSelect
-          selectedPriorities={priorityIds}
-          onChange={(selected) => setFilter({ priorityIds: selected })}
-        />
-        <DatePicker
-          date={startDate}
-          onDateChange={(date) => setFilter({ startDate: date || undefined })}
-          placeholder="Start Date"
-          Icon={CalendarCheck2}
-          tooltipHeading="Filter Start Date"
-        />
-        <DatePicker
-          date={dueDate}
-          onDateChange={(date) => setFilter({ dueDate: date || undefined })}
-          placeholder="Due Date"
-          Icon={CalendarClock}
-          tooltipHeading="Filter Due Date"
-        />
-      </div>
       <div className="flex-1 overflow-x-auto">
         <table className="w-full min-w-max border-collapse">
           <thead className="sticky top-0 z-20 bg-backdrop">

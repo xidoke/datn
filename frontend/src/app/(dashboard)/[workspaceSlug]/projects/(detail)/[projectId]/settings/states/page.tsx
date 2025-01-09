@@ -1,17 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Plus,
-  Circle,
-  CheckCircle2,
-  XCircle,
-  MoreHorizontal,
-  Pencil,
-  Trash2,
-  AlignLeft,
-  Clock,
-} from "lucide-react";
+import { Plus, Circle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -32,28 +22,12 @@ import { useProjectStateStore } from "@/stores/projectStateStore";
 import { useParams } from "next/navigation";
 import { State, StateGroup } from "@/types";
 import { Separator } from "@/components/ui/separator";
-
-const stateGroups = [
-  { name: "backlog", label: "Backlog", icon: AlignLeft },
-  { name: "unstarted", label: "Unstarted", icon: Clock },
-  { name: "started", label: "Started", icon: Circle },
-  { name: "completed", label: "Completed", icon: CheckCircle2 },
-  { name: "cancelled", label: "Cancelled", icon: XCircle },
-];
-
-const PRESET_COLORS = [
-  "#ff6b00",
-  "#ffa800",
-  "#4bce97",
-  "#00c7b0",
-  "#62b0fd",
-  "#0055cc",
-  "#95a5a6",
-  "#e5484d",
-  "#ff8fab",
-  "#9333ea",
-  "#666666",
-];
+import {
+  PRESET_COLORS,
+  stateGroups,
+  TStateGroups,
+} from "@/components/icons/state/helper";
+import { StateGroupIcon } from "@/components/icons";
 
 export default function StateSettingsPage() {
   const params = useParams();
@@ -206,9 +180,6 @@ export default function StateSettingsPage() {
   };
 
   const renderStateItem = (state: State, isEditing: boolean) => {
-    const GroupIcon =
-      stateGroups.find((group) => group.name === state.group)?.icon || Circle;
-
     return (
       <div
         key={state.id}
@@ -264,7 +235,11 @@ export default function StateSettingsPage() {
             </>
           ) : (
             <>
-              <GroupIcon className="h-4 w-4" style={{ color: state.color }} />
+              <StateGroupIcon
+                stateGroup={state.group as TStateGroups}
+                className="h-5 w-5"
+                color={state.color}
+              />
               <div className="flex flex-col">
                 <span>{state.name}</span>
                 {state.description && (

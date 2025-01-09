@@ -1,10 +1,7 @@
 "use client";
-
-import HeaderFilters from "./filters";
 import { Briefcase, Menu } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,13 +12,6 @@ import { CreateProjectDialog } from "@/components/projects/create-project-dialog
 import { useSidebar } from "@/components/ui/sidebar";
 
 export const ProjectsBaseHeader = () => {
-  // const { searchQuery, updateSearchQuery } = useProjectFilter();
-
-  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Escape") {
-      // updateSearchQuery("");
-    }
-  };
   const { isMobile, toggleSidebar } = useSidebar();
   return (
     <>
@@ -46,18 +36,8 @@ export const ProjectsBaseHeader = () => {
           </Breadcrumb>
         </div>
         <div className="flex flex-row space-x-2">
-          <div className="relative w-full md:w-64">
-            <Input
-              className="w-full"
-              placeholder="Search projects"
-              // value={searchQuery}
-              // onChange={(e) => updateSearchQuery(e.target.value)}
-              onKeyDown={handleInputKeyDown}
-            />
-          </div>
-          <div className="hidden md:block">
-            <HeaderFilters />
-          </div>
+          <div className="relative w-full md:w-64"></div>
+          <div className="hidden md:block"></div>
           <CreateProjectDialog>
             <Button size={"sm"}>Add Project</Button>
           </CreateProjectDialog>

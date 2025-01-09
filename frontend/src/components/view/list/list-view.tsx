@@ -1,26 +1,16 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import {
-  ChevronDown,
-  ChevronRight,
-  Plus,
-  Search,
-  CalendarCheck2,
-  CalendarClock,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { Issue, Label, State, TIssuePriorities } from "@/types";
 import { Button } from "@/components/ui/button";
 import { CreateIssueDialog } from "@/components/issues/create-issue-dialog";
 import IssueListItem from "./issue-list-item";
 import { Card } from "@/components/ui/card";
-import { AlignLeft, Clock, Circle, CheckCircle2, XCircle } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import FilterDropdown from "@/components/dropdown/filter";
 import { useFilterStore } from "@/stores/filterStore";
-import PriorityMultiSelect from "@/components/dropdown/priority-multi-select";
-import { DatePicker } from "@/components/ui/date-picker";
 import IssueModal from "../IssueModal";
+import { stateGroups, TStateGroups } from "@/components/icons/state/helper";
+import { StateGroupIcon } from "@/components/icons";
 
 interface ListViewProps {
   issues: Issue[];
@@ -28,20 +18,18 @@ interface ListViewProps {
   labels: Label[];
 }
 
-const stateGroups = [
-  { name: "backlog", label: "Backlog", icon: AlignLeft },
-  { name: "unstarted", label: "Unstarted", icon: Clock },
-  { name: "started", label: "Started", icon: Circle },
-  { name: "completed", label: "Completed", icon: CheckCircle2 },
-  { name: "cancelled", label: "Cancelled", icon: XCircle },
-];
-
 export default function ListView({ issues, states, labels }: ListViewProps) {
   const [collapsedStates, setCollapsedStates] = useState<string[]>([]);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
-  const [search, setSearch] = useState("");
-  const { statusIds, labelIds, priorityIds, startDate, dueDate, setFilter } =
-    useFilterStore();
+  const {
+    statusIds,
+    labelIds,
+    priorityIds,
+    startDate,
+    dueDate,
+    setFilter,
+    search,
+  } = useFilterStore();
 
   const toggleState = (stateId: string) => {
     setCollapsedStates((prev) =>
@@ -109,47 +97,6 @@ export default function ListView({ issues, states, labels }: ListViewProps) {
 
   return (
     <div className="flex flex-col space-y-4 p-4">
-      <div className="mb-4 flex items-center justify-end gap-2">
-        <div className="relative">
-          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input
-            className="w-64 pl-8 text-sm"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <FilterDropdown
-          label="Status"
-          options={states}
-          selectedIds={statusIds}
-          onChange={(selected) => setFilter({ statusIds: selected })}
-        />
-        <FilterDropdown
-          label="Labels"
-          options={labels}
-          selectedIds={labelIds}
-          onChange={(selected) => setFilter({ labelIds: selected })}
-        />
-        <PriorityMultiSelect
-          selectedPriorities={priorityIds}
-          onChange={(selected) => setFilter({ priorityIds: selected })}
-        />
-        <DatePicker
-          date={startDate}
-          onDateChange={(date) => setFilter({ startDate: date || undefined })}
-          placeholder="Start Date"
-          Icon={CalendarCheck2}
-          tooltipHeading="Filter Start Date"
-        />
-        <DatePicker
-          date={dueDate}
-          onDateChange={(date) => setFilter({ dueDate: date || undefined })}
-          placeholder="Due Date"
-          Icon={CalendarClock}
-          tooltipHeading="Filter Due Date"
-        />
-      </div>
       {groupedStates.map(({ group, states }) => (
         <div key={group.name}>
           <h2 className="mb-2 text-lg font-semibold">{group.label}</h2>
@@ -174,10 +121,11 @@ export default function ListView({ issues, states, labels }: ListViewProps) {
                       )}
                     </Button>
                     <div className="flex items-center gap-2">
-                      {React.createElement(group.icon, {
-                        className: "h-4 w-4",
-                        style: { color: state.color },
-                      })}
+                      <StateGroupIcon
+                        stateGroup={state.group as TStateGroups}
+                        className="h-5 w-5"
+                        color={state.color}
+                      />
                       <span
                         className="text-sm font-medium"
                         style={{ color: state.color }}

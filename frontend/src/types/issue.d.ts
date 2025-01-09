@@ -60,7 +60,15 @@ export interface IssueAssignee {
   id: string;
   title: string;
   issues: Issue[];
-  icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>;
+  icon: React.FC<IStateGroupIcon>;
+}
+
+interface IStateGroupIcon {
+  className?: string;
+  color?: string;
+  stateGroup: TStateGroups;
+  height?: string;
+  width?: string;
 }
 
 export interface Board {

@@ -9,6 +9,7 @@ interface FilterStoreState {
     labelIds: string[];
     startDate: string | undefined;
     dueDate: string | undefined;
+    search: string;
 }
 
 const initialState: FilterStoreState = {
@@ -19,6 +20,7 @@ const initialState: FilterStoreState = {
     labelIds: [],
     startDate: undefined,
     dueDate: undefined,
+    search: "",
 };
 
 interface FilterStoreActions {

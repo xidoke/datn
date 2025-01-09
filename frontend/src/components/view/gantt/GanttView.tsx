@@ -1,25 +1,14 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import {
-  format,
-  addDays,
-  startOfWeek,
-  endOfWeek,
-  eachDayOfInterval,
-} from "date-fns";
+import { startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
 import { Issue, Label, State, TIssuePriorities } from "@/types";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Maximize2, Search, CalendarCheck2, CalendarClock } from "lucide-react";
+import { Maximize2, CalendarCheck2, CalendarClock } from "lucide-react";
 import GanttTimeline from "./GanttTimeline";
 import GanttSidebar from "./GanttSidebar";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import FilterDropdown from "@/components/dropdown/filter";
 import { useFilterStore } from "@/stores/filterStore";
-import PriorityMultiSelect from "@/components/dropdown/priority-multi-select";
-import { DatePicker } from "@/components/ui/date-picker";
 import IssueModal from "../IssueModal";
 
 interface GanttViewProps {
@@ -35,9 +24,15 @@ export default function GanttView({ issues, states, labels }: GanttViewProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
-  const [search, setSearch] = useState("");
-  const { statusIds, labelIds, priorityIds, startDate, dueDate, setFilter } =
-    useFilterStore();
+  const {
+    statusIds,
+    labelIds,
+    priorityIds,
+    startDate,
+    dueDate,
+    search,
+    setFilter,
+  } = useFilterStore();
 
   const dateRange = useMemo(() => {
     const start = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -135,45 +130,6 @@ export default function GanttView({ issues, states, labels }: GanttViewProps) {
           </div>
         </div>
         <div className="flex items-center gap-2 overflow-x-auto">
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input
-              className="w-64 pl-8 text-sm"
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <FilterDropdown
-            label="Status"
-            options={states}
-            selectedIds={statusIds}
-            onChange={(selected) => setFilter({ statusIds: selected })}
-          />
-          <FilterDropdown
-            label="Labels"
-            options={labels}
-            selectedIds={labelIds}
-            onChange={(selected) => setFilter({ labelIds: selected })}
-          />
-          <PriorityMultiSelect
-            selectedPriorities={priorityIds}
-            onChange={(selected) => setFilter({ priorityIds: selected })}
-          />
-          <DatePicker
-            date={startDate}
-            onDateChange={(date) => setFilter({ startDate: date || undefined })}
-            placeholder="Start Date"
-            Icon={CalendarCheck2}
-            tooltipHeading="Filter Start Date"
-          />
-          <DatePicker
-            date={dueDate}
-            onDateChange={(date) => setFilter({ dueDate: date || undefined })}
-            placeholder="Due Date"
-            Icon={CalendarClock}
-            tooltipHeading="Filter Due Date"
-          />
           <Button variant="ghost" size="icon" onClick={handleFullscreen}>
             <Maximize2 className="h-4 w-4" />
           </Button>

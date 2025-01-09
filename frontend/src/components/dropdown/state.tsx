@@ -2,7 +2,6 @@ import { ReactNode, useEffect, useState } from "react";
 import { TDropdownProps } from "./type";
 import { useParams } from "next/navigation";
 import { useProjectStateStore } from "@/stores/projectStateStore";
-import StateGroupIcon from "../state-group-icon";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
@@ -16,6 +15,7 @@ import {
 } from "../ui/command";
 import { cn } from "@/lib/utils";
 import { Spinner } from "../ui/spinner";
+import { StateGroupIcon } from "../icons";
 
 export interface StateDropdownProps extends TDropdownProps {
   button?: ReactNode;

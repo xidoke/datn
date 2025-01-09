@@ -17,8 +17,6 @@ import {
 import { cn } from "@/lib/utils";
 import { getDay, getDaysInMonth, isSameDay } from "date-fns";
 import {
-  CalendarCheck2,
-  CalendarClock,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react";
@@ -28,12 +26,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { Issue, State, TIssuePriorities } from "@/types";
 import { useFilterStore } from "@/stores/filterStore";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import FilterDropdown from "@/components/dropdown/filter";
 import IssueModal from "../IssueModal";
-import { DatePicker } from "@/components/ui/date-picker";
-import PriorityMultiSelect from "@/components/dropdown/priority-multi-select";
 
 export type CalendarState = {
   month: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
@@ -457,8 +450,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   labels,
 }) => {
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
-  const [search, setSearch] = useState("");
-  const { statusIds, labelIds, priorityIds, startDate, dueDate, setFilter } =
+  const { statusIds, labelIds, priorityIds, startDate, dueDate, setFilter, search } =
     useFilterStore();
 
   const issueAfterFilter = issues.filter((issue) => {
@@ -521,45 +513,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       <div className="flex items-center justify-between px-4 py-2">
         <h1 className="text-2xl font-bold">Calendar View</h1>
         <div className="flex items-center gap-2 overflow-x-auto">
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input
-              className="w-44 pl-8 text-sm"
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <FilterDropdown
-            label="Status"
-            options={states}
-            selectedIds={statusIds}
-            onChange={(selected) => setFilter({ statusIds: selected })}
-          />
-          <FilterDropdown
-            label="Labels"
-            options={labels}
-            selectedIds={labelIds}
-            onChange={(selected) => setFilter({ labelIds: selected })}
-          />
-          <PriorityMultiSelect
-            selectedPriorities={priorityIds}
-            onChange={(selected) => setFilter({ priorityIds: selected })}
-          />
-          <DatePicker
-            date={startDate}
-            onDateChange={(date) => setFilter({ startDate: date ?? undefined })}
-            placeholder="Start Date"
-            Icon={CalendarCheck2}
-            tooltipHeading="Filter Start Date"
-          />
-          <DatePicker
-            date={dueDate}
-            onDateChange={(date) => setFilter({ dueDate: date ?? undefined })}
-            placeholder="Due Date"
-            Icon={CalendarClock}
-            tooltipHeading="Filter Due Date"
-          />
         </div>
       </div>
       <CalendarDate>

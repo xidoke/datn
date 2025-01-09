@@ -90,7 +90,6 @@ const HeaderRight = () => {
   };
   return (
     <div className="flex gap-2">
-      {/* <HeaderFilters currentProjectDetails={currentProjectDetails} /> */}
       <Button size={"sm"} onClick={handleOpenModal}>
         Add Cycle
       </Button>

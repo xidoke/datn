@@ -2,9 +2,7 @@
 
 import React, { useEffect, useMemo } from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { Search, CalendarCheck2, CalendarClock } from "lucide-react";
-import { AlignLeft, Clock, Circle, CheckCircle2, XCircle } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { CalendarCheck2, CalendarClock } from "lucide-react";
 import Column from "./Column";
 import IssueModal from "../IssueModal";
 import useIssueStore from "@/stores/issueStore";
@@ -12,19 +10,9 @@ import { useProjectLabelStore } from "@/stores/projectLabelStore";
 import { useProjectStateStore } from "@/stores/projectStateStore";
 import { useParams } from "next/navigation";
 import { Issue, Label, State, TIssuePriorities } from "@/types";
-import FilterDropdown from "@/components/dropdown/filter";
 import { useFilterStore } from "@/stores/filterStore";
-import PriorityMultiSelect from "@/components/dropdown/priority-multi-select";
 import { DatePicker } from "@/components/ui/date-picker";
-
-const stateGroups = [
-  { name: "backlog", label: "Backlog", icon: AlignLeft },
-  { name: "unstarted", label: "Unstarted", icon: Clock },
-  { name: "started", label: "Started", icon: Circle },
-  { name: "completed", label: "Completed", icon: CheckCircle2 },
-  { name: "cancelled", label: "Cancelled", icon: XCircle },
-];
-
+import { stateGroups, TStateGroups } from "@/components/icons/state/helper";
 interface KanbanBoardProps {
   issues: Issue[];
   states: State[];
@@ -39,10 +27,9 @@ export default function KanbanBoard({
   const { fetchIssues, updateIssue } = useIssueStore();
   const { fetchStates } = useProjectStateStore();
   const { fetchLabels } = useProjectLabelStore();
-  const { statusIds, labelIds, priorityIds, startDate, dueDate, setFilter } =
+  const { statusIds, labelIds, priorityIds, startDate, dueDate, search } =
     useFilterStore();
   const [selectedIssue, setSelectedIssue] = React.useState<Issue | null>(null);
-  const [search, setSearch] = React.useState("");
 
   const issueAfterFilter = issues.filter((issue) => {
     if (
@@ -82,16 +69,13 @@ export default function KanbanBoard({
       return false;
     }
 
-    return true;
-  });
-
-  const issueAfterSearchandFilter = issueAfterFilter.filter((issue) => {
     if (
       search.length > 0 &&
       !issue.title.toLowerCase().includes(search.toLowerCase())
     ) {
       return false;
     }
+
     return true;
   });
 
@@ -112,14 +96,14 @@ export default function KanbanBoard({
           id: state.id,
           icon: group.icon,
           title: state.name,
-          issues: issueAfterSearchandFilter.filter(
+          issues: issueAfterFilter.filter(
             (issue) => issue.state?.id === state.id,
           ),
           state,
         }));
       })
       .flat();
-  }, [states, issueAfterSearchandFilter]);
+  }, [states, issueAfterFilter]);
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;
@@ -154,50 +138,6 @@ export default function KanbanBoard({
 
   return (
     <div className="flex h-screen flex-col">
-      <div className="flex items-center justify-end px-4 py-2">
-        {/* filter */}
-        <div className="flex items-center gap-2 overflow-x-auto p-1">
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input
-              className="w-64 pl-8 text-sm"
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <FilterDropdown
-            label="Status"
-            options={states}
-            selectedIds={statusIds}
-            onChange={(selected) => setFilter({ statusIds: selected })}
-          />
-          <FilterDropdown
-            label="Labels"
-            options={labels}
-            selectedIds={labelIds}
-            onChange={(selected) => setFilter({ labelIds: selected })}
-          />
-          <PriorityMultiSelect
-            selectedPriorities={priorityIds}
-            onChange={(selected) => setFilter({ priorityIds: selected })}
-          />
-          <DatePicker
-            date={startDate}
-            onDateChange={(date) => setFilter({ startDate: date || undefined })}
-            placeholder="Start Date"
-            Icon={CalendarCheck2}
-            tooltipHeading="Filter Start Date"
-          />
-          <DatePicker
-            date={dueDate}
-            onDateChange={(date) => setFilter({ dueDate: date || undefined })}
-            placeholder="Due Date"
-            Icon={CalendarClock}
-            tooltipHeading="Filter Due Date"
-          />
-        </div>
-      </div>
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex-1 overflow-x-auto scrollbar-thin">
           <div className="flex h-full gap-4 p-4">

@@ -36,3 +36,11 @@ export const ISSUE_LAYOUTS: {
   title: string;
   icon: any;
 }[] = Object.values(ISSUE_LAYOUT_MAP);
+
+export const ISSUE_PRIORITIES = [
+  { key: "4", title: "Urgent" },
+  { key: "3", title: "High" },
+  { key: "2", title: "Medium" },
+  { key: "1", title: "Low" },
+  { key: "0", title: "None" },
+];

@@ -37,7 +37,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   workspaceSlug,
 }) => {
   return (
-    <Card className="group w-[300px] transition-colors hover:border-primary">
+    <Card className="group transition-colors hover:border-primary">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <div className="flex items-center justify-center bg-primary/85">
@@ -62,25 +62,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         <span className="text-xs text-muted-foreground">
           Created on {format(createdAt, "MMM dd, yyyy")}
         </span>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">More options</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link
-                href={`/${workspaceSlug}/projects/${id}/settings`}
-                className="flex items-center"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Link
+          href={`/${workspaceSlug}/projects/${id}/settings`}
+          className="flex items-center"
+        >
+          <Settings className="mr-2 h-4 w-4" />
+        </Link>
       </CardFooter>
     </Card>
   );
