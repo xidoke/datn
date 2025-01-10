@@ -12,6 +12,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import useIssueStore from "@/stores/issueStore";
 import { TIssuePriorities } from "@/types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { API_BASE_URL } from "@/helpers/common.helper";
+import { CycleDropdown } from "@/components/dropdown/cycle";
+import { IssueDropdown } from "@/components/dropdown/issue";
+import { IssueFilesList } from "@/components/view/issue-files-list";
+import { SubIssuesList } from "@/components/view/sub-issue-list";
 
 interface IssueDetailProps {
   workspaceSlug: string;
@@ -24,7 +30,7 @@ export default function IssueDetail({
   projectId,
   issueId,
 }: IssueDetailProps) {
-  const { getIssueById, updateIssue } = useIssueStore();
+  const { getIssueById, updateIssue, fetchIssueById } = useIssueStore();
   const issue = getIssueById(issueId);
 
   const [description, setDescription] = useState(issue?.description || "");
@@ -45,14 +51,6 @@ export default function IssueDetail({
           <h1 className="text-lg font-medium">
             {issue.fullIdentifier}: {issue.title}
           </h1>
-          <Link
-            href={`/${workspaceSlug}/projects/${projectId}/issues/${issue.id}`}
-          >
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Link2 size={16} />
-              <span>{issue.fullIdentifier}</span>
-            </div>
-          </Link>
         </div>
       </div>
 
@@ -101,85 +99,169 @@ export default function IssueDetail({
         )}
       </div>
 
+      {/* Sub-issues */}
+      <div>
+        <SubIssuesList parentIssueId={issue.id} />
+      </div>
+
+      {/* Files */}
+      <div>
+        <IssueFilesList
+          issue={issue}
+          onUpdate={() => {
+            fetchIssueById(
+              workspaceSlug as string,
+              projectId as string,
+              issueId,
+            );
+          }}
+        />
+      </div>
+
       {/* Properties */}
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-muted-foreground">
           Properties
         </h3>
 
-        {/* State */}
-        <div className="flex items-center gap-4">
-          <span className="w-24 text-sm text-muted-foreground">State</span>
-          <StateDropdown
-            size="sm"
-            projectId={projectId}
-            value={issue.stateId}
-            onChange={async (value) => {
-              await handleUpdateIssue({ stateId: value });
-            }}
-          />
-        </div>
+        <div className="space-y-4">
+          {/* State */}
+          <div className="flex items-center gap-4">
+            <span className="w-24 text-sm text-muted-foreground">State</span>
+            <StateDropdown
+              size="sm"
+              projectId={projectId as string}
+              value={issue.stateId}
+              onChange={async (value) => {
+                await handleUpdateIssue({ stateId: value });
+              }}
+            />
+          </div>
 
-        {/* Assignees */}
-        <div className="flex items-center gap-4">
-          <span className="w-24 text-sm text-muted-foreground">Assignees</span>
-          <AssigneeDropdown
-            size="icon"
-            projectId={projectId}
-            values={issue.assignees.map(
-              (assignee) => assignee.workspaceMember?.user?.id,
-            )}
-            onChange={async (values) => {
-              await handleUpdateIssue({ assigneeIds: values });
-            }}
-          />
-        </div>
+          {/* Assignees */}
+          <div className="flex items-center gap-4">
+            <span className="w-24 text-sm text-muted-foreground">
+              Assignees
+            </span>
+            <AssigneeDropdown
+              size="sm"
+              projectId={projectId as string}
+              values={issue.assignees.map(
+                (assignee) => assignee?.workspaceMember?.user?.id,
+              )}
+              onChange={async (values) => {
+                await updateIssue(
+                  workspaceSlug as string,
+                  projectId as string,
+                  issue.id,
+                  { assigneeIds: values },
+                );
+              }}
+            />
+          </div>
 
-        {/* Priority */}
-        <div className="flex items-center gap-4">
-          <span className="w-24 text-sm text-muted-foreground">Priority</span>
-          <PriorityDropdown
-            size="sm"
-            value={issue.priority.toString() as TIssuePriorities}
-            onChange={async (newPriority) => {
-              await handleUpdateIssue({ priority: +newPriority });
-            }}
-          />
-        </div>
+          {/* Priority */}
+          <div className="flex items-center gap-4">
+            <span className="w-24 text-sm text-muted-foreground">Priority</span>
+            <PriorityDropdown
+              size="sm"
+              onChange={async (newPriority) => {
+                await handleUpdateIssue({ priority: +newPriority });
+              }}
+              value={issue.priority.toString() as TIssuePriorities}
+            />
+          </div>
 
-        {/* Dates */}
-        <div className="flex items-center gap-4">
-          <span className="w-24 text-sm text-muted-foreground">Start date</span>
-          <DatePicker
-            date={issue.startDate}
-            Icon={CalendarCheck2}
-            onDateChange={(date) => handleUpdateIssue({ startDate: date || undefined })}
-            maxDate={issue.dueDate}
-          />
-        </div>
+          {/* Dates */}
+          <div className="flex items-center gap-4">
+            <span className="w-24 text-sm text-muted-foreground">
+              Start date
+            </span>
+            <DatePicker
+              size="sm"
+              date={issue.startDate}
+              Icon={CalendarCheck2}
+              onDateChange={(date) => {
+                handleUpdateIssue({ startDate: date });
+              }}
+              maxDate={issue.dueDate}
+            />
+          </div>
 
-        <div className="flex items-center gap-4">
-          <span className="w-24 text-sm text-muted-foreground">Due date</span>
-          <DatePicker
-            date={issue.dueDate}
-            Icon={CalendarClock}
-            onDateChange={(date) => handleUpdateIssue({ dueDate: date || undefined })}
-            minDate={issue.startDate}
-          />
-        </div>
+          <div className="flex items-center gap-4">
+            <span className="w-24 text-sm text-muted-foreground">Due date</span>
+            <DatePicker
+              size="sm"
+              date={issue.dueDate}
+              Icon={CalendarClock}
+              onDateChange={(date) => {
+                handleUpdateIssue({ dueDate: date });
+              }}
+              minDate={issue.startDate}
+            />
+          </div>
 
-        {/* Labels */}
-        <div className="flex items-center gap-4">
-          <span className="w-24 text-sm text-muted-foreground">Labels</span>
-          <LabelDropdown
-            projectId={projectId}
-            placeHolder="Add labels"
-            values={issue.labels.map((label) => label.id)}
-            onChange={async (values) => {
-              await handleUpdateIssue({ labelIds: values });
-            }}
-            maxDisplayedLabels={2}
-          />
+          {/* Labels */}
+          <div className="flex items-center gap-4">
+            <span className="w-24 text-sm text-muted-foreground">Labels</span>
+            <LabelDropdown
+              size="sm"
+              projectId={projectId as string}
+              placeHolder="Add labels"
+              onChange={async (values) => {
+                await handleUpdateIssue({ labelIds: values });
+              }}
+              values={issue.labels.map((label) => label.id)}
+              maxDisplayedLabels={7}
+            />
+          </div>
+
+          {/* Cycle */}
+          <div className="flex items-center gap-4">
+            <span className="w-24 text-sm text-muted-foreground">Cycle</span>
+            <CycleDropdown
+              size="sm"
+              projectId={projectId as string}
+              value={issue.cycleId}
+              onChange={async (value) => {
+                await handleUpdateIssue({ cycleId: value });
+              }}
+            />
+          </div>
+
+          {/* Parent */}
+          <div className="flex items-center gap-4 overflow-y-auto">
+            <span className="w-24 text-sm text-muted-foreground">
+              Parent issue
+            </span>
+
+            <IssueDropdown
+              size="sm"
+              projectId={projectId as string}
+              value={issue.parentId}
+              onChange={async (value) => {
+                await handleUpdateIssue({ parentId: value });
+              }}
+            />
+          </div>
+
+          {/* Creator */}
+          <div className="flex items-center gap-4 overflow-y-auto">
+            <span className="w-24 text-sm text-muted-foreground">Creator</span>
+
+            <Avatar>
+              <AvatarImage
+                className="h-8 w-8"
+                src={API_BASE_URL + issue.creator?.avatarUrl}
+              />
+              <AvatarFallback>
+                {(issue.creator.firstName?.charAt(0).toUpperCase() ??
+                  "" + issue.creator.lastName?.charAt(0).toUpperCase() ??
+                  "") ||
+                  issue.creator.email.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </div>
         </div>
       </div>
     </div>

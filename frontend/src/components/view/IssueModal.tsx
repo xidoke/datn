@@ -23,8 +23,7 @@ import { SubIssuesList } from "./sub-issue-list";
 import { IssueFilesList } from "./issue-files-list";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { API_BASE_URL } from "@/helpers/common.helper";
-import useSWR, { mutate } from "swr";
-
+import { CycleDropdown } from "../dropdown/cycle";
 interface IssueModalProps {
   issue: Issue;
   onClose: () => void;
@@ -247,6 +246,21 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                       }}
                       values={issueModal.labels.map((label) => label.id)}
                       maxDisplayedLabels={2}
+                    />
+                  </div>
+
+                  {/* Cycle */}
+                  <div className="flex items-center gap-4">
+                    <span className="w-24 text-sm text-muted-foreground">
+                      Cycle
+                    </span>
+                    <CycleDropdown
+                      size="sm"
+                      projectId={projectId as string}
+                      value={issueModal.cycleId}
+                      onChange={async (value) => {
+                        await handleUpdateIssue({ cycleId: value });
+                      }}
                     />
                   </div>
 

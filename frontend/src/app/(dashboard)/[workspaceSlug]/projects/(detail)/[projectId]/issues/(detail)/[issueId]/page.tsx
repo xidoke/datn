@@ -9,7 +9,7 @@ export default function IssuePage({
   params: { workspaceSlug: string; projectId: string; issueId: string };
 }) {
   return (
-    <div>
+    <div className="bg-background">
       <IssueDetailsHeader />
       <div className="container mx-auto px-4 py-8">
         {/* issue properties */}
