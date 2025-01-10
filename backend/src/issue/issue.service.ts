@@ -129,6 +129,7 @@ export class IssuesService {
             },
           },
         },
+        FileAssets: true,
         labels: true,
       },
       skip,
@@ -174,6 +175,7 @@ export class IssuesService {
             user: true,
           },
         },
+        FileAssets: true,
       },
     });
 

@@ -29,6 +29,7 @@ interface IssueStore {
   pagination: PaginationInfo;
 
   fetchIssues: (workspaceSlug: string, projectId: string, page?: number, pageSize?: number) => Promise<void>;
+  fetchIssueById: (workspaceSlug: string, projectId: string, issueId: string) => Promise<Issue>;
   getIssueById: (issueId: string) => Issue | undefined;
   createIssue: (workspaceSlug: string, projectId: string, issueData: Partial<Issue>) => Promise<Issue>;
   updateIssue: (workspaceSlug: string, projectId: string, issueId: string, issueData : Partial<IssueUpdateDto>) => Promise<Issue>;
@@ -77,6 +78,21 @@ const useIssueStore = create<IssueStore>()(
           throw error;
         }
       },
+
+      fetchIssueById: async (workspaceSlug, projectId, issueId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const issue = await issueService.fetchIssueById(workspaceSlug, projectId, issueId);
+      set(state => ({
+        issues: state.issues.map(i => i.id === issueId ? issue : i),
+        isLoading: false
+      }));
+      return issue;
+    } catch (error) {
+      set({ error: 'Failed to fetch issue', isLoading: false });
+      throw error;
+    }
+  },
 
       getIssueById: (issueId) => {
         return get().issues.find(issue => issue.id === issueId);

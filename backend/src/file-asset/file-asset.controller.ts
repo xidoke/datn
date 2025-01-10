@@ -17,6 +17,7 @@ import { FileAssetService } from "./file-asset.service";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { CognitoAuthGuard } from "src/auth/guards/cognito.guard";
 import { Role } from "src/auth/enums/role.enum";
+import { CreateFileAssetDto } from "./dto/create-file-asset.dto";
 
 @Controller("file-assets")
 @UseGuards(CognitoAuthGuard)
@@ -28,10 +29,7 @@ export class FileAssetController {
   @Roles(Role.ADMIN, Role.USER)
   async createFileAsset(
     @UploadedFile() file: Express.Multer.File,
-    @Body("entityType") entityType: string,
-    @Body("entityId") entityId: string,
-    @Body("workspaceId") workspaceId: string,
-    @Body("userId") userId: string,
+    @Body() createFileAssetDto: CreateFileAssetDto,
   ) {
     if (!file) {
       throw new BadRequestException("File is required");
@@ -43,10 +41,7 @@ export class FileAssetController {
         mimetype: file.mimetype,
         size: file.size,
       },
-      entityType,
-      entityId,
-      workspaceId,
-      userId,
+      ...createFileAssetDto,
     });
   }
 
@@ -66,7 +61,7 @@ export class FileAssetController {
   }
 
   @Delete(":id")
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.USER)
   async deleteFileAsset(@Param("id") id: string) {
     return this.fileAssetService.deleteFileAsset(id);
   }

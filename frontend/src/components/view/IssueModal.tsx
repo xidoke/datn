@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, Suspense } from "react";
 import { CalendarCheck2, CalendarClock, Maximize2 } from "lucide-react";
 import {
   Sheet,
@@ -22,8 +20,10 @@ import Link from "next/link";
 import Comments from "@/components/comment/comments";
 import { IssueDropdown } from "../dropdown/issue";
 import { SubIssuesList } from "./sub-issue-list";
+import { IssueFilesList } from "./issue-files-list";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { API_BASE_URL } from "@/helpers/common.helper";
+import useSWR, { mutate } from "swr";
 
 interface IssueModalProps {
   issue: Issue;
@@ -32,25 +32,20 @@ interface IssueModalProps {
 
 export default function IssueModal({ issue, onClose }: IssueModalProps) {
   const issueId = issue.id;
-  const { issues } = useIssueStore();
-  const issueModal = issues.find((i) => i.id === issueId);
+  const { getIssueById, fetchIssueById } = useIssueStore();
+  const { workspaceSlug, projectId } = useParams();
 
-
-
-  if (!issueModal) {
-    return null;
-  }
+  const issueModal = getIssueById(issueId);
+  console.log("🚀 ~ IssueModal ~ issueModal:", issueModal);
 
   const [description, setDescription] = useState(issueModal?.description || "");
   const [isEditing, setIsEditing] = useState(false);
 
   const { updateIssue } = useIssueStore();
-  const { workspaceSlug, projectId } = useParams();
 
-  // useEffect(() => {
-  //   setLocalIssue(issue);
-  //   setDescription(issue.description || "");
-  // }, [issue]);
+  if (!issueModal) {
+    return null;
+  }
 
   const handleUpdateIssue = async (updateData: Partial<IssueUpdateDto>) => {
     await updateIssue(
@@ -66,7 +61,6 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
       <SheetContent className="z-50 w-full sm:max-w-none md:w-[50%]">
         <div className="flex h-full flex-col">
           <SheetHeader className="border-b px-6 py-4">
-            {/* link to detail page */}
             <Link
               href={`/${workspaceSlug}/projects/${projectId}/issues/${issue.id}`}
             >
@@ -135,6 +129,21 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
               <div>
                 <SubIssuesList parentIssueId={issueModal.id} />
               </div>
+
+              {/* Files */}
+              <div>
+                <IssueFilesList
+                  issue={issueModal}
+                  onUpdate={() => {
+                    fetchIssueById(
+                      workspaceSlug as string,
+                      projectId as string,
+                      issueId,
+                    );
+                  }}
+                />
+              </div>
+
               {/* Properties */}
               <div className="space-y-4">
                 <h3 className="text-sm font-medium text-muted-foreground">
@@ -169,9 +178,6 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                         (assignee) => assignee?.workspaceMember?.user?.id,
                       )}
                       onChange={async (values) => {
-                        const updatedAssignees = values.map((id) => ({
-                          user: { id },
-                        }));
                         await updateIssue(
                           workspaceSlug as string,
                           projectId as string,
@@ -238,7 +244,6 @@ export default function IssueModal({ issue, onClose }: IssueModalProps) {
                       placeHolder="Add labels"
                       onChange={async (values) => {
                         await handleUpdateIssue({ labelIds: values });
-
                       }}
                       values={issueModal.labels.map((label) => label.id)}
                       maxDisplayedLabels={2}

@@ -5,7 +5,6 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { FileStorageService } from "../file-storage/file-storage.service";
-import { v4 as uuidv4 } from "uuid";
 
 interface FileData {
   buffer: Buffer;
@@ -29,14 +28,14 @@ export class FileAssetService {
     userId: string;
   }) {
     const { file, entityType, entityId, workspaceId, userId } = data;
-    const filename = `${uuidv4()}-${file.originalname}`;
+    const filename = `${file.originalname}`;
 
     try {
       const filePath = await this.fileStorage.saveFile(file.buffer, filename);
 
       const asset = await this.prisma.fileAsset.create({
         data: {
-          asset: filename,
+          asset: filePath,
           attributes: {
             name: file.originalname,
             type: file.mimetype,
@@ -49,16 +48,12 @@ export class FileAssetService {
           [this.getEntityField(entityType)]: { connect: { id: entityId } },
         },
       });
-      console.log(
-        filePath + " " + this.fileStorage.getFileUrl(filename),
-        filePath === this.fileStorage.getFileUrl(filename),
-      );
       return {
         asset,
-        fileUrl: this.fileStorage.getFileUrl(filename),
+        fileUrl: this.fileStorage.getFileUrl(filePath),
       };
-    } catch {
-      throw new BadRequestException("Failed to create file asset");
+    } catch (error) {
+      throw error;
     }
   }
 
@@ -105,9 +100,8 @@ export class FileAssetService {
 
     try {
       await this.fileStorage.deleteFile(asset.asset);
-      return this.prisma.fileAsset.update({
+      return this.prisma.fileAsset.delete({
         where: { id },
-        data: { isDeleted: true, deletedAt: new Date() },
       });
     } catch {
       throw new BadRequestException("Failed to delete file asset");

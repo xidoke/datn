@@ -9,6 +9,24 @@ export interface IssueLabel {
   color: string;
 }
 
+export interface IFileAsset {
+  id: string;
+  asset: string;
+  attributes: {
+    name: string;
+    type: string;
+    size: number;
+  };
+  size: number;
+  entityType: string;
+  entityId: string;
+  workspaceId: string;
+  isUploaded: boolean;
+  isDeleted: boolean;
+  deletedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 interface Issue {
   id: string;
@@ -25,6 +43,7 @@ interface Issue {
     name: string;
     token: string;
   };
+  FileAssets: IFileAsset[];
   parentId?: string | null;
   stateId: string;
   state: {

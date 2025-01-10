@@ -15,6 +15,14 @@ export class IssueService extends APIService {
   });
   }
 
+  async fetchIssueById(workspaceSlug: string, projectId: string, issueId: string ) : Promise<Issue> {
+    return this.get<Issue>(`workspaces/${workspaceSlug}/projects/${projectId}/issues/${issueId}`).then(
+      (response) => response.data.data
+    ).catch((error) => {
+      throw error?.response?.data
+  });
+  }
+
   async createIssue(workspaceSlug: string, projectId: string, issueData: any) {
     return this.post<Issue>(`workspaces/${workspaceSlug}/projects/${projectId}/issues`, issueData).then(
       (response) => response.data.data
