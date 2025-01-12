@@ -40,7 +40,12 @@ export const useProjectStateStore = create<ProjectStateStore>()(
           set({ isLoading: true });
           try {
             const states = await stateService.fetchStates(workspaceSlug, projectId);
-            set({ states });
+            const sortedStates = states.sort((a, b) => {
+                // Sort states by group order: backlog -> cancelled
+                const groupOrder = ["backlog", "unstarted", "started", "completed", "cancelled"];
+                return groupOrder.indexOf(a.group) - groupOrder.indexOf(b.group);
+            });
+            set({ states: sortedStates });
           } catch (error) {
             console.error("Failed to fetch states:", error);
             throw error;

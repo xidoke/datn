@@ -99,6 +99,13 @@ export const AuthenticationWrapper: FC<TAuthenticationWrapper> = ({
     }
   }
 
+  if (user?.isActive === false) {
+    if (pathname === "/") {
+      router.push("/blocked/");
+      return;
+    }
+  }
+
   if (pageType === PageType.PUBLIC) {
     return <>{children}</>;
   }

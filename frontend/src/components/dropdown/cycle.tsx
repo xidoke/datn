@@ -41,7 +41,7 @@ const CycleDropdown = ({
   const [loading, setLoading] = useState(false);
 
   const { workspaceSlug } = useParams();
-  const { cycles, fetchCycles, getCycleById } = useCycleStore();
+  const { cyclesMap: cycles, fetchCycles, getCycleById } = useCycleStore();
 
   // convert cycle map to cycle list
   const cyclesList = cycles ? Object.values(cycles) : [];

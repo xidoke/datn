@@ -64,11 +64,19 @@ export class UserService {
   }
 
   async findAll(paginationQuery: PaginationQueryDto) {
-    const { page = 1, pageSize = 20 } = paginationQuery;
+    const { page = 1, pageSize = 20, search = "" } = paginationQuery;
     const skip = (page - 1) * pageSize;
 
-    const [users, totalCount] = await Promise.all([
+    const [users] = await Promise.all([
       this.prisma.user.findMany({
+        where: {
+          role: { not: Role.ADMIN },
+          OR: [
+            { email: { contains: search, mode: "insensitive" } },
+            { firstName: { contains: search, mode: "insensitive" } },
+            { lastName: { contains: search, mode: "insensitive" } },
+          ],
+        },
         skip,
         take: pageSize,
         orderBy: { createdAt: "desc" },
@@ -84,12 +92,11 @@ export class UserService {
           lastWorkspaceSlug: true,
         },
       }),
-      this.prisma.user.count(),
     ]);
 
     return {
       users,
-      totalCount,
+      totalCount: users.length,
       page,
       pageSize,
     };
@@ -164,6 +171,13 @@ export class UserService {
     return this.prisma.user.update({
       where: { id },
       data: updateUserDto,
+    });
+  }
+
+  async setIsActive(id: string, isActive: boolean) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { isActive },
     });
   }
 
@@ -348,77 +362,105 @@ export class UserService {
 
   async getChartData() {
     const months = [
-      "January",
-      "February",
-      "March",
-      "April",
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
       "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
-
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-
-    // Xây dựng danh sách 12 tháng gần nhất
-    const last12Months = Array.from({ length: 12 }, (_, i) => {
-      const monthIndex = (currentMonth - i + 12) % 12;
-      const yearOffset = Math.floor((currentMonth - i) / 12);
-      return {
-        month: months[monthIndex],
-        year: currentYear + yearOffset,
-        index: monthIndex,
-      };
-    }).reverse(); // Đảo ngược thứ tự để tháng cũ nhất ở đầu
-
-    // Lấy dữ liệu cho từng tháng
-    const chartData = await Promise.all(
-      last12Months.map(async ({ month, year, index }) => {
-        const startDate = new Date(year, index, 1);
-        const endDate = new Date(year, index + 1, 0);
-
-        const userCount = await this.prisma.user.count({
-          where: {
-            createdAt: {
-              gte: startDate,
-              lt: endDate,
-            },
-          },
-        });
-
-        const workspaceCount = await this.prisma.workspace.count({
-          where: {
-            createdAt: {
-              gte: startDate,
-              lt: endDate,
-            },
-          },
-        });
-
-        const projectCount = await this.prisma.project.count({
-          where: {
-            createdAt: {
-              gte: startDate,
-              lt: endDate,
-            },
-          },
-        });
-
-        return {
-          month,
-          year,
-          users: userCount,
-          workspaces: workspaceCount,
-          projects: projectCount,
-        };
-      }),
+    const currentDate = new Date();
+    const endDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth() + 1,
+      0,
+    );
+    const startDate = new Date(
+      endDate.getFullYear() - 1,
+      endDate.getMonth() + 1,
+      1,
     );
 
+    const [users, workspaces, projects, issues] = await Promise.all([
+      this.prisma.user.groupBy({
+        by: ["createdAt"],
+        _count: { id: true },
+        where: { createdAt: { gte: startDate, lte: endDate } },
+      }),
+      this.prisma.workspace.groupBy({
+        by: ["createdAt"],
+        _count: { id: true },
+        where: { createdAt: { gte: startDate, lte: endDate } },
+      }),
+      this.prisma.project.groupBy({
+        by: ["createdAt"],
+        _count: { id: true },
+        where: { createdAt: { gte: startDate, lte: endDate } },
+      }),
+      this.prisma.issue.groupBy({
+        by: ["createdAt"],
+        _count: { id: true },
+        where: { createdAt: { gte: startDate, lte: endDate } },
+      }),
+    ]);
+
+    const chartData = Array.from({ length: 12 }, (_, index) => {
+      const date = new Date(
+        endDate.getFullYear(),
+        endDate.getMonth() - index,
+        1,
+      );
+      const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}`;
+
+      return {
+        month: months[date.getMonth()],
+        year: date.getFullYear(),
+        users: 0,
+        workspaces: 0,
+        projects: 0,
+        issues: 0,
+      };
+    }).reverse();
+
+    const updateCounts = (data, key) => {
+      data.forEach((item) => {
+        const monthKey = `${item.createdAt.getFullYear()}-${(item.createdAt.getMonth() + 1).toString().padStart(2, "0")}`;
+        const chartItem = chartData.find(
+          (d) =>
+            `${d.year}-${(months.indexOf(d.month) + 1).toString().padStart(2, "0")}` ===
+            monthKey,
+        );
+        if (chartItem) {
+          chartItem[key] += item._count.id;
+        }
+      });
+    };
+
+    updateCounts(users, "users");
+    updateCounts(workspaces, "workspaces");
+    updateCounts(projects, "projects");
+    updateCounts(issues, "issues");
+
     return chartData;
+  }
+
+  async getMetrics() {
+    const totalUsers = await this.prisma.user.count();
+    const totalWorkspaces = await this.prisma.workspace.count();
+    const totalProjects = await this.prisma.project.count();
+    const totalIssues = await this.prisma.issue.count();
+
+    return {
+      totalUsers,
+      totalWorkspaces,
+      totalProjects,
+      totalIssues,
+    };
   }
 }

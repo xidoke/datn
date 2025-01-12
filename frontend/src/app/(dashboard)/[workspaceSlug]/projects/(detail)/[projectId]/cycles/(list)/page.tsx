@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 const CycleListPage = () => {
   const { workspaceSlug, projectId } = useParams();
   const {
-    cycles,
+    cyclesMap: cycles,
     completedCycleIds: compeletedCycleIds,
     upcomingCycleIds,
   } = useCycleStore();

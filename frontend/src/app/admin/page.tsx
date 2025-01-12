@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users, FileText, Settings, LogOut, User } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
@@ -43,27 +42,35 @@ const chartConfig = {
     label: "Projects",
     color: "hsl(var(--chart-3))",
   },
+  issues: {
+    label: "Issues",
+    color: "hsl(var(--chart-4))",
+  },
 } satisfies ChartConfig;
 
 export default function AdminHomePage() {
   const { data: user } = useUserStore();
   const logout = useLogout();
   const router = useAppRouter();
-  const [greeting, setGreeting] = useState(() => {
+  const greeting = (() => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
     if (hour < 18) return "Good afternoon";
     return "Good evening";
+  })();
+  const [chartData, setChartData] = useState<{ month: string; users: number; workspaces: number; projects: number; issues: number }[]>([]);
+  const [metrics, setMetrics] = useState({
+    totalUsers: 0,
+    totalWorkspaces: 0,
+    totalProjects: 0,
+    totalIssues: 0,
   });
-  const [chartData, setChartData] = useState([]);
 
   const handleProfile = () => {
-    // Navigate to profile page
     router.push("/admin/profile");
   };
 
   const handleLogout = () => {
-    // Implement logout logic here
     logout();
     router.push("/");
   };
@@ -83,8 +90,24 @@ export default function AdminHomePage() {
       }
     };
 
+    const fetchMetrics = async () => {
+      try {
+        const response = await fetch(API_BASE_URL + "/users/admin/metrics", {
+          credentials: "include",
+        });
+        const result = await response.json();
+        if (result.status) {
+          setMetrics(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching metrics:", error);
+      }
+    };
+
     fetchChartData();
+    fetchMetrics();
   }, []);
+
   return (
     <div className="container mx-auto min-h-screen p-6">
       <header className="mb-6 flex items-center justify-between">
@@ -98,7 +121,7 @@ export default function AdminHomePage() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Avatar className="h-12 w-12 cursor-pointer">
+            <Avatar className="h-12 w-12 cursor-pointer border-2">
               <AvatarImage
                 src={API_BASE_URL + user?.avatarUrl}
                 alt={user?.firstName}
@@ -129,8 +152,11 @@ export default function AdminHomePage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">?</div>
-            <p className="text-xs text-muted-foreground">+? new this week</p>
+            <div className="text-2xl font-bold">{metrics.totalUsers}</div>
+            <p className="text-xs text-muted-foreground">
+              +{metrics.totalUsers - chartData[chartData.length - 2]?.users}{" "}
+              from last month
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -141,33 +167,48 @@ export default function AdminHomePage() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">?</div>
-            <p className="text-xs text-muted-foreground">+? new this week</p>
+            <div className="text-2xl font-bold">{metrics.totalWorkspaces}</div>
+            <p className="text-xs text-muted-foreground">
+              +
+              {metrics.totalWorkspaces -
+                chartData[chartData.length - 2]?.workspaces}{" "}
+              from last month
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">System Load</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Projects
+            </CardTitle>
             <BarChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">?</div>
-            <p className="text-xs text-muted-foreground">?% from average</p>
+            <div className="text-2xl font-bold">{metrics.totalProjects}</div>
+            <p className="text-xs text-muted-foreground">
+              +
+              {metrics.totalProjects -
+                chartData[chartData.length - 2]?.projects}{" "}
+              from last month
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Uptime</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Issues</CardTitle>
             <Settings className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">?</div>
-            <p className="text-xs text-muted-foreground">+?% from last week</p>
+            <div className="text-2xl font-bold">{metrics.totalIssues}</div>
+            <p className="text-xs text-muted-foreground">
+              +{metrics.totalIssues - chartData[chartData.length - 2]?.issues}{" "}
+              from last month
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>User chart</CardTitle>
@@ -194,7 +235,7 @@ export default function AdminHomePage() {
                   cursor={false}
                   content={<ChartTooltipContent hideLabel />}
                 />
-                <Bar dataKey="users" radius={8}>
+                <Bar dataKey="users" radius={8} fill="var(--color-users)">
                   <LabelList
                     position="top"
                     offset={12}
@@ -233,7 +274,7 @@ export default function AdminHomePage() {
                   cursor={false}
                   content={<ChartTooltipContent hideLabel />}
                 />
-                <Bar dataKey="workspaces" radius={8}>
+                <Bar dataKey="workspaces" radius={8} fill="var(--color-workspaces)">
                   <LabelList
                     position="top"
                     offset={12}
@@ -272,7 +313,7 @@ export default function AdminHomePage() {
                   cursor={false}
                   content={<ChartTooltipContent hideLabel />}
                 />
-                <Bar dataKey="projects" radius={8}>
+                <Bar dataKey="projects" radius={8} fill="var(--color-projects)">
                   <LabelList
                     position="top"
                     offset={12}
@@ -284,12 +325,45 @@ export default function AdminHomePage() {
             </ChartContainer>
           </CardContent>
         </Card>
-      </div>
 
-      <div className="mt-6 flex flex-wrap gap-4">
-        <Button>Manage Users</Button>
-        <Button variant="outline">View Reports</Button>
-        <Button variant="outline">System Settings</Button>
+        <Card>
+          <CardHeader>
+            <CardTitle>Issue chart</CardTitle>
+            <CardDescription>12 months</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig}>
+              <BarChart
+                accessibilityLayer
+                data={chartData}
+                margin={{
+                  top: 20,
+                }}
+              >
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="month"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  tickFormatter={(value) => value.slice(0, 3)}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
+                />
+                <Bar dataKey="issues" radius={8} fill="var(--color-issues)">
+                  <LabelList
+                    position="top"
+                    offset={12}
+                    className="fill-foreground"
+                    fontSize={12}
+                  />
+                </Bar>
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="container mx-auto py-10">

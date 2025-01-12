@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Link2, CalendarCheck2, CalendarClock } from "lucide-react";
+import { CalendarCheck2, CalendarClock } from "lucide-react";
 import { AutoResizeTextarea } from "@/components/ui/auto-resize-textarea";
 import { StateDropdown } from "@/components/dropdown/state";
 import { PriorityDropdown } from "@/components/dropdown/priority";

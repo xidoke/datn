@@ -31,7 +31,7 @@ export default function Home() {
     case IssueLayoutTypes.GANTT:
       return (
         <main className="min-h-screen">
-          <GanttView issues={issues} states={states} labels={labels} />
+          <GanttView issues={issues} states={states} />
         </main>
       );
     case IssueLayoutTypes.SPREADSHEET:

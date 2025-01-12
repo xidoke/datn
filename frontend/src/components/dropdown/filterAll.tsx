@@ -51,11 +51,11 @@ const FilterAllDropdown: React.FC<FilterDropdownProps> = () => {
     usersId,
     setFilter,
   } = useFilterStore();
-    console.log("🚀 ~ usersId:", usersId)
+  console.log("🚀 ~ usersId:", usersId);
   const { states } = useProjectStateStore();
   const { labels } = useProjectLabelStore();
   const {
-    cycles,
+    cyclesMap: cycles,
     activeCycleId,
     completedCycleIds: compeletedCycleIds,
     upcomingCycleIds,

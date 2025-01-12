@@ -152,6 +152,14 @@ export class UserController {
     return this.userService.getChartData();
   }
 
+  // metrics user for admin
+  @Get("admin/metrics")
+  @Roles(Role.ADMIN)
+  @UseGuards(CognitoAuthGuard)
+  async getMetrics() {
+    return this.userService.getMetrics();
+  }
+
   // retrieve user by userId
   @Get(":userId")
   @Roles(Role.ADMIN)
@@ -170,6 +178,21 @@ export class UserController {
   @UseGuards(CognitoAuthGuard)
   async createUser(@Body() createUserDto: CreateAdminUserDto) {
     return this.userService.create(createUserDto);
+  }
+
+  // Block user by userId (admin only)
+  @Patch(":userId/isActive")
+  @Roles(Role.ADMIN)
+  @UseGuards(CognitoAuthGuard)
+  async setIsActive(
+    @Param("userId") userId: string,
+    @Body("isActive") isActive: boolean,
+  ) {
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+    return this.userService.setIsActive(userId, isActive);
   }
 
   // Delete user by userId

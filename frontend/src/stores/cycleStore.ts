@@ -7,7 +7,7 @@ import { CycleService } from '@/services/cycle.service';
 import { mutate } from 'swr';
 
 interface CycleState {
-  cycles: Record<string, ICycle>;
+  cyclesMap: Record<string, ICycle>;
   activeCycleId: string | null;
   completedCycleIds: string[];
   upcomingCycleIds: string[];
@@ -33,7 +33,7 @@ const cycleService = new CycleService();
 export const useCycleStore = create<CycleState>()(
   devtools(persist(
     immer((set, get) => ({
-      cycles: {},
+      cyclesMap: {},
       activeCycleId: null,
       completedCycleIds: [],
       upcomingCycleIds: [],
@@ -41,7 +41,7 @@ export const useCycleStore = create<CycleState>()(
       error: null,
 
       reset: () => {
-        set({ cycles: {}, activeCycleId: null, completedCycleIds: [], upcomingCycleIds: [], isLoading: false, error: null });
+        set({ cyclesMap: {}, activeCycleId: null, completedCycleIds: [], upcomingCycleIds: [], isLoading: false, error: null });
     },
 
       fetchCycles: async (workspaceSlug: string, projectId: string) => {
@@ -88,7 +88,7 @@ export const useCycleStore = create<CycleState>()(
           const upcomingCycleIds = upcomingCycles.map((cycle) => cycle.id);
 
           set((state) => {
-            state.cycles = cycles.reduce((acc: Record<string, ICycle>, cycle: ICycle) => {
+            state.cyclesMap = cycles.reduce((acc: Record<string, ICycle>, cycle: ICycle) => {
               acc[cycle.id] = cycle;
               return acc;
             }, {});
@@ -108,7 +108,7 @@ export const useCycleStore = create<CycleState>()(
         try {
           const cycleProgress = await cycleService.fetchCycleProgress(workspaceSlug, projectId, cycleId);
           set((state) => {
-            state.cycles[cycleId].progress = cycleProgress;
+            state.cyclesMap[cycleId].progress = cycleProgress;
           });
           return cycleProgress.progress;
         } catch (error) {
@@ -122,7 +122,7 @@ export const useCycleStore = create<CycleState>()(
         try {
           const cycle = await cycleService.createCycle(workspaceSlug, projectId, cycleData);
           set((state) => {
-            state.cycles[cycle.id] = cycle;
+            state.cyclesMap[cycle.id] = cycle;
             state.isLoading = false;
           });
           mutate(`PROJECT_CYCLES_${workspaceSlug}_${projectId}`);
@@ -141,7 +141,7 @@ export const useCycleStore = create<CycleState>()(
         try {
           const updatedCycle = await cycleService.updateCycle(workspaceSlug, projectId, cycleId, cycleData);
           set((state) => {
-            state.cycles[cycleId] = updatedCycle;
+            state.cyclesMap[cycleId] = updatedCycle;
             state.isLoading = false;
           });
           mutate(`PROJECT_CYCLES_${workspaceSlug}_${projectId}`);
@@ -158,7 +158,7 @@ export const useCycleStore = create<CycleState>()(
           
           await cycleService.deleteCycle(workspaceSlug, projectId, cycleId);
           set((state) => {
-            delete state.cycles[cycleId];
+            delete state.cyclesMap[cycleId];
             if (state.activeCycleId === cycleId) {
               state.activeCycleId = null;
             }
@@ -175,21 +175,21 @@ export const useCycleStore = create<CycleState>()(
       },
 
       getCycleById: (cycleId: string) => {
-        return get().cycles[cycleId];
+        return get().cyclesMap[cycleId];
       },
 
       getActiveCycle: () => {
-        const { activeCycleId, cycles } = get();
+        const { activeCycleId, cyclesMap: cycles } = get();
         return activeCycleId ? cycles[activeCycleId] : undefined;
       },
 
       getFilteredCycles: (filter: (cycle: ICycle) => boolean) => {
-        return Object.values(get().cycles).filter(filter);
+        return Object.values(get().cyclesMap).filter(filter);
       },
     })),
     { name: 'cycle-store',
       partialize: (state) => ({
-          cycles: state.cycles,
+          cycles: state.cyclesMap,
           activeCycleId: state.activeCycleId,
           completedCycleIds: state.completedCycleIds,
           upcomingCycleIds: state.upcomingCycleIds,

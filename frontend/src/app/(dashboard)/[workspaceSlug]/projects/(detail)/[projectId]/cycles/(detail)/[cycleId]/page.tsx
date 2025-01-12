@@ -44,7 +44,7 @@ const CycleDetailsPage = () => {
     case IssueLayoutTypes.GANTT:
       return (
         <main className="min-h-screen">
-          <GanttView issues={issuesOfCycle} states={states} labels={labels} />
+          <GanttView issues={issuesOfCycle} states={states} />
         </main>
       );
     case IssueLayoutTypes.SPREADSHEET:
