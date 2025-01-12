@@ -1,13 +1,13 @@
 "use client";
 
 import Stats from "./stats";
-import AssignedIssues from "./assigned-issues";
-import CreatedIssues from "./created-issues";
 import { useParams } from "next/navigation";
 import { IssuesByStatePieChart } from "./pie-chart-state";
 import { IssuesByPriorityChart } from "./priority-chart";
 import { useProfile } from "@/hooks/useProfile";
 import { useMemberStore } from "@/stores/member/memberStore";
+import AssignedIssues from "../dashboard/assigned-issues";
+import CreatedIssues from "../dashboard/created-issues";
 
 export const WorkspaceMemberDashboard = () => {
   const { workspaceSlug, memberId } = useParams();

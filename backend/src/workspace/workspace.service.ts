@@ -418,6 +418,12 @@ export class WorkspaceService {
         projectId: {
           in: workspace.projects.map((p) => p.id),
         },
+        assignees: {
+          some: {
+            memberId: userId,
+            workspaceId: workspace.id,
+          },
+        },
       },
       _count: {
         _all: true,
@@ -486,6 +492,12 @@ export class WorkspaceService {
       where: {
         projectId: {
           in: workspace.projects.map((p) => p.id),
+        },
+        assignees: {
+          some: {
+            memberId: userId,
+            workspaceId: workspace.id,
+          },
         },
       },
       _count: {

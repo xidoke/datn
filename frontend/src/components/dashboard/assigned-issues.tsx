@@ -4,7 +4,7 @@ import { PriorityIcon } from "../icons/priority-icon";
 import Link from "next/link";
 import { Skeleton } from "../ui/skeleton";
 import { Card } from "../ui/card";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, CheckCircle } from "lucide-react";
 import { Issue, TIssuePriorities } from "@/types";
 
 const AssignedIssues = ({
@@ -18,7 +18,7 @@ const AssignedIssues = ({
   return (
     <Card className="p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Last assigned to you</h2>
+        <h2 className="text-xl font-semibold">Last 10 assigned  to you</h2>
       </div>
 
       <Tabs defaultValue="pending">
@@ -68,7 +68,35 @@ const AssignedIssues = ({
           </div>
         </TabsContent>
         <TabsContent value="completed">
-          {/* Similar structure for completed issues */}
+          <div className="space-y-4">
+            {isLoading
+              ? Array(3)
+                  .fill(0)
+                  .map((_, i) => <Skeleton key={i} className="h-16 w-full" />)
+              : data?.recentAssignedIssues
+                  .filter((issue: Issue) => issue.state.group === "completed")
+                  .map((issue: Issue) => (
+                    <div
+                      key={issue.id}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
+                      <Link
+                        href={`projects/${issue.project.id}/issues/${issue.id}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-muted-foreground">
+                            {issue.project.token}-{issue.sequenceNumber}
+                          </span>
+                          <span>{issue.title}</span>
+                        </div>
+                      </Link>
+
+                      <div className="flex items-center gap-4">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      </div>
+                    </div>
+                  ))}
+          </div>
         </TabsContent>
       </Tabs>
     </Card>

@@ -16,7 +16,7 @@ const CreatedIssues = ({
   return (
     <Card className="p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Last created by you</h2>
+        <h2 className="text-xl font-semibold">Last 10 created by you</h2>
       </div>
 
       <Tabs defaultValue="pending">
@@ -60,7 +60,39 @@ const CreatedIssues = ({
           </div>
         </TabsContent>
         <TabsContent value="completed">
-          {/* Similar structure for completed issues */}
+          <div className="space-y-4">
+            {isLoading
+              ? Array(3)
+                  .fill(0)
+                  .map((_, i) => <Skeleton key={i} className="h-16 w-full" />)
+              : data?.recentCreatedIssues
+                  .filter((issue: Issue) => issue.state.group === "completed")
+                  .map((issue: Issue) => (
+                    <div
+                      key={issue.id}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
+                      <Link
+                        href={`projects/${issue.project.id}/issues/${issue.id}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-muted-foreground">
+                            {issue.project.token}-{issue.sequenceNumber}
+                          </span>
+                          <span>{issue.title}</span>
+                        </div>
+                      </Link>
+
+                      <div className="flex items-center gap-4">
+                        <PriorityIcon
+                          priority={
+                            issue?.priority?.toString() as TIssuePriorities
+                          }
+                        />
+                      </div>
+                    </div>
+                  ))}
+          </div>
         </TabsContent>
       </Tabs>
     </Card>
