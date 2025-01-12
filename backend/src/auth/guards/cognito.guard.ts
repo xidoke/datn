@@ -118,6 +118,10 @@ export class CognitoAuthGuard implements CanActivate {
     if (requiredRoles && !requiredRoles.includes(user.role)) {
       throw new ForbiddenException("Insufficient permissions");
     }
+
+    if (user.role === "USER" && user.isActive === false) {
+      throw new ForbiddenException("User is blocked");
+    }
   }
 
   private async handleTokenError(
