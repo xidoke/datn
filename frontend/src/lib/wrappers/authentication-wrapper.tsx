@@ -14,12 +14,8 @@ type TAuthenticationWrapper = {
 };
 
 const isValidURL = (url: string): boolean => {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
+  const disallowedSchemes = /^(https?|ftp):\/\//i;
+  return !disallowedSchemes.test(url);
 };
 
 export const AuthenticationWrapper: FC<TAuthenticationWrapper> = ({
@@ -115,7 +111,6 @@ export const AuthenticationWrapper: FC<TAuthenticationWrapper> = ({
       return <>{children}</>;
     }
     const currentRedirectRoute = getWorkspaceRedirectionUrl();
-    console.log("Redirecting to", currentRedirectRoute);
     router.push(currentRedirectRoute);
     return <></>;
   }
