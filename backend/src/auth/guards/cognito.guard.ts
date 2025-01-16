@@ -102,7 +102,7 @@ export class CognitoAuthGuard implements CanActivate {
         email: user.email,
       };
 
-      await this.cacheManager.set(cognitoId, userInfo, 60 * 1000); // Cache for 1 minute
+      await this.cacheManager.set(token, userInfo, 60 * 1000); // Cache for 1 minute
       return userInfo;
     } catch (error) {
       console.error("Token validation error:", error);

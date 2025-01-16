@@ -27,7 +27,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { UserTable } from "@/components/admin/user-table";
 
 const chartConfig = {
   users: {
@@ -58,7 +57,15 @@ export default function AdminHomePage() {
     if (hour < 18) return "Good afternoon";
     return "Good evening";
   })();
-  const [chartData, setChartData] = useState<{ month: string; users: number; workspaces: number; projects: number; issues: number }[]>([]);
+  const [chartData, setChartData] = useState<
+    {
+      month: string;
+      users: number;
+      workspaces: number;
+      projects: number;
+      issues: number;
+    }[]
+  >([]);
   const [metrics, setMetrics] = useState({
     totalUsers: 0,
     totalWorkspaces: 0,
@@ -119,30 +126,6 @@ export default function AdminHomePage() {
             Welcome to your admin dashboard
           </p>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Avatar className="h-12 w-12 cursor-pointer border-2">
-              <AvatarImage
-                src={API_BASE_URL + user?.avatarUrl}
-                alt={user?.firstName}
-              />
-              <AvatarFallback>
-                {user?.firstName?.[0]}
-                {user?.lastName?.[0]}
-              </AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleProfile}>
-              <User className="mr-2 h-4 w-4" />
-              <span>Profile</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </header>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -274,7 +257,11 @@ export default function AdminHomePage() {
                   cursor={false}
                   content={<ChartTooltipContent hideLabel />}
                 />
-                <Bar dataKey="workspaces" radius={8} fill="var(--color-workspaces)">
+                <Bar
+                  dataKey="workspaces"
+                  radius={8}
+                  fill="var(--color-workspaces)"
+                >
                   <LabelList
                     position="top"
                     offset={12}
@@ -364,11 +351,6 @@ export default function AdminHomePage() {
             </ChartContainer>
           </CardContent>
         </Card>
-      </div>
-
-      <div className="container mx-auto py-10">
-        <h1 className="mb-5 text-2xl font-bold">User Management</h1>
-        <UserTable />
       </div>
     </div>
   );

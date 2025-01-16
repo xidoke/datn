@@ -66,8 +66,14 @@ export function UserTable() {
       });
       const data = await response.json();
       if (data.status) {
-        // Implement block user functionality
-        console.log("Block user:", userId, isActive);
+        // Cập nhật trạng thái trực tiếp trong danh sách người dùng
+        setUserData((prevData) => {
+          if (!prevData) return null;
+          const updatedUsers = prevData.users.map((user) =>
+            user.id === userId ? { ...user, isActive } : user,
+          );
+          return { ...prevData, users: updatedUsers };
+        });
       } else {
         console.error("Unexpected response format:", data);
       }
@@ -87,6 +93,7 @@ export function UserTable() {
           },
         );
         const data = await response.json();
+        console.log(data);
         if (data.status && data.data) {
           setUserData(data.data);
         } else {
@@ -103,13 +110,15 @@ export function UserTable() {
 
   const handlePageChange = (newPage: number) => {
     router.push(
-      `/admin/?page=${newPage}&pageSize=${pageSize}&search=${search}`,
+      `/admin/users/?page=${newPage}&pageSize=${pageSize}&search=${search}`,
     );
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(`/admin/?page=1&pageSize=${pageSize}&search=${searchTerm}`);
+    router.push(
+      `/admin/users/?page=1&pageSize=${pageSize}&search=${searchTerm}`,
+    );
   };
 
   const totalPages = userData
@@ -242,8 +251,7 @@ export function UserTable() {
                   <Button
                     size="sm"
                     onClick={async () => {
-                    await setIsActive(user.id, !user.isActive);
-                      router.refresh();
+                      await setIsActive(user.id, !user.isActive);
                     }}
                     variant={user.isActive ? "destructive" : "default"}
                   >
@@ -270,13 +278,17 @@ export function UserTable() {
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => handlePageChange(page - 1)}
-                />
+                <Button variant={"ghost"} disabled={page === 1}>
+                  <PaginationPrevious
+                    onClick={() => handlePageChange(page - 1)}
+                  />
+                </Button>
               </PaginationItem>
               {renderPaginationItems()}
               <PaginationItem>
-                <PaginationNext onClick={() => handlePageChange(page + 1)} />
+                <Button variant={"ghost"} disabled={page === totalPages}>
+                  <PaginationNext onClick={() => handlePageChange(page + 1)} />
+                </Button>
               </PaginationItem>
             </PaginationContent>
           </Pagination>

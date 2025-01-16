@@ -94,9 +94,20 @@ export class UserService {
       }),
     ]);
 
+    const totalCount = await this.prisma.user.count({
+      where: {
+        role: { not: Role.ADMIN },
+        OR: [
+          { email: { contains: search, mode: "insensitive" } },
+          { firstName: { contains: search, mode: "insensitive" } },
+          { lastName: { contains: search, mode: "insensitive" } },
+        ],
+      },
+    });
+
     return {
       users,
-      totalCount: users.length,
+      totalCount,
       page,
       pageSize,
     };
