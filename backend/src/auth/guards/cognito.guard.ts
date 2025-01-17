@@ -100,6 +100,7 @@ export class CognitoAuthGuard implements CanActivate {
         role: user.role,
         userId: user.id,
         email: user.email,
+        isActive: user.isActive,
       };
 
       await this.cacheManager.set(token, userInfo, 60 * 1000); // Cache for 1 minute
@@ -120,6 +121,7 @@ export class CognitoAuthGuard implements CanActivate {
     }
 
     if (user.role === "USER" && user.isActive === false) {
+      console.log("User is blocked");
       throw new ForbiddenException("User is blocked");
     }
   }
