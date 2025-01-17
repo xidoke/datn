@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -23,7 +23,7 @@ const HeaderLeft = () => {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            <BreadcrumbLink href="/">User Management</BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -31,11 +31,11 @@ const HeaderLeft = () => {
   );
 };
 
-const WorkspaceHeader = () => {
+const UsersAdminHeader = () => {
   return (
     <>
       <Header left={<HeaderLeft />} />
     </>
   );
 };
-export default WorkspaceHeader;
+export default UsersAdminHeader;

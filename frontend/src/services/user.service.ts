@@ -1,7 +1,7 @@
 import { API_BASE_URL } from "@/helpers/common.helper";
 import { APIService } from "./api.service";
 import { ApiResponse, User } from "@/types";
-import axios from 'axios';
+import axios from "axios";
 
 export class UserService extends APIService {
   constructor() {
@@ -10,37 +10,59 @@ export class UserService extends APIService {
 
   async currentUser(): Promise<ApiResponse<User>> {
     try {
-      const response = await this.get<User>("/users/me", {} , { validateStatus: null });
+      const response = await this.get<User>(
+        "/users/me",
+        {},
+        { validateStatus: null },
+      );
+
+      if (response && response.status === 403) {
+        console.log("User is blocked");
+        if (response.data.message === "User is blocked") {
+          window.location.replace("/blocked");
+        }
+      }
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         throw error.response.data;
       }
-      throw new Error('An unexpected error occurred while fetching current user');
+      throw error;
     }
   }
 
-  async updateLastWorkspaceSlug(slug: string): Promise<ApiResponse<{ lastWorkspaceSlug: string }>> {
+  async updateLastWorkspaceSlug(
+    slug: string,
+  ): Promise<ApiResponse<{ lastWorkspaceSlug: string }>> {
     try {
-      const response = await this.patch<{ lastWorkspaceSlug: string }>("/users/me", { lastWorkspaceSlug: slug });
+      const response = await this.patch<{ lastWorkspaceSlug: string }>(
+        "/users/me",
+        { lastWorkspaceSlug: slug },
+      );
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         throw error.response.data;
       }
-      throw new Error('Failed to update last workspace slug');
+      throw new Error("Failed to update last workspace slug");
     }
   }
 
-  async updateUser(firstName: string, lastName: string): Promise<ApiResponse<User>> {
+  async updateUser(
+    firstName: string,
+    lastName: string,
+  ): Promise<ApiResponse<User>> {
     try {
-      const response = await this.patch<User>("/users/me", { firstName, lastName });
+      const response = await this.patch<User>("/users/me", {
+        firstName,
+        lastName,
+      });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         throw error.response.data;
       }
-      throw new Error('Failed to update user');
+      throw new Error("Failed to update user");
     }
   }
 
@@ -59,7 +81,7 @@ export class UserService extends APIService {
       if (axios.isAxiosError(error) && error.response) {
         throw error.response.data;
       }
-      throw new Error('Failed to update user avatar');
+      throw new Error("Failed to update user avatar");
     }
   }
 }

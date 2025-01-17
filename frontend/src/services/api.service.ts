@@ -32,6 +32,9 @@ export abstract class APIService {
           const currentPath = window.location.pathname;
           window.location.replace(`/${currentPath ? `?next_path=${currentPath}` : ``}`);
         }
+
+
+
         return Promise.reject(error);
       }
     );

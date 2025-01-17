@@ -1,11 +1,14 @@
 import { UserTable } from "@/components/admin/user-table";
+import UsersAdminHeader from "./header";
 
 const UsersManagementPage = () => {
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="mb-5 text-2xl font-bold">User Management</h1>
-      <UserTable />
-    </div>
+    <>
+      <UsersAdminHeader />
+      <div className="container mx-auto px-4 py-4">
+        <UserTable />
+      </div>
+    </>
   );
 };
 export default UsersManagementPage;
