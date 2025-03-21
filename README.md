@@ -1,3 +1,8 @@
+# Demo
+~~Dự án triển khai trên Vercel (Frontend), EC2 (Backend), RDS (Database). Live: https:xidok.vercel.app~~
+
+Video demo tại: https://drive.google.com/drive/folders/1dpt5NvPp9y8AkW_uDlb4qhMyPDd6Reb8
+
 # Hướng Dẫn Triển Khai Dự Án
 
 ## 1. Yêu Cầu Hệ Thống
