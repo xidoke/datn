@@ -1,59 +1,66 @@
-## Đồ án tốt nghiệp kỳ 2024.1 - Khoa học máy tính
+# Hướng Dẫn Triển Khai Dự Án
 
-# Hướng dẫn khởi chạy dự án
+## 1. Yêu Cầu Hệ Thống
+Trước khi khởi chạy dự án, vui lòng đảm bảo hệ thống của bạn đáp ứng các yêu cầu sau:
+- **Node.js**: Phiên bản >= 20.14.0
+- **npm**: Phiên bản >= 10.8.3
+- **PostgreSQL**: Phiên bản 17.0
 
-## Yêu cầu hệ thống
-- Node.js (được code trên 20.14.0)
-- npm (được code trên 10.8.3)
+## 2. Khởi Chạy Backend
 
-## Khởi chạy dự án Backend
+### 2.1. Cài Đặt Các Gói Phụ Thuộc
+Chạy các lệnh sau để cài đặt và thiết lập môi trường cho backend:
+```bash
+cd backend
+npm install
+npx prisma generate
+```
 
-1. Cài đặt các gói phụ thuộc:
+### 2.2. Cấu Hình Môi Trường
+- Sao chép tệp `.env.example` thành `.env` trong thư mục `backend` và cấu hình các biến môi trường cần thiết.
+- Hệ thống sử dụng **AWS Cognito** để xác thực người dùng. Vui lòng tham khảo tài liệu của AWS để thiết lập chính xác.
+- Cấu hình **Cơ sở dữ liệu**:
+  - Nếu sử dụng PostgreSQL, có thể khôi phục cơ sở dữ liệu từ `backup.sql` bằng `pg_dump`.
+  - Hoặc cập nhật thông tin kết nối trong `.env` và chạy lệnh sau để tạo bảng:
     ```bash
-    cd backend
-    npm install 
-    npx prisma generate
+    npx prisma db push
     ```
 
-2. Cấu hình môi trường:
-    - Tạo file `.env` trong thư mục `backend` dựa vào `.env.example` và cấu hình các biến môi trường cần thiết. Lưu ý rằng dự án sử dụng AWS Cognito làm bên thứ ba hỗ trợ xác thực. Xem hướng dẫn ở AWS.
-    - Về Database, tôi sử dụng postgreSQL 17.0, bạn có thể sử dụng file backup.sql để tạo database bằng pg_dump hoặc điều chỉnh `.env` đúng với database của bạn. Sau đó có thể sử dụng `npx prisma db push` để tạo bảng.
+### 2.3. (Tuỳ Chọn) Tạo Tài Khoản Quản Trị Hệ Thống
+Nếu cần tài khoản quản trị, chạy lệnh sau (thông tin tài khoản được định nghĩa trong `./prisma/seed.ts`):
+```bash
+npm run seed
+```
 
-3. (optional) Tạo tài khoản admin system (thông tin tài khoản xem ở file ./prisma/seed.ts): 
-    ```bash
-    npm run seed
-    ```
-4. Khởi chạy server:
-    ```bash
-    npm start
-    ```
+### 2.4. Khởi Chạy Server
+- Chạy chế độ phát triển:
+  ```bash
+  npm start
+  ```
+- Hoặc build và chạy ở môi trường sản xuất:
+  ```bash
+  npm run build
+  npm run start:prod
+  ```
 
-5. Hoặc build và chạy bản tối ưu (production):
-    ```bash
-    npm run build
-    npm run start:prod
-    ```
+## 3. Khởi Chạy Frontend
 
-## Khởi chạy dự án Frontend
+### 3.1. Cài Đặt Các Gói Phụ Thuộc
+```bash
+cd frontend
+npm install
+```
 
-1. Cài đặt các gói phụ thuộc:
-    ```bash
-    cd frontend
-    npm install
-    ```
+### 3.2. Cấu Hình Môi Trường
+- Tạo tệp `.env` trong thư mục `frontend` và thiết lập các biến môi trường phù hợp.
+- Nếu sử dụng tính năng trợ lý AI, vui lòng cung cấp **Gemini API Key**.
 
-2. Cấu hình môi trường:
-    - Tạo file `.env` trong thư mục `frontend` và cấu hình các biến môi trường cần thiết. Để sử dụng tính năng trợ lý AI, cần cung cấp Gemini API KEY 
+### 3.3. Build và Chạy Ứng Dụng
+```bash
+npm run build
+npm run start
+```
 
-3. Build và chạy ứng dụng:
-    ```bash
-    npm run build
-    npm run start
-    ```
-
-## Ghi chú
-- Đảm bảo rằng các dịch vụ cần thiết (như cơ sở dữ liệu) đang chạy trước khi khởi chạy dự án.
-- Kiểm tra lại các biến môi trường trong file `.env` để đảm bảo chúng đúng với cấu hình của bạn.
-- Nếu bạn là giáo viên của tôi hãy liên hệ email do.pd200154@sis.hust.edu.vn để được cấp các file `.env` hoặc xem sản phẩm được triển khai:
-- Frontend đang được tôi triển khai tại `https//:xidok.vercel.app`
-- Backend, database đang được tôi triển khai trên EC2 và RDS (AWS). `https://xidoke.id.vn`, Tuy nhiên chắc là tôi sẽ dừng khi xong ĐATN. (to 30/1/2025)
+## Biến môi trường cần thiết:
+- Tính năng liên quan đến generative AI (OPTIONAL): API KEY
+- AWS Cognito (REQUIRED): Chi tiết xem tại backend/.env.example
